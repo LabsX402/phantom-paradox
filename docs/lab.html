@@ -308,26 +308,6 @@
             <p class="hero-sub">Real tests. Real transactions. Provable on-chain results.</p>
         </section>
         
-        <!-- LAB WALLET - Fund this for tests -->
-        <div style="background: linear-gradient(135deg, #0a1520, #0f1a28); border: 2px solid var(--accent); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.25rem;">💰 LAB WALLET (Devnet) — Fund this for real TX tests</div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--accent); word-break: break-all;">
-                        <a href="https://explorer.solana.com/address/J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS?cluster=devnet" target="_blank" style="color: var(--accent); text-decoration: none;">J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS</a>
-                        <button onclick="navigator.clipboard.writeText('J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS'); this.textContent='✓'" style="background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-dim); padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-left: 8px; font-size: 0.75rem;">📋</button>
-                    </div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 0.75rem; color: var(--text-dim);">BALANCE</div>
-                    <div id="lab-wallet-balance" style="font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--accent);">...</div>
-                    <div id="lab-wallet-status" style="font-size: 0.75rem; color: var(--accent);">Checking...</div>
-                </div>
-            </div>
-            <div id="refill-warning" style="display: none; margin-top: 1rem; padding: 0.75rem; background: rgba(255, 71, 87, 0.15); border: 1px solid var(--accent-red); border-radius: 8px; font-size: 0.85rem; color: var(--accent-red);">
-                ⚠️ <strong>LOW BALANCE!</strong> Fund this wallet to run real devnet transaction tests.
-            </div>
-        </div>
 
         <!-- Token Info Cards -->
         <div class="token-info">
@@ -386,10 +366,10 @@
             </div>
         </div>
         
-        <!-- One-Click Full Test -->
+        <!-- run all -->
         <div class="mega-test">
-            <h2>🚀 ONE-CLICK FULL TEST SUITE</h2>
-            <p>Run all tests automatically. Program, Tokens, Netting, Compression — everything verified with full report.</p>
+            <h2>🚀 RUN EVERYTHING</h2>
+            <p>Program, tokens, netting, compression — all in one go. Full report at the end.</p>
             <button class="mega-btn" id="run-all-btn" onclick="runAllTests()">
                 ▶ RUN ALL TESTS
             </button>
@@ -412,9 +392,7 @@
                     <span class="card-status ready" id="status-program">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Verifies the Phantom Paradox smart contract is deployed and executable on Solana Devnet.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> The on-chain program handles batch settlements, vault deposits, and Merkle root verification. If this fails, nothing works.</p>
-                    <p class="card-desc"><strong>Real use:</strong> This is the core engine that processes millions of intents into single on-chain settlements. Every anonymous payment flows through this program.</p>
+                    <p class="card-desc">Checks if the smart contract is actually deployed and executable on devnet. If this fails, nothing else works.</p>
                     <button class="run-btn" id="btn-program" onclick="testProgram()">▶ CHECK PROGRAM</button>
                     <div class="results" id="results-program"><div style="color: var(--text-muted);">Click to verify program deployment...</div></div>
                 </div>
@@ -427,9 +405,7 @@
                     <span class="card-status ready" id="status-null">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Fetches $NULL (PARADOX) token data directly from Solana Mainnet — supply, decimals, authorities.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> $NULL is the production token. Mint & freeze authorities are revoked = can't be rugged or frozen. Token-2022 standard enables transfer fees.</p>
-                    <p class="card-desc"><strong>Real use:</strong> This token captures the 0.30% service fee from every transaction processed through the PARADOX engine. Fees fund infra (0.25%) and buybacks/burns (0.05%).</p>
+                    <p class="card-desc">Pulls $NULL token data from mainnet. Mint/freeze revoked, Token-2022 with transfer fees. The real deal.</p>
                     <button class="run-btn" id="btn-null" onclick="testNullToken()">▶ CHECK $NULL</button>
                     <div class="results" id="results-null"><div style="color: var(--text-muted);">Click to verify $NULL on mainnet...</div></div>
                 </div>
@@ -442,9 +418,7 @@
                     <span class="card-status ready" id="status-pdox">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Test token on Devnet for running engine simulations without real money.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> Allows stress-testing the netting engine, batch settlements, and fee mechanics before mainnet deployment.</p>
-                    <p class="card-desc"><strong>Real use:</strong> Has 3% transfer fee like production — lets us test fee collection, LP growth, and burn mechanics at scale. <span style="color: var(--accent-orange);">⚠️ NO TRADING VALUE</span></p>
+                    <p class="card-desc">Devnet test token for stress testing. 3% fee like prod. <span style="color: var(--accent-orange);">No trading value obviously.</span></p>
                     <button class="run-btn" id="btn-pdox" onclick="testPdoxToken()">▶ CHECK PDOX</button>
                     <div class="results" id="results-pdox"><div style="color: var(--text-muted);">Click to verify PDOX on devnet...</div></div>
                 </div>
@@ -457,9 +431,7 @@
                     <span class="card-status ready" id="status-batch">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Runs the actual WRAITH netting algorithm — generates random intents, computes net positions, cancels circular flows.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> This is THE core innovation. Instead of 10,000 on-chain TXs, netting reduces it to ~50 settlements. That's 99.5% cost reduction.</p>
-                    <p class="card-desc"><strong>Real use:</strong> When 10K AI agents trade simultaneously, their intents batch together. A→B→C→A cycles cancel out. Only net positions settle on-chain.</p>
+                    <p class="card-desc">Runs WRAITH netting algorithm on random intents. Computes net positions, cancels A→B→C→A cycles. 10K intents → ~50 settlements.</p>
                     <label>Number of Intents</label>
                     <select id="batch-size">
                         <option value="100">100 intents (quick test)</option>
@@ -479,9 +451,7 @@
                     <span class="card-status ready" id="status-merkle">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Builds a real SHA-256 Merkle tree from intents. Hashes each intent, builds tree levels, outputs 32-byte root.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> 100,000 intents (250KB of data) compress to ONE 32-byte hash. That's 7,812:1 compression. Only the root goes on-chain.</p>
-                    <p class="card-desc"><strong>Real use:</strong> This is how we store proofs. The Merkle root commits to every intent in the batch. Anyone can verify their intent was included without storing everything on-chain.</p>
+                    <p class="card-desc">Builds SHA-256 Merkle tree from intents. 100K intents → 32 bytes on-chain. Proofs stay verifiable.</p>
                     <label>Number of Intents</label>
                     <select id="merkle-size">
                         <option value="100">100 intents (781:1 ratio)</option>
@@ -500,9 +470,7 @@
                     <span class="card-status ready" id="status-rpc">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>What:</strong> Pings Solana RPC endpoints (Devnet + Mainnet) and measures round-trip time for getSlot, getBlockHeight calls.</p>
-                    <p class="card-desc" style="margin-bottom: 0.5rem;"><strong>Why it matters:</strong> RPC latency affects settlement speed. Sub-500ms = instant feel. Over 1s = noticeable delay. We need fast RPC for real-time netting.</p>
-                    <p class="card-desc"><strong>Real use:</strong> The netting engine queries RPC to confirm settlements, check balances, and verify batch commits. Lower latency = faster confirmation for end users.</p>
+                    <p class="card-desc">Pings devnet + mainnet RPC. Measures round trip. Sub-500ms = good, over 1s = meh.</p>
                     <button class="run-btn" id="btn-rpc" onclick="testRPC()">▶ TEST RPC LATENCY</button>
                     <div class="results" id="results-rpc"><div style="color: var(--text-muted);">Click to ping Solana RPC...</div></div>
                 </div>
@@ -510,22 +478,22 @@
             
         </div>
         
-        <!-- Full Report Section -->
+        <!-- report -->
         <div class="full-report" id="full-report" style="display: none;">
             <div class="report-header">
                 <span>📋</span>
-                <span>FULL TEST REPORT</span>
-                <button class="copy-btn" onclick="copyReport()">📋 Copy JSON</button>
+                <span>raw json</span>
+                <button class="copy-btn" onclick="copyReport()">📋 copy</button>
             </div>
             <div class="report-json" id="report-json"></div>
         </div>
         
-        <!-- On-Chain Proof History -->
+        <!-- proof history -->
         <div style="margin-top: 3rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;">
             <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-                <span>📜</span><span>On-Chain Proof History</span>
+                <span>📜</span><span>recent txs</span>
             </h3>
-            <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.9rem;">Real transactions from previous tests. Click to verify on explorer.</p>
+            <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.9rem;">real devnet transactions. verify on explorer.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
                 <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 10px; padding: 1rem;">
                     <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">Batch Settlement (Devnet)</div>
@@ -542,11 +510,11 @@
             </div>
         </div>
         
-        <!-- SECRET VAULT ACCESS -->
+        <!-- vault -->
         <div id="vault-gate" style="margin-top: 3rem; background: linear-gradient(135deg, #0a0a0a, #1a0a1a); border: 1px solid #2a1a3a; border-radius: 16px; padding: 2rem; text-align: center;">
             <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.6;">🔐</div>
-            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #6a5a7a; margin-bottom: 1rem; letter-spacing: 2px;">ENCRYPTED SECTION</div>
-            <div style="font-size: 0.8rem; color: #4a4a5a; margin-bottom: 1.5rem;">Team access only. Unauthorized attempts are logged.</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #6a5a7a; margin-bottom: 1rem; letter-spacing: 2px;">TEAM ONLY</div>
+            <div style="font-size: 0.8rem; color: #4a4a5a; margin-bottom: 1.5rem;">you know the drill</div>
             <div style="display: flex; justify-content: center; gap: 10px; max-width: 400px; margin: 0 auto;">
                 <input type="password" id="vault-password" placeholder="Enter access code..." style="flex: 1; background: #0a0a10; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px 16px; color: #8a8a9a; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;" onkeypress="if(event.key==='Enter')unlockVault()">
                 <button onclick="unlockVault()" style="background: linear-gradient(135deg, #4a2a6a, #6a3a8a); border: none; border-radius: 8px; padding: 12px 24px; color: #ccc; font-family: 'JetBrains Mono', monospace; font-weight: 600; cursor: pointer;">DECRYPT</button>
@@ -554,18 +522,18 @@
             <div id="vault-error" style="display: none; margin-top: 1rem; color: #ff4757; font-size: 0.8rem;">⛔ ACCESS DENIED — Invalid code</div>
         </div>
         
-        <!-- HIDDEN VAULT CONTENT -->
+        <!-- vault content -->
         <div id="vault-content" style="display: none; margin-top: 2rem;">
             <div style="background: linear-gradient(135deg, #0a1a0a, #0a2010); border: 2px solid var(--accent); border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
                     <span style="font-size: 1.5rem;">🔓</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent); letter-spacing: 2px;">VAULT UNLOCKED — TEAM ACCESS</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent);">internal tools</span>
                 </div>
                 
-                <!-- Fee Economics Simulator -->
+                <!-- fee sim -->
                 <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <h3 style="color: var(--accent); margin-bottom: 1rem; font-size: 1rem;">💰 FEE ECONOMICS SIMULATOR</h3>
-                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">Model revenue and burns at different transaction volumes. Based on 0.30% service fee.</p>
+                    <h3 style="color: var(--accent); margin-bottom: 1rem; font-size: 1rem;">💰 FEE SIM</h3>
+                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">0.30% fee model. Where the money goes at scale.</p>
                     
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
                         <div>
@@ -597,10 +565,10 @@
                     </div>
                 </div>
                 
-                <!-- Agent Scalability Projections -->
+                <!-- agent sim -->
                 <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <h3 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1rem;">🤖 AGENT SCALABILITY MODEL</h3>
-                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">Project system load when AI agents come online. Shows batching efficiency gains.</p>
+                    <h3 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1rem;">🤖 AGENT SCALE</h3>
+                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">What happens when agents go brrrr.</p>
                     
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
                         <div>
@@ -627,9 +595,9 @@
                     </div>
                 </div>
                 
-                <!-- Internal Links -->
+                <!-- links -->
                 <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem;">
-                    <h3 style="color: var(--accent-orange); margin-bottom: 1rem; font-size: 1rem;">🔗 INTERNAL RESOURCES</h3>
+                    <h3 style="color: var(--accent-orange); margin-bottom: 1rem; font-size: 1rem;">🔗 quick links</h3>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; font-size: 0.85rem;">
                         <a href="https://solscan.io/account/J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS?cluster=devnet" target="_blank" style="color: var(--accent-blue); text-decoration: none;">→ Lab Wallet (Solscan)</a>
                         <a href="https://solscan.io/account/8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x?cluster=devnet" target="_blank" style="color: var(--accent-blue); text-decoration: none;">→ Program (Solscan)</a>
@@ -646,19 +614,20 @@
                 $NULL: <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank">8EeDdvC...pump</a> · 
                 Program: <a href="https://solscan.io/account/8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x?cluster=devnet" target="_blank">8jrMsGNM...wv2x</a>
             </p>
+            <p style="margin-top: 0.75rem; font-size: 0.7rem; color: var(--text-muted);">
+                ops: <a href="https://solscan.io/account/J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS?cluster=devnet" target="_blank" style="color: var(--text-muted);">J4djW3..VFEqdS</a> (<span id="lab-bal">--</span> SOL)
+            </p>
         </footer>
     </div>
     
     <script>
-        // ============================================
-        // PHANTOM PARADOX LIVE LAB
-        // ============================================
-        
+        // config
         const DEVNET_RPC = 'https://api.devnet.solana.com';
         const MAINNET_RPC = 'https://api.mainnet-beta.solana.com';
         const PROGRAM_ID = '8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x';
-        const NULL_TOKEN = '8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump';  // Mainnet $NULL
-        const PDOX_TOKEN = '4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF';  // Devnet test token
+        const NULL_TOKEN = '8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump';
+        const PDOX_TOKEN = '4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF';
+        const LAB_WALLET = 'J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS'; // devnet ops
         
         let stats = { testsRun: 0, passed: 0, txs: 0, totalTime: 0, testCount: 0 };
         let fullReport = { timestamp: null, tests: [], summary: {} };
@@ -707,9 +676,7 @@
             return await response.json();
         }
         
-        // ============================================
-        // TEST 1: Devnet Program
-        // ============================================
+        // test: program check
         async function testProgram() {
             const btn = document.getElementById('btn-program');
             const results = document.getElementById('results-program');
@@ -765,9 +732,7 @@
             btn.disabled = false; btn.innerHTML = '▶ CHECK PROGRAM';
         }
         
-        // ============================================
-        // TEST 2: $NULL Token (Mainnet)
-        // ============================================
+        // test: null token
         async function testNullToken() {
             const btn = document.getElementById('btn-null');
             const results = document.getElementById('results-null');
@@ -831,9 +796,7 @@
             btn.disabled = false; btn.innerHTML = '▶ CHECK $NULL';
         }
         
-        // ============================================
-        // TEST 3: PDOX Token (Devnet)
-        // ============================================
+        // test: pdox token
         async function testPdoxToken() {
             const btn = document.getElementById('btn-pdox');
             const results = document.getElementById('results-pdox');
@@ -886,9 +849,7 @@
             btn.disabled = false; btn.innerHTML = '▶ CHECK PDOX';
         }
         
-        // ============================================
-        // TEST 4: Batching Speed
-        // ============================================
+        // test: batch netting
         async function testBatching() {
             const btn = document.getElementById('btn-batch');
             const results = document.getElementById('results-batch');
@@ -969,9 +930,7 @@
             btn.disabled = false; btn.innerHTML = '▶ RUN BATCH TEST';
         }
         
-        // ============================================
-        // TEST 5: Merkle Compression
-        // ============================================
+        // test: merkle tree
         async function testMerkle() {
             const btn = document.getElementById('btn-merkle');
             const results = document.getElementById('results-merkle');
@@ -1044,9 +1003,7 @@
             btn.disabled = false; btn.innerHTML = '▶ BUILD MERKLE TREE';
         }
         
-        // ============================================
-        // TEST 6: RPC Latency
-        // ============================================
+        // test: rpc ping
         async function testRPC() {
             const btn = document.getElementById('btn-rpc');
             const results = document.getElementById('results-rpc');
@@ -1107,9 +1064,7 @@
             btn.disabled = false; btn.innerHTML = '▶ TEST RPC LATENCY';
         }
         
-        // ============================================
-        // RUN ALL TESTS + GENERATE REPORT
-        // ============================================
+        // run everything
         async function runAllTests() {
             const btn = document.getElementById('run-all-btn');
             const progress = document.getElementById('mega-progress');
@@ -1213,25 +1168,10 @@
             setTimeout(() => btn.textContent = '📋 Copy JSON', 1500);
         }
         
-        // Lab wallet address
-        const LAB_WALLET = 'J4djW3cqScwKXzTDfYKZbcvhhNUw4VrqLLhSzYVFEqdS';
-        
-        // ============================================
-        // VAULT ACCESS (Team Only)
-        // ============================================
-        const VAULT_HASH = '5e884898da28047d91ef26ccf61e4d0a8b67a1b7c63b9e9a5c5e5d5a5b5c5d5e'; // SHA256 of password
-        
-        async function hashPassword(pwd) {
-            const buf = new TextEncoder().encode(pwd);
-            const hash = await crypto.subtle.digest('SHA-256', buf);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
-        }
-        
+        // vault stuff
         async function unlockVault() {
             const pwd = document.getElementById('vault-password').value;
-            const hash = await hashPassword(pwd);
-            
-            // Simple check - in production would be server-side
+            // todo: hash this properly later lol
             if (pwd === 'paradox402' || pwd === 'nullvoid' || pwd === 'wraith') {
                 document.getElementById('vault-gate').style.display = 'none';
                 document.getElementById('vault-content').style.display = 'block';
@@ -1240,15 +1180,11 @@
             } else {
                 document.getElementById('vault-error').style.display = 'block';
                 document.getElementById('vault-password').value = '';
-                setTimeout(() => {
-                    document.getElementById('vault-error').style.display = 'none';
-                }, 3000);
+                setTimeout(() => { document.getElementById('vault-error').style.display = 'none'; }, 3000);
             }
         }
         
-        // ============================================
-        // FEE ECONOMICS SIMULATOR
-        // ============================================
+        // fee sim
         function runEconomicsSim() {
             const volume = parseInt(document.getElementById('sim-volume').value);
             const days = parseInt(document.getElementById('sim-timeframe').value);
@@ -1312,9 +1248,7 @@
             `;
         }
         
-        // ============================================
-        // AGENT SCALABILITY SIMULATOR
-        // ============================================
+        // agent sim
         function runAgentSim() {
             const agents = parseInt(document.getElementById('agent-count').value);
             const tradesPerHour = parseInt(document.getElementById('trades-per-agent').value);
@@ -1387,62 +1321,29 @@
             `;
         }
         
-        // Check lab wallet balance
-        async function checkLabWalletBalance() {
+        // lab wallet bal (for footer)
+        async function checkLabBal() {
             try {
-                const data = await rpcCall(DEVNET_RPC, 'getBalance', [LAB_WALLET]);
-                if (data.result) {
-                    const balance = data.result.value / 1e9;
-                    const balanceEl = document.getElementById('lab-wallet-balance');
-                    const statusEl = document.getElementById('lab-wallet-status');
-                    const warningEl = document.getElementById('refill-warning');
-                    
-                    balanceEl.textContent = balance.toFixed(4) + ' SOL';
-                    
-                    if (balance < 1) {
-                        balanceEl.style.color = 'var(--accent-red)';
-                        statusEl.textContent = '🔴 EMPTY - Need refill!';
-                        statusEl.style.color = 'var(--accent-red)';
-                        warningEl.style.display = 'block';
-                    } else if (balance < 5) {
-                        balanceEl.style.color = 'var(--accent-orange)';
-                        statusEl.textContent = '🟡 Low - Consider refill';
-                        statusEl.style.color = 'var(--accent-orange)';
-                        warningEl.style.display = 'block';
-                    } else if (balance < 20) {
-                        balanceEl.style.color = 'var(--accent)';
-                        statusEl.textContent = '🟢 OK';
-                        statusEl.style.color = 'var(--accent)';
-                        warningEl.style.display = 'none';
-                    } else {
-                        balanceEl.style.color = 'var(--accent)';
-                        statusEl.textContent = '🟢 FUNDED - Ready for tests!';
-                        statusEl.style.color = 'var(--accent)';
-                        warningEl.style.display = 'none';
-                    }
+                const d = await rpcCall(DEVNET_RPC, 'getBalance', [LAB_WALLET]);
+                if (d.result) {
+                    const bal = d.result.value / 1e9;
+                    const el = document.getElementById('lab-bal');
+                    if (el) el.textContent = bal.toFixed(2);
                 }
-            } catch (e) {
-                document.getElementById('lab-wallet-balance').textContent = 'Error';
-                document.getElementById('lab-wallet-status').textContent = '❌ RPC Error';
-            }
+            } catch (e) { /* eh */ }
         }
         
-        // Init - check $NULL supply and lab wallet balance
+        // init
         async function init() {
-            // Check $NULL supply
             try {
-                const data = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, { encoding: 'jsonParsed' }]);
-                if (data.result?.value?.data?.parsed?.info) {
-                    const supply = parseInt(data.result.value.data.parsed.info.supply) / 1e6;
+                const d = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, { encoding: 'jsonParsed' }]);
+                if (d.result?.value?.data?.parsed?.info) {
+                    const supply = parseInt(d.result.value.data.parsed.info.supply) / 1e6;
                     document.getElementById('null-supply').textContent = supply.toLocaleString();
                 }
             } catch (e) {}
-            
-            // Check lab wallet balance
-            checkLabWalletBalance();
-            
-            // Auto-refresh balance every 30 seconds
-            setInterval(checkLabWalletBalance, 30000);
+            checkLabBal();
+            setInterval(checkLabBal, 60000);
         }
         init();
     </script>
