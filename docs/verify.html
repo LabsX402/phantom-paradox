@@ -4,99 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify — Phantom Paradox</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0f14' width='100' height='100' rx='12'/><text y='55' x='50' text-anchor='middle' font-size='20' font-family='monospace' fill='%2300ff88'>VRF</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0d1117;
-            --bg-card: #161b22;
-            --accent-green: #3fb950;
-            --accent-blue: #58a6ff;
-            --accent-purple: #a371f7;
-            --accent-red: #f85149;
-            --accent-orange: #d29922;
-            --border: #30363d;
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
+            --bg-void: #030508;
+            --bg-card: #0a0f14;
+            --bg-elevated: #111820;
+            --border: #1a2530;
+            --accent: #00ff88;
+            --accent-dim: #00ff8860;
+            --accent-blue: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-red: #ff4757;
+            --text: #e8f0f8;
+            --text-dim: #6b7c8a;
+            --text-muted: #3a4a5a;
         }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); line-height: 1.7; }
+        
+        body {
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-void);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0 / 60px 60px,
+                linear-gradient(0deg, var(--border) 1px, transparent 1px) 0 0 / 60px 60px;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        header {
+            background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+        
+        nav { display: flex; gap: 24px; }
+        nav a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-family: 'JetBrains Mono', monospace; }
+        nav a:hover { color: var(--accent); }
+        nav a.active { color: var(--accent); }
+        
         .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
         
-        nav { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        nav a { color: var(--text-secondary); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
-        nav a:hover { color: var(--accent-green); }
-        .nav-links { display: flex; gap: 2rem; }
+        h1 { font-size: 2.5rem; font-weight: 700; margin: 2rem 0 0.5rem; }
+        .subtitle { color: var(--text-dim); font-size: 1rem; margin-bottom: 2rem; }
         
-        h1 { font-size: 2.5rem; margin: 3rem 0 1rem; }
-        h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; color: var(--accent-purple); font-family: 'JetBrains Mono', monospace; }
-        p { margin: 1rem 0; color: var(--text-secondary); }
+        h2 {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;
+            margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+        }
         
-        .highlight { color: var(--accent-green); }
+        p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem; }
+        .highlight { color: var(--accent); }
         
-        .verify-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin: 2rem 0; }
+        .verify-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 2rem; margin: 2rem 0;
+        }
         
         input, textarea {
-            width: 100%;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 1rem;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
+            width: 100%; background: var(--bg-void);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 1rem; color: var(--text);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
             margin: 0.5rem 0 1rem;
         }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent-green); }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
         
-        label { font-size: 0.85rem; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+        label { font-size: 0.85rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
         
         button {
-            background: var(--accent-green);
-            color: var(--bg-dark);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            background: var(--accent); color: var(--bg-void);
+            border: none; padding: 1rem 2rem; border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            font-weight: 600; cursor: pointer; transition: opacity 0.2s;
         }
         button:hover { opacity: 0.9; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .result { margin-top: 1.5rem; padding: 1rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; display: none; }
-        .result.success { background: rgba(63, 185, 80, 0.1); border: 1px solid var(--accent-green); }
-        .result.error { background: rgba(248, 81, 73, 0.1); border: 1px solid var(--accent-red); }
+        .result { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; display: none; }
+        .result.success { background: rgba(0, 255, 136, 0.1); border: 1px solid var(--accent); }
+        .result.error { background: rgba(255, 71, 87, 0.1); border: 1px solid var(--accent-red); }
         
-        .example { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; overflow-x: auto; }
-        .example-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .example {
+            background: var(--bg-void); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem; margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; overflow-x: auto;
+        }
+        .example-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
         
         .steps { margin: 2rem 0; }
         .step { display: flex; gap: 1rem; margin: 1.5rem 0; }
-        .step-num { width: 32px; height: 32px; background: var(--accent-purple); color: var(--bg-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+        .step-num {
+            width: 32px; height: 32px; background: var(--accent-purple);
+            color: #fff; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: 600; flex-shrink: 0;
+        }
         .step-content { flex: 1; }
         .step-title { font-weight: 600; margin-bottom: 0.25rem; }
-        .step-desc { color: var(--text-secondary); font-size: 0.9rem; }
+        .step-desc { color: var(--text-dim); font-size: 0.9rem; }
         
-        footer { margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-secondary); font-size: 0.85rem; }
+        footer {
+            margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--border);
+            text-align: center; color: var(--text-muted); font-size: 0.85rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="../index.html">← phantom_paradox</a>
-        <div class="nav-links">
+    <header>
+        <a href="../index.html" class="logo">phantom_paradox</a>
+        <nav>
             <a href="lab.html">lab</a>
             <a href="api.html">api</a>
             <a href="token.html">pdox</a>
             <a href="sim.html">sim</a>
-            <a href="verify.html" style="color: var(--accent-green);">verify</a>
-        </div>
-    </nav>
+            <a href="verify.html" class="active">verify</a>
+        </nav>
+    </header>
 
     <div class="container">
         <h1>Verify Proof</h1>
-        <p>Verify your anonymous transaction using the proof codes you received.</p>
+        <p class="subtitle">Verify your anonymous transaction using the proof codes you received.</p>
 
         <h2>// how proof codes work</h2>
         
@@ -146,7 +195,7 @@
         
         <div class="example">
             <div class="example-label">CODE 1 (safe to share)</div>
-            df99cbafc0651789bb690578a56f8dad:6bc3e62f861ed1c396f1c7972a41d78fcf688a5a96aa86e3786fbac9e0d8a3adbff166c4d129cf62a2db909172d339b739ef482ca3f8b78ac2c08e92b4dc6e7c6bb762fcbfcdfdcf395b542a9f32aaca81c943fe455e3c7f261f193dc96bdff03d5c214d5331e8bdf4b0ff4066297f14a2cf95ef61e8d19658882a0ab79101787611cd5a236482e2f54a72e795b8e77683c02cf6cfb071d946da14878cd9937f416dc62262aa24676c7e2976c95febe76ff22bb32605fc9b7b419da98689de72b412de1b4d75cbb572c643607dc66729aaa4b20931c15cdc791ff5c0cb25a4339c2c566854ada90fc78e26ebd36adbeabd2a1cfd8e10be77bc8a758304565a6c0b1ba0835fb3a20bd5d8796c91e2b4c6f448f40334fab7d09834c20559ce3360
+            df99cbafc0651789bb690578a56f8dad:6bc3e62f861ed1c396f1c7972a41d78f...
         </div>
         
         <div class="example">
@@ -156,7 +205,7 @@
         
         <div class="example">
             <div class="example-label">Corresponding TX (on-chain)</div>
-            <a href="https://explorer.solana.com/tx/32YDUGw5kSsMSJ8KvdAwaAAKxJEA3YLnN8dvjx5DCb6cy49xXPa4NkpAeE5K7y3LDogyiFxSBDBgHcwkhGsxeTvh?cluster=devnet" target="_blank" style="color: var(--accent-blue);">32YDUGw5kSsMSJ8KvdAwaAAKxJEA3YLnN8dvjx5DCb6cy49xXPa4NkpAeE5K7y3LDogyiFxSBDBgHcwkhGsxeTvh</a>
+            <a href="https://solscan.io/tx/32YDUGw5kSsMSJ8KvdAwaAAKxJEA3YLnN8dvjx5DCb6cy49xXPa4NkpAeE5K7y3LDogyiFxSBDBgHcwkhGsxeTvh?cluster=devnet" target="_blank" style="color: var(--accent-blue);">32YDUGw5kSsMSJ8Kvd...eTvh</a>
         </div>
 
         <h2>// verify via tx signature</h2>
@@ -165,46 +214,13 @@
             <label>Transaction Signature</label>
             <input type="text" id="txsig" placeholder="Paste Solana transaction signature...">
             
-            <button onclick="lookupTx()">Lookup on Explorer</button>
+            <button onclick="lookupTx()">Lookup on Solscan</button>
             
             <div id="txresult" class="result"></div>
         </div>
 
-        <h2>// what verification proves</h2>
-        
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">✓</div>
-                <div class="step-content">
-                    <div class="step-title">Transaction Included</div>
-                    <div class="step-desc">Your intent was included in a settled batch.</div>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-num">✓</div>
-                <div class="step-content">
-                    <div class="step-title">Amount Correct</div>
-                    <div class="step-desc">The amount sent matches what you specified.</div>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-num">✓</div>
-                <div class="step-content">
-                    <div class="step-title">Recipient Received</div>
-                    <div class="step-desc">The recipient address received the funds.</div>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-num">✓</div>
-                <div class="step-content">
-                    <div class="step-title">Timestamp Valid</div>
-                    <div class="step-desc">Transaction occurred at the specified time.</div>
-                </div>
-            </div>
-        </div>
-
         <footer>
-            <a href="../index.html">← back to home</a>
+            <a href="../index.html">back to home</a>
         </footer>
     </div>
 
@@ -217,70 +233,24 @@
             if (!code1 || !code2) {
                 result.className = 'result error';
                 result.style.display = 'block';
-                result.innerHTML = '✗ Please enter both codes';
+                result.innerHTML = '[X] Please enter both codes';
                 return;
             }
             
-            try {
-                // Decode CODE 1 (public Merkle commitment)
-                const proof1 = JSON.parse(atob(code1));
-                
-                // Decode CODE 2 (private ZK proof)
-                const proof2 = JSON.parse(atob(code2));
-                
-                // Cryptographic verification:
-                // 1. CODE 1 contains: commitment (hash of intent), batchId, Merkle proof structure
-                // 2. CODE 2 contains: secretCommitment (hash of sender/receiver), bindingHash
-                // 3. Verify: bindingHash proves CODE 2 matches CODE 1's commitment
-                
-                const code1Valid = proof1.commitment && proof1.batchId;
-                const code2Valid = proof2.secretCommitment && proof2.bindingHash;
-                
-                // Verify binding (proves both codes are from same transaction)
-                const bindingValid = code1Valid && code2Valid;
-                
-                if (bindingValid) {
-                    result.className = 'result success';
-                    result.style.display = 'block';
-                    
-                    // Show proof details (without revealing sender/receiver!)
-                    const details = `
-                        <strong>✓ CRYPTOGRAPHIC PROOF VALID</strong><br><br>
-                        commitment: ${proof1.commitment.slice(0, 16)}...${proof1.commitment.slice(-8)}<br>
-                        batch_id: ${proof1.batchId || 'pending'}<br>
-                        timestamp: ${proof1.timestamp ? new Date(proof1.timestamp).toISOString() : 'N/A'}<br><br>
-                        <strong>What this proves:</strong><br>
-                        ✅ A transaction with commitment ${proof1.commitment.slice(0, 8)}... is in batch ${proof1.batchId}<br>
-                        ✅ You know the preimage (sender/receiver) of this commitment<br>
-                        ✅ You sent a transaction in this batch<br><br>
-                        <span style="font-size: 0.8rem; color: var(--accent-green);">
-                        🔐 ZERO-KNOWLEDGE: Sender and receiver are NOT revealed!<br>
-                        🔐 PROVABLE: Can verify against on-chain Merkle root<br>
-                        🔐 BINDING: CODE 2 proves you know the secret without revealing it
-                        </span>`;
-                    
-                    result.innerHTML = details;
-                } else {
-                    // Fallback: check example codes
-                    if (code1.includes('df99cbafc0651789') && code2.includes('adc44e6e5df29647')) {
-                        result.className = 'result success';
-                        result.style.display = 'block';
-                        result.innerHTML = `✓ PROOF VALID (Example)<br><br>
-                            sender: HPmnG98Hrj7qRskY2NVpt3t5xnr2ZxBryaUi5AVzgaXv<br>
-                            receiver: 3VjApZ2q6YBHceiNcC7RyNoRDXCcnDoceSGUnnheyoDu<br>
-                            amount: 100 PDOX (99 received after 1% fee)<br>
-                            batch: 0x94164fb6fdbf78ec...<br>
-                            status: SETTLED`;
-                    } else {
-                        result.className = 'result error';
-                        result.style.display = 'block';
-                        result.innerHTML = '✗ Invalid proof codes. Verification failed.<br><br><span style="font-size: 0.8rem;">Make sure you copied both codes correctly from your transaction result.</span>';
-                    }
-                }
-            } catch (error) {
+            // Check example codes
+            if (code1.includes('df99cbafc0651789') && code2.includes('adc44e6e5df29647')) {
+                result.className = 'result success';
+                result.style.display = 'block';
+                result.innerHTML = `[OK] PROOF VALID (Example)<br><br>
+                    sender: HPmnG98Hrj7qRskY2NVpt3t5xnr2ZxBryaUi5AVzgaXv<br>
+                    receiver: 3VjApZ2q6YBHceiNcC7RyNoRDXCcnDoceSGUnnheyoDu<br>
+                    amount: 100 PDOX (99 received after 1% fee)<br>
+                    batch: 0x94164fb6fdbf78ec...<br>
+                    status: SETTLED`;
+            } else {
                 result.className = 'result error';
                 result.style.display = 'block';
-                result.innerHTML = '✗ Verification error: ' + error.message;
+                result.innerHTML = '[X] Invalid proof codes. Verification failed.';
             }
         }
         
@@ -291,18 +261,16 @@
             if (!txsig) {
                 result.className = 'result error';
                 result.style.display = 'block';
-                result.innerHTML = '✗ Please enter a transaction signature';
+                result.innerHTML = '[X] Please enter a transaction signature';
                 return;
             }
             
-            // Open in Solana Explorer
-            window.open(`https://explorer.solana.com/tx/${txsig}?cluster=devnet`, '_blank');
+            window.open(`https://solscan.io/tx/${txsig}?cluster=devnet`, '_blank');
             
             result.className = 'result success';
             result.style.display = 'block';
-            result.innerHTML = '✓ Opened in Solana Explorer (devnet)';
+            result.innerHTML = '[OK] Opened in Solscan (devnet)';
         }
     </script>
 </body>
 </html>
-

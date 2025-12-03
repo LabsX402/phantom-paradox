@@ -311,7 +311,7 @@
         <!-- ARCHITECTURE FLOW -->
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
             <h3 style="margin-bottom: 1.5rem; color: var(--accent); display: flex; align-items: center; gap: 10px;">
-                <span>⚡</span> how it works
+                <span>//</span> how it works
             </h3>
             
             <!-- flow diagram -->
@@ -446,7 +446,7 @@
                     <div class="token-stat"><span class="token-stat-label">Trigger:</span> <span class="token-stat-value" style="color: var(--accent-orange);">&lt;80% perf</span></div>
                 </div>
                 <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-dim);">
-                    🔥 ARMAGEDDON: Performance slasher. No LP, no trading. Your stake = your reputation.
+                    ARMAGEDDON: Performance slasher. No LP, no trading. Your stake = your reputation.
                 </div>
             </div>
         </div>
@@ -473,7 +473,7 @@
         
         <!-- run all -->
         <div class="mega-test">
-            <h2>🚀 RUN EVERYTHING</h2>
+            <h2>// RUN EVERYTHING</h2>
             <p>Program, tokens, netting, compression — all in one go. Full report at the end.</p>
             <button class="mega-btn" id="run-all-btn" onclick="runAllTests()">
                 ▶ RUN ALL TESTS
@@ -558,7 +558,7 @@
             <!-- Test 4: Batching Speed -->
             <div class="test-card" id="card-batch">
                 <div class="card-header">
-                    <div class="card-title"><span class="card-icon">⚡</span><span>Batching Speed</span></div>
+                    <div class="card-title"><span class="card-icon">[4]</span><span>Batching Speed</span></div>
                     <span class="card-status ready" id="status-batch">READY</span>
                 </div>
                 <div class="card-body">
@@ -892,7 +892,7 @@
                     { icon: '2️⃣', text: 'Track which agent processed each intent' },
                     { icon: '3️⃣', text: 'Build graph, cancel cycles, compute nets' },
                     { icon: '4️⃣', text: 'On failure: flag agent, update performance score' },
-                    { icon: '5️⃣', text: 'Score <80%? → 🔥 ARMAGEDDON: slash 3% PDOX' }
+                    { icon: '[5]', text: 'Score <80%? → ARMAGEDDON: slash 3% PDOX' }
                 ],
                 proves: 'Batch test simulates netting. In prod, agent performance tracked per-batch. Underperformers get slashed automatically.',
                 example: 'Agent fails 3 batches → score drops to 75% → ARMAGEDDON burns 3% PDOX per batch until recovery',
@@ -1498,7 +1498,7 @@
                 testData.averageLatency = avgTime;
                 addResult('results-rpc', 'A', 'Average Latency', avgTime + 'ms', avgTime < 500);
                 
-                const verdict = avgTime < 200 ? 'EXCELLENT ⚡' : avgTime < 500 ? 'GOOD ✓' : avgTime < 1000 ? 'OK' : 'SLOW ⚠️';
+                const verdict = avgTime < 200 ? 'EXCELLENT' : avgTime < 500 ? 'GOOD' : avgTime < 1000 ? 'OK' : 'SLOW';
                 testData.verdict = verdict;
                 addResult('results-rpc', '🏆', 'Verdict', verdict, avgTime < 1000);
                 
@@ -1761,7 +1761,7 @@
                         <span style="color: var(--accent);">$${batchedCost.toFixed(4)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 4px 0; font-weight: 700;">
-                        <span style="color: var(--accent);">🚀 COST REDUCTION</span>
+                        <span style="color: var(--accent);">COST REDUCTION</span>
                         <span style="color: var(--accent);">${costReduction.toFixed(2)}%</span>
                     </div>
                 </div>
