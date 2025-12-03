@@ -1784,9 +1784,8 @@
             } catch (e) {}
         }
         
-        // $NULL live stats
-        const HELIUS_KEY = '7b3312ca-9bf1-4b30-ba5f-5e342be423ec';
-        const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`;
+        // $NULL live stats - using public endpoints only
+        const HELIUS_RPC = 'https://api.mainnet-beta.solana.com';
         
         async function refreshNullStats() {
             const updateEl = document.getElementById('null-last-update');
@@ -1874,8 +1873,8 @@
                     if (supplyEl) supplyEl.textContent = formatNumber(supply);
                 }
                 
-                // Holder count - use Helius DAS API
-                const holdersRes = await fetch(`https://api.helius.xyz/v0/addresses/${NULL_TOKEN}/balances?api-key=${HELIUS_KEY}`);
+                // Holder count - estimate from DexScreener data
+                const holdersRes = null; // No API key needed
                 // This endpoint may not give holders directly, so let's estimate from DexScreener or show "—"
                 
             } catch (e) {
