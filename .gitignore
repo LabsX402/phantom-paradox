@@ -164,3 +164,8 @@ LAUNCH_AUTOMATION_DOCUMENTATION.md
 SOL_RECOVERY_GUIDE.md
 SOL_RECOVERY_INFO.txt
 scripts/recover-sol.ps1
+
+# ========== INTERNAL DOCS (LOCAL ONLY) ==========
+*.local.md
+*_LOCAL.md
+INTERNAL_*.md
