@@ -33,6 +33,7 @@ This is the ONLY public-facing code. Everything else stays local.
 | `compression.html` | Merkle tree diagram, cost savings table |
 | `compare.html` | Honest comparison vs ZK (Zcash, Tornado, Light Protocol) |
 | `test.html` | **Interactive test page** — Phantom wallet connect, send TX, get proof codes |
+| `lab.html` | **🆕 LIVE LAB** — One-click test suite, real devnet tests, provable results |
 
 ---
 
@@ -98,6 +99,14 @@ See `RULES.md` for full list.
 - [x] **Wallet Connect** — Phantom integration working
 - [x] **Compare Page** — Honest ZK comparison (Zcash, Tornado, Light Protocol)
 - [x] **Full Journey Benchmark** — AI agent nano payments
+- [x] **🆕 LIVE LAB** — One-click test suite with real devnet tests
+  - Program verification (is deployed, executable)
+  - Token verification (supply, decimals, fees)
+  - Batching speed benchmark (100-100K intents)
+  - Merkle compression test (real tree building)
+  - Anonymity calculator (all modes)
+  - RPC latency tests (real devnet pings)
+  - All results provable with on-chain TX links
 
 ### Medium Priority
 - [ ] Add more real TX proofs as we test
@@ -136,7 +145,8 @@ test/
     ├── anonymity.html  # Anonymity layer explainer
     ├── compression.html # Merkle compression explainer
     ├── compare.html    # Honest ZK comparison
-    └── test.html       # Interactive test page (Phantom wallet)
+    ├── test.html       # Interactive test page (Phantom wallet)
+    └── lab.html        # 🆕 Live Lab - one-click test suite
 ```
 
 ---
