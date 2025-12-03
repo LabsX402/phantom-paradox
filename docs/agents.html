@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGENTS — Phantom Paradox</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0f14' width='100' height='100' rx='12'/><text y='55' x='50' text-anchor='middle' font-size='20' font-family='monospace' fill='%2300ff88'>AGT</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #030508;
+            --bg-card: #0a0f14;
+            --bg-elevated: #111820;
+            --border: #1a2530;
+            --accent: #00ff88;
+            --accent-dim: #00ff8860;
+            --accent-blue: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-orange: #ff9500;
+            --accent-red: #ff4757;
+            --text: #e8f0f8;
+            --text-dim: #6b7c8a;
+            --text-muted: #3a4a5a;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-void);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0 / 60px 60px,
+                linear-gradient(0deg, var(--border) 1px, transparent 1px) 0 0 / 60px 60px;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Lock Screen */
+        .lock-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-void);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .lock-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .lock-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .lock-sub {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        
+        .lock-input {
+            width: 100%;
+            background: var(--bg-void);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .lock-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .lock-btn {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--bg-void);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .lock-btn:hover { opacity: 0.9; }
+        
+        .lock-error {
+            color: var(--accent-red);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        /* Main Content (hidden until unlocked) */
+        .main-content {
+            display: none;
+        }
+        
+        header {
+            background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+        
+        .dev-badge {
+            background: var(--accent-orange);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle { color: var(--text-dim); margin-bottom: 2rem; }
+        
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--accent);
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-desc {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        
+        .card.done { border-color: var(--accent); }
+        .card.wip { border-color: var(--accent-orange); }
+        .card.todo { border-color: var(--border); opacity: 0.6; }
+        
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status.done { background: var(--accent); color: #000; }
+        .status.wip { background: var(--accent-orange); color: #000; }
+        .status.todo { background: var(--border); color: var(--text-dim); }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        th { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; }
+        
+        /* Code blocks */
+        pre {
+            background: var(--bg-void);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            margin: 1rem 0;
+        }
+        
+        .note {
+            background: rgba(0, 255, 136, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+        
+        /* Test Section */
+        .test-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .test-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            color: var(--bg-void);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        
+        .test-btn:hover { opacity: 0.9; }
+        .test-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .test-btn.secondary { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
+        
+        .results {
+            background: var(--bg-void);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-line {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .result-line:last-child { border-bottom: none; }
+        .result-pass { color: var(--accent); }
+        .result-fail { color: var(--accent-red); }
+        .result-info { color: var(--text-dim); }
+        
+        /* Sliders */
+        .slider-group {
+            margin: 1rem 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .slider-label span:last-child {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Lock Screen -->
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-box">
+            <div class="lock-icon">[X]</div>
+            <div class="lock-title">AGENTS DEV</div>
+            <div class="lock-sub">team access only</div>
+            <input type="password" class="lock-input" id="passInput" placeholder="enter code" onkeypress="if(event.key==='Enter')unlock()">
+            <button class="lock-btn" onclick="unlock()">UNLOCK</button>
+            <div class="lock-error" id="lockError">wrong code</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <header>
+            <a href="../index.html" class="logo">phantom_paradox</a>
+            <span class="dev-badge">DEV BUILD</span>
+        </header>
+
+        <div class="container">
+            <h1>AGENT NETWORK</h1>
+            <p class="subtitle">internal dev dashboard — not for public</p>
+
+            <h2>// STATUS</h2>
+            
+            <div class="card-grid">
+                <div class="card wip">
+                    <span class="status wip">WIP</span>
+                    <div class="card-title">Agent Test Page</div>
+                    <div class="card-desc">Onboarding flow, 5min test, report card</div>
+                </div>
+                <div class="card todo">
+                    <span class="status todo">TODO</span>
+                    <div class="card-title">Core Agent</div>
+                    <div class="card-desc">Batching, verify, jury, relay</div>
+                </div>
+                <div class="card todo">
+                    <span class="status todo">TODO</span>
+                    <div class="card-title">Dispute System</div>
+                    <div class="card-desc">10 jury, 8/10 consensus, 30min cycle</div>
+                </div>
+                <div class="card todo">
+                    <span class="status todo">TODO</span>
+                    <div class="card-title">Pricing Auction</div>
+                    <div class="card-desc">Bid/ask, demand-based, live dashboard</div>
+                </div>
+            </div>
+
+            <h2>// AGENT TEST SIMULATOR</h2>
+            
+            <div class="test-panel">
+                <h3 style="color: var(--text); margin-bottom: 1rem;">Configure Test Agent</h3>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>CPU Limit</span>
+                        <span id="cpuVal">25%</span>
+                    </div>
+                    <input type="range" min="10" max="100" value="25" id="cpuSlider" oninput="document.getElementById('cpuVal').textContent=this.value+'%'">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>RAM Limit</span>
+                        <span id="ramVal">512 MB</span>
+                    </div>
+                    <input type="range" min="256" max="4096" step="256" value="512" id="ramSlider" oninput="document.getElementById('ramVal').textContent=this.value+' MB'">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Bandwidth</span>
+                        <span id="bwVal">10 Mbps</span>
+                    </div>
+                    <input type="range" min="1" max="100" value="10" id="bwSlider" oninput="document.getElementById('bwVal').textContent=this.value+' Mbps'">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Data Cap</span>
+                        <span id="dataVal">500 MB</span>
+                    </div>
+                    <input type="range" min="100" max="5000" step="100" value="500" id="dataSlider" oninput="document.getElementById('dataVal').textContent=this.value+' MB'">
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <button class="test-btn" onclick="runAgentTest()">RUN 5 MIN TEST</button>
+                    <button class="test-btn secondary" onclick="clearResults()">CLEAR</button>
+                </div>
+                
+                <div class="results" id="testResults">
+                    <div class="result-line result-info">configure settings and run test...</div>
+                </div>
+            </div>
+
+            <h2>// ARCHITECTURE</h2>
+            
+            <pre>
+PARADOX AGENT NETWORK
+=====================
+
+BRAINS (buyers)              MUSCLE (agents)
+     |                            |
+     | 1. deposit escrow          |
+     |--------------------------->|
+     |                            |
+     | 2. job assigned            |
+     |         AUTO JOBS          |
+     |    (compute, vpn, verify)  |
+     |    = instant payout ------>| PAID
+     |                            |
+     |         MANUAL JOBS        |
+     |    (review needed)         |
+     |                            |
+     | 3. submit work             |
+     |<---------------------------|
+     |                            |
+     | 4. 24h to approve/reject   |
+     |    or auto-release         |
+     |                            |
+
+SYSTEM AGENTS
+=============
+- Manager: assigns jobs
+- PDOX Watcher: monitors scores, slash <80%
+- Dispute: picks jury, runs 30min cycle
+- Heartbeat: tracks online/offline
+- Payout: distributes rewards
+
+COMMUNICATION
+=============
+- XMTP: real-time encrypted chat
+- Arweave: permanent storage
+- Solana: hash anchors (proof)
+            </pre>
+
+            <h2>// DISPUTE FLOW</h2>
+            
+            <table>
+                <tr>
+                    <th>Step</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>0:00</td>
+                    <td>Dispute opened, 10 jury selected</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>0:00-5:00</td>
+                    <td>Jury accepts (5 min window)</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>5:00-30:00</td>
+                    <td>Review evidence, cast votes</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>30:00</td>
+                    <td>8/10 consensus = decision</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>30:00+</td>
+                    <td>Payout to winner, fine from loser</td>
+                </tr>
+            </table>
+            
+            <div class="note">
+                <strong>Jury rewards:</strong> Correct vote = share of loser's fine. Wrong vote (minority) = almost nothing.
+            </div>
+
+            <h2>// PRICING MODEL</h2>
+            
+            <table>
+                <tr>
+                    <th>Service</th>
+                    <th>Base Rate</th>
+                    <th>Demand Mult</th>
+                </tr>
+                <tr>
+                    <td>Relay (VPN)</td>
+                    <td>$0.01/min + $0.0001/MB</td>
+                    <td>1x - 10x</td>
+                </tr>
+                <tr>
+                    <td>Compute (CPU)</td>
+                    <td>$0.005/min</td>
+                    <td>1x - 5x</td>
+                </tr>
+                <tr>
+                    <td>Compute (GPU)</td>
+                    <td>$0.10/min</td>
+                    <td>1x - 20x</td>
+                </tr>
+                <tr>
+                    <td>Storage</td>
+                    <td>$0.001/GB/hr</td>
+                    <td>1x - 3x</td>
+                </tr>
+            </table>
+            
+            <div class="note">
+                <strong>Fee split:</strong> 97% to agent, 3% protocol (2% infra, 1% buyback)
+            </div>
+
+            <h2>// TODO LIST</h2>
+            
+            <table>
+                <tr>
+                    <th>#</th>
+                    <th>Task</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Agent test page UI</td>
+                    <td style="color: var(--accent-red);">HIGH</td>
+                    <td style="color: var(--accent-orange);">WIP</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Message schema (dispute-ready)</td>
+                    <td style="color: var(--accent-red);">HIGH</td>
+                    <td style="color: var(--text-muted);">TODO</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Core agent MVP</td>
+                    <td style="color: var(--accent-orange);">MED</td>
+                    <td style="color: var(--text-muted);">TODO</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>XMTP integration</td>
+                    <td style="color: var(--accent-orange);">MED</td>
+                    <td style="color: var(--text-muted);">TODO</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Pricing dashboard</td>
+                    <td style="color: var(--text-dim);">LOW</td>
+                    <td style="color: var(--text-muted);">TODO</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Dispute flow UI</td>
+                    <td style="color: var(--text-dim);">LOW</td>
+                    <td style="color: var(--text-muted);">TODO</td>
+                </tr>
+            </table>
+
+            <footer>
+                phantom paradox · agents dev · internal only
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const PASS_HASH = '5e884898da28047d9164071403d6bd25';
+        
+        function md5(s) {
+            function L(k,d){return(k<<d)|(k>>>(32-d))}function K(G,k){var I,d,F,H,x;F=(G&2147483648);H=(k&2147483648);I=(G&1073741824);d=(k&1073741824);x=(G&1073741823)+(k&1073741823);if(I&d){return(x^2147483648^F^H)}if(I|d){if(x&1073741824){return(x^3221225472^F^H)}else{return(x^1073741824^F^H)}}else{return(x^F^H)}}function r(d,F,k){return(d&F)|((~d)&k)}function q(d,F,k){return(d&k)|(F&(~k))}function p(d,F,k){return(d^F^k)}function n(d,F,k){return(F^(d|(~k)))}function u(G,F,aa,Z,k,H,I){G=K(G,K(K(r(F,aa,Z),k),I));return K(L(G,H),F)}function f(G,F,aa,Z,k,H,I){G=K(G,K(K(q(F,aa,Z),k),I));return K(L(G,H),F)}function D(G,F,aa,Z,k,H,I){G=K(G,K(K(p(F,aa,Z),k),I));return K(L(G,H),F)}function t(G,F,aa,Z,k,H,I){G=K(G,K(K(n(F,aa,Z),k),I));return K(L(G,H),F)}function e(G){var Z;var F=G.length;var x=F+8;var k=(x-(x%64))/64;var I=(k+1)*16;var aa=Array(I-1);var d=0;var H=0;while(H<F){Z=(H-(H%4))/4;d=(H%4)*8;aa[Z]=(aa[Z]}|(G.charCodeAt(H)<<d));H++}Z=(H-(H%4))/4;d=(H%4)*8;aa[Z]=aa[Z]|(128<<d);aa[I-2]=F<<3;aa[I-1]=F>>>29;return aa}function B(x){var k="",F="",G,d;for(d=0;d<=3;d++){G=(x>>>(d*8))&255;F="0"+G.toString(16);k=k+F.substr(F.length-2,2)}return k}function J(k){k=k.replace(/\r\n/g,"\n");var d="";for(var F=0;F<k.length;F++){var x=k.charCodeAt(F);if(x<128){d+=String.fromCharCode(x)}else{if((x>127)&&(x<2048)){d+=String.fromCharCode((x>>6)|192);d+=String.fromCharCode((x&63)|128)}else{d+=String.fromCharCode((x>>12)}224);d+=String.fromCharCode(((x>>6)&63)|128);d+=String.fromCharCode((x&63)|128)}}}return d}var C=Array();var P,h,E,v,g,Y,X,W,V;var S=7,Q=12,N=17,M=22;var A=5,z=9,y=14,w=20;var o=4,m=11,l=16,j=23;var U=6,T=10,R=15,O=21;s=J(s);C=e(s);Y=1732584193;X=4023233417;W=2562383102;V=271733878;for(P=0;P<C.length;P+=16){h=Y;E=X;v=W;g=V;Y=u(Y,X,W,V,C[P+0],S,3614090360);V=u(V,Y,X,W,C[P+1],Q,3905402710);W=u(W,V,Y,X,C[P+2],N,606105819);X=u(X,W,V,Y,C[P+3],M,3250441966);Y=u(Y,X,W,V,C[P+4],S,4118548399);V=u(V,Y,X,W,C[P+5],Q,1200080426);W=u(W,V,Y,X,C[P+6],N,2821735955);X=u(X,W,V,Y,C[P+7],M,4249261313);Y=u(Y,X,W,V,C[P+8],S,1770035416);V=u(V,Y,X,W,C[P+9],Q,2336552879);W=u(W,V,Y,X,C[P+10],N,4294925233);X=u(X,W,V,Y,C[P+11],M,2304563134);Y=u(Y,X,W,V,C[P+12],S,1804603682);V=u(V,Y,X,W,C[P+13],Q,4254626195);W=u(W,V,Y,X,C[P+14],N,2792965006);X=u(X,W,V,Y,C[P+15],M,1236535329);Y=f(Y,X,W,V,C[P+1],A,4129170786);V=f(V,Y,X,W,C[P+6],z,3225465664);W=f(W,V,Y,X,C[P+11],y,643717713);X=f(X,W,V,Y,C[P+0],w,3921069994);Y=f(Y,X,W,V,C[P+5],A,3593408605);V=f(V,Y,X,W,C[P+10],z,38016083);W=f(W,V,Y,X,C[P+15],y,3634488961);X=f(X,W,V,Y,C[P+4],w,3889429448);Y=f(Y,X,W,V,C[P+9],A,568446438);V=f(V,Y,X,W,C[P+14],z,3275163606);W=f(W,V,Y,X,C[P+3],y,4107603335);X=f(X,W,V,Y,C[P+8],w,1163531501);Y=f(Y,X,W,V,C[P+13],A,2850285829);V=f(V,Y,X,W,C[P+2],z,4243563512);W=f(W,V,Y,X,C[P+7],y,1735328473);X=f(X,W,V,Y,C[P+12],w,2368359562);Y=D(Y,X,W,V,C[P+5],o,4294588738);V=D(V,Y,X,W,C[P+8],m,2272392833);W=D(W,V,Y,X,C[P+11],l,1839030562);X=D(X,W,V,Y,C[P+14],j,4259657740);Y=D(Y,X,W,V,C[P+1],o,2763975236);V=D(V,Y,X,W,C[P+4],m,1272893353);W=D(W,V,Y,X,C[P+7],l,4139469664);X=D(X,W,V,Y,C[P+10],j,3200236656);Y=D(Y,X,W,V,C[P+13],o,681279174);V=D(V,Y,X,W,C[P+0],m,3936430074);W=D(W,V,Y,X,C[P+3],l,3572445317);X=D(X,W,V,Y,C[P+6],j,76029189);Y=D(Y,X,W,V,C[P+9],o,3654602809);V=D(V,Y,X,W,C[P+12],m,3873151461);W=D(W,V,Y,X,C[P+15],l,530742520);X=D(X,W,V,Y,C[P+2],j,3299628645);Y=t(Y,X,W,V,C[P+0],U,4096336452);V=t(V,Y,X,W,C[P+7],T,1126891415);W=t(W,V,Y,X,C[P+14],R,2878612391);X=t(X,W,V,Y,C[P+5],O,4237533241);Y=t(Y,X,W,V,C[P+12],U,1700485571);V=t(V,Y,X,W,C[P+3],T,2399980690);W=t(W,V,Y,X,C[P+10],R,4293915773);X=t(X,W,V,Y,C[P+1],O,2240044497);Y=t(Y,X,W,V,C[P+8],U,1873313359);V=t(V,Y,X,W,C[P+15],T,4264355552);W=t(W,V,Y,X,C[P+6],R,2734768916);X=t(X,W,V,Y,C[P+13],O,1309151649);Y=t(Y,X,W,V,C[P+4],U,4149444226);V=t(V,Y,X,W,C[P+11],T,3174756917);W=t(W,V,Y,X,C[P+2],R,718787259);X=t(X,W,V,Y,C[P+9],O,3951481745);Y=K(Y,h);X=K(X,E);W=K(W,v);V=K(V,g)}return(B(Y)}+B(X)+B(W)+B(V)).toLowerCase()}
+        
+        function unlock() {
+            const input = document.getElementById('passInput').value;
+            if (md5(input) === PASS_HASH) {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                sessionStorage.setItem('agents_unlocked', 'true');
+            } else {
+                document.getElementById('lockError').style.display = 'block';
+                document.getElementById('passInput').value = '';
+            }
+        }
+        
+        // Check if already unlocked this session
+        if (sessionStorage.getItem('agents_unlocked') === 'true') {
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+        
+        // Agent test simulator
+        function runAgentTest() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '';
+            
+            const cpu = document.getElementById('cpuSlider').value;
+            const ram = document.getElementById('ramSlider').value;
+            const bw = document.getElementById('bwSlider').value;
+            const data = document.getElementById('dataSlider').value;
+            
+            addResult('info', `Starting test with: CPU ${cpu}%, RAM ${ram}MB, BW ${bw}Mbps, Cap ${data}MB`);
+            addResult('info', 'Connecting to test server...');
+            
+            setTimeout(() => addResult('pass', 'Connection established'), 500);
+            setTimeout(() => addResult('info', 'Running latency test...'), 1000);
+            setTimeout(() => {
+                const latency = Math.floor(Math.random() * 80) + 20;
+                addResult(latency < 100 ? 'pass' : 'fail', `Latency: ${latency}ms`);
+            }, 1500);
+            setTimeout(() => addResult('info', 'Testing bandwidth...'), 2000);
+            setTimeout(() => {
+                const actualBw = (parseFloat(bw) * (0.7 + Math.random() * 0.3)).toFixed(1);
+                addResult('pass', `Bandwidth: ${actualBw} Mbps (${Math.round(actualBw/bw*100)}% of limit)`);
+            }, 3000);
+            setTimeout(() => addResult('info', 'Testing packet loss...'), 3500);
+            setTimeout(() => {
+                const loss = (Math.random() * 0.5).toFixed(2);
+                addResult(loss < 1 ? 'pass' : 'fail', `Packet loss: ${loss}%`);
+            }, 4000);
+            setTimeout(() => addResult('info', 'Computing performance score...'), 4500);
+            setTimeout(() => {
+                const score = Math.floor(Math.random() * 200) + 700;
+                addResult('pass', `CPU Score: ${score}`);
+            }, 5000);
+            setTimeout(() => {
+                addResult('info', '─────────────────────────────');
+                addResult('pass', 'TEST COMPLETE');
+                const grade = ['A+', 'A', 'A-', 'B+', 'B'][Math.floor(Math.random() * 5)];
+                const earnings = (Math.random() * 5 + 1).toFixed(2);
+                addResult('pass', `Overall Grade: ${grade}`);
+                addResult('pass', `Est. Earnings: $${earnings}-${(parseFloat(earnings)*2).toFixed(2)}/day`);
+            }, 5500);
+        }
+        
+        function addResult(type, text) {
+            const results = document.getElementById('testResults');
+            const line = document.createElement('div');
+            line.className = `result-line result-${type}`;
+            line.textContent = (type === 'pass' ? '[OK] ' : type === 'fail' ? '[X] ' : '> ') + text;
+            results.appendChild(line);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '<div class="result-line result-info">configure settings and run test...</div>';
+        }
+    </script>
+</body>
+</html>
+
