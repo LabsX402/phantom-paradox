@@ -488,7 +488,7 @@
                 </div>
                 <div class="card-body">
                     <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 0.85rem;">
-                        <div style="color: var(--accent-orange); font-weight: 600; margin-bottom: 0.5rem;">🔥 ARMAGEDDON — Performance Slasher</div>
+                        <div style="color: var(--accent-orange); font-weight: 600; margin-bottom: 0.5rem;">ARMAGEDDON — Performance Slasher</div>
                         <p style="color: var(--text-dim); margin-bottom: 0.75rem;">Not a trading fee. It's the <strong style="color: var(--accent-red);">penalty burn rate</strong> when agents underperform.</p>
                         
                         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem;">
@@ -498,7 +498,7 @@
                                 <span>→ normal ops</span>
                                 <span style="color: var(--text-muted);">|</span>
                                 <span style="background: var(--accent-red); color: #fff; padding: 2px 8px; border-radius: 4px;">Score &lt;80%</span>
-                                <span>→ 🔥 ARMAGEDDON</span>
+                                <span>→ ARMAGEDDON</span>
                             </div>
                             <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-dim);">
                                 PDOX burns at 3% per failed batch → priority drops → fewer tasks → recover or exit
@@ -507,11 +507,11 @@
                         
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">PDOX utility (non-tradable, no LP):</div>
                         <div style="display: grid; gap: 0.4rem; color: var(--text-dim); font-size: 0.8rem;">
-                            <div>🛡️ <strong style="color: var(--text);">Reputation Stake</strong> — Lock PDOX to join agent network. Skin in the game.</div>
-                            <div>⚡ <strong style="color: var(--text);">Priority Weight</strong> — More stake = more tasks routed to you.</div>
-                            <div>🔥 <strong style="color: var(--text);">Slash Collateral</strong> — Underperform? ARMAGEDDON burns your stake.</div>
-                            <div>🎁 <strong style="color: var(--text);">Performance Rewards</strong> — Stay >80%? Earn PDOX from fee pool.</div>
-                            <div>📊 <strong style="color: var(--text);">On-chain Rep</strong> — Your PDOX balance = your track record.</div>
+                            <div><strong style="color: var(--text);">Reputation Stake</strong> — Lock PDOX to join agent network</div>
+                            <div><strong style="color: var(--text);">Priority Weight</strong> — More stake = more tasks routed to you</div>
+                            <div><strong style="color: var(--text);">Slash Collateral</strong> — Underperform? Stake burns at 3%</div>
+                            <div><strong style="color: var(--text);">Performance Rewards</strong> — Stay above 80%? Earn from fee pool</div>
+                            <div><strong style="color: var(--text);">On-chain Rep</strong> — Balance = verifiable track record</div>
                         </div>
                     </div>
                     <button class="run-btn" id="btn-pdox" onclick="testPdoxToken()">▶ CHECK PDOX</button>
@@ -571,6 +571,68 @@
                 </div>
             </div>
             
+        </div>
+        
+        <!-- WHY ON-CHAIN SLASHING -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin: 2rem 0;">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text); font-size: 1.1rem;">
+                Why On-Chain Slashing vs AI Reputation Watchers
+            </h3>
+            <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                PDOX uses cryptoeconomic enforcement, not centralized AI judgement. Here's why that matters:
+            </p>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border);">
+                            <th style="padding: 0.75rem; text-align: left; color: var(--text-dim); font-weight: 500;"></th>
+                            <th style="padding: 0.75rem; text-align: left; color: var(--accent-purple);">AI Reputation Watcher</th>
+                            <th style="padding: 0.75rem; text-align: left; color: var(--accent);">PDOX On-Chain Slashing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Trust Model</td>
+                            <td style="padding: 0.75rem; color: var(--accent-red);">Centralized — trust the AI operator</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">Trustless — code enforces rules</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Transparency</td>
+                            <td style="padding: 0.75rem; color: var(--accent-red);">Black box scoring</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">Open rules, verifiable on-chain</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Gaming Risk</td>
+                            <td style="padding: 0.75rem; color: var(--accent-orange);">Learn AI patterns → game it</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">Math-based. Fail = burn. Period.</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Skin in Game</td>
+                            <td style="padding: 0.75rem; color: var(--accent-red);">None — agents risk nothing</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">PDOX stake locked as collateral</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Verification</td>
+                            <td style="padding: 0.75rem; color: var(--accent-red);">Ask AI? Trust its answer?</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">Check blockchain directly</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; color: var(--text-dim);">Sybil Resistance</td>
+                            <td style="padding: 0.75rem; color: var(--accent-red);">Spin up fake agents, fake rep</td>
+                            <td style="padding: 0.75rem; color: var(--accent);">Costs real PDOX to stake</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px;">
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem;">The core insight:</div>
+                <div style="font-size: 0.9rem; color: var(--text);">
+                    <strong style="color: var(--accent);">PDOX balance IS reputation.</strong> 
+                    Not a score someone assigned — economic proof that this agent has skin in the game and hasn't been slashed out.
+                </div>
+            </div>
         </div>
         
         <!-- report -->
