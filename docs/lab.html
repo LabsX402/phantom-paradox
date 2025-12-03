@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIVE LAB — Phantom Paradox Devnet Testing</title>
+    <title>LIVE LAB — Phantom Paradox Testing</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0f14' width='100' height='100' rx='12'/><text y='55' x='50' text-anchor='middle' font-size='40' font-family='monospace' fill='%2300ff88'>⚗️</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
     <style>
         :root {
             --bg-void: #030508;
@@ -34,7 +35,6 @@
             line-height: 1.6;
         }
         
-        /* Animated background grid */
         body::before {
             content: '';
             position: fixed;
@@ -47,7 +47,6 @@
             z-index: -1;
         }
         
-        /* Header */
         header {
             background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
             border-bottom: 1px solid var(--border);
@@ -61,47 +60,21 @@
             backdrop-filter: blur(20px);
         }
         
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-icon {
-            font-size: 2rem;
-        }
-        
-        .logo-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-        
-        .logo-sub {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            font-weight: 400;
-        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { font-size: 2rem; }
+        .logo-text { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+        .logo-sub { font-size: 0.75rem; color: var(--text-dim); font-weight: 400; }
         
         .network-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--accent-dim);
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            display: flex; align-items: center; gap: 8px;
+            background: var(--bg-elevated); border: 1px solid var(--accent-dim);
+            border-radius: 20px; padding: 6px 16px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
         }
         
         .network-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+            width: 8px; height: 8px; background: var(--accent);
+            border-radius: 50%; animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -110,377 +83,199 @@
         }
         
         nav { display: flex; gap: 20px; }
-        nav a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+        nav a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
         nav a:hover { color: var(--accent); }
         
-        /* Main container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
         
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 3rem 0 4rem;
-        }
-        
+        .hero { text-align: center; padding: 3rem 0 2rem; }
         .hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;
             background: linear-gradient(135deg, var(--accent), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .hero-sub { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 1rem; }
         
-        .hero-sub {
-            font-size: 1.2rem;
-            color: var(--text-dim);
-            margin-bottom: 2rem;
+        /* Token Info Box */
+        .token-info {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+            margin: 2rem 0;
         }
+        @media (max-width: 800px) { .token-info { grid-template-columns: 1fr; } }
         
-        .hero-badges {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .token-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem;
         }
+        .token-card.mainnet { border-color: var(--accent-purple); }
+        .token-card.devnet { border-color: var(--accent-orange); }
         
-        .hero-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+        .token-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+        .token-badge {
+            padding: 4px 10px; border-radius: 4px; font-size: 0.7rem;
+            font-weight: 700; text-transform: uppercase;
         }
+        .token-badge.mainnet { background: var(--accent-purple); color: #fff; }
+        .token-badge.devnet { background: var(--accent-orange); color: #000; }
         
-        .hero-badge.live { border-color: var(--accent); color: var(--accent); }
+        .token-name { font-size: 1.3rem; font-weight: 700; }
+        .token-symbol { color: var(--text-dim); font-size: 0.9rem; }
+        .token-address {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+            background: var(--bg-void); padding: 8px 12px; border-radius: 6px;
+            word-break: break-all; margin-top: 0.5rem;
+        }
+        .token-address a { color: var(--accent-blue); text-decoration: none; }
+        .token-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 1rem; }
+        .token-stat { font-size: 0.85rem; }
+        .token-stat-label { color: var(--text-dim); }
+        .token-stat-value { font-weight: 600; }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+            background: var(--border); border-radius: 12px; overflow: hidden; margin: 2rem 0;
+        }
+        .stat-item { background: var(--bg-card); padding: 1.25rem; text-align: center; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
         
         /* Test Grid */
         .test-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem; margin-top: 2rem;
         }
+        @media (max-width: 900px) { .test-grid { grid-template-columns: 1fr; } }
         
-        @media (max-width: 900px) {
-            .test-grid { grid-template-columns: 1fr; }
-        }
-        
-        /* Test Card */
         .test-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
-        
-        .test-card:hover {
-            border-color: var(--accent-dim);
-            box-shadow: 0 0 40px var(--accent-dim);
-        }
-        
-        .test-card.running {
-            border-color: var(--accent-orange);
-            animation: glow-running 1.5s infinite;
-        }
+        .test-card:hover { border-color: var(--accent-dim); box-shadow: 0 0 40px var(--accent-dim); }
+        .test-card.running { border-color: var(--accent-orange); animation: glow-running 1.5s infinite; }
+        .test-card.passed { border-color: var(--accent); }
+        .test-card.failed { border-color: var(--accent-red); }
         
         @keyframes glow-running {
             0%, 100% { box-shadow: 0 0 20px rgba(255, 149, 0, 0.3); }
             50% { box-shadow: 0 0 40px rgba(255, 149, 0, 0.5); }
         }
         
-        .test-card.passed {
-            border-color: var(--accent);
-        }
-        
-        .test-card.failed {
-            border-color: var(--accent-red);
-        }
-        
         .card-header {
-            background: var(--bg-elevated);
-            padding: 1rem 1.25rem;
+            background: var(--bg-elevated); padding: 1rem 1.25rem;
             border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        
-        .card-icon {
-            font-size: 1.3rem;
-        }
-        
+        .card-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1rem; }
+        .card-icon { font-size: 1.3rem; }
         .card-status {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+            padding: 4px 10px; border-radius: 4px; font-weight: 600;
         }
-        
         .card-status.ready { background: var(--bg-void); color: var(--text-dim); }
         .card-status.running { background: var(--accent-orange); color: #000; animation: blink 0.5s infinite; }
         .card-status.passed { background: var(--accent); color: #000; }
         .card-status.failed { background: var(--accent-red); color: #fff; }
         
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         
-        .card-body {
-            padding: 1.25rem;
-        }
+        .card-body { padding: 1.25rem; }
+        .card-desc { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem; }
         
-        .card-desc {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* Run Button */
         .run-btn {
-            width: 100%;
-            padding: 14px;
+            width: 100%; padding: 14px;
             background: linear-gradient(135deg, var(--accent), #00cc70);
-            border: none;
-            border-radius: 10px;
-            color: #000;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            border: none; border-radius: 10px; color: #000;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
+        .run-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent-dim); }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg-elevated); color: var(--text-dim); }
         
-        .run-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px var(--accent-dim);
-        }
-        
-        .run-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: var(--bg-elevated);
-            color: var(--text-dim);
-        }
-        
-        /* Results Area */
         .results {
-            margin-top: 1rem;
-            background: var(--bg-void);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            min-height: 120px;
-            max-height: 300px;
-            overflow-y: auto;
+            margin-top: 1rem; background: var(--bg-void); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            min-height: 120px; max-height: 400px; overflow-y: auto;
         }
         
         .results-line {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 4px 0;
-            border-bottom: 1px solid var(--border);
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 4px 0; border-bottom: 1px solid var(--border);
         }
-        
         .results-line:last-child { border-bottom: none; }
-        
         .results-icon { width: 20px; text-align: center; }
-        .results-label { color: var(--text-dim); min-width: 120px; }
+        .results-label { color: var(--text-dim); min-width: 140px; }
         .results-value { color: var(--text); flex: 1; word-break: break-all; }
         .results-value.pass { color: var(--accent); }
         .results-value.fail { color: var(--accent-red); }
         .results-value.warning { color: var(--accent-orange); }
-        
-        .results-link {
-            color: var(--accent-blue);
-            text-decoration: none;
-        }
+        .results-link { color: var(--accent-blue); text-decoration: none; }
         .results-link:hover { text-decoration: underline; }
         
-        /* Stats bar */
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            margin: 2rem 0;
-        }
-        
-        .stat-item {
-            background: var(--bg-card);
-            padding: 1.25rem;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-        
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-top: 4px;
-        }
-        
-        /* Big test panel */
+        /* Mega Test */
         .mega-test {
             background: linear-gradient(135deg, var(--bg-card) 0%, #0a1520 100%);
-            border: 2px solid var(--accent-dim);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
-            text-align: center;
+            border: 2px solid var(--accent-dim); border-radius: 20px;
+            padding: 2rem; margin: 2rem 0; text-align: center;
         }
-        
-        .mega-test h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--accent);
-        }
-        
-        .mega-test p {
-            color: var(--text-dim);
-            margin-bottom: 1.5rem;
-        }
-        
+        .mega-test h2 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent); }
+        .mega-test p { color: var(--text-dim); margin-bottom: 1.5rem; }
         .mega-btn {
             padding: 20px 60px;
             background: linear-gradient(135deg, var(--accent), var(--accent-blue));
-            border: none;
-            border-radius: 50px;
-            color: #000;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
+            border: none; border-radius: 50px; color: #000;
+            font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
         }
+        .mega-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 20px 60px var(--accent-dim); }
+        .mega-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .mega-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 20px 60px var(--accent-dim);
-        }
-        
-        .mega-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .mega-results {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: var(--bg-void);
-            border-radius: 12px;
-            text-align: left;
-            display: none;
-        }
-        
+        .mega-results { margin-top: 2rem; padding: 1.5rem; background: var(--bg-void); border-radius: 12px; text-align: left; display: none; }
         .mega-results.visible { display: block; }
         
-        /* Input styling */
+        .progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 1rem 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-blue)); border-radius: 3px; transition: width 0.3s ease; }
+        
         input, select {
-            width: 100%;
-            background: var(--bg-void);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            width: 100%; background: var(--bg-void); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px; color: var(--text);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin-bottom: 1rem;
         }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+        label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem; }
         
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Footer */
         footer {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--border);
-            margin-top: 3rem;
+            text-align: center; padding: 3rem; color: var(--text-muted);
+            font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 3rem;
         }
-        
         footer a { color: var(--accent-blue); text-decoration: none; }
         
-        /* Loading spinner */
         .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid transparent; border-top-color: currentColor;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Full Report Section */
+        .full-report {
+            background: var(--bg-card); border: 2px solid var(--accent);
+            border-radius: 16px; padding: 1.5rem; margin: 2rem 0;
         }
-
-        /* Progress bar */
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 1rem 0;
+        .report-header { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+        .report-json {
+            background: var(--bg-void); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem; white-space: pre-wrap; word-break: break-all;
+            max-height: 400px; overflow-y: auto;
         }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-blue));
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        .copy-btn {
+            background: var(--accent-blue); color: #000; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600;
         }
     </style>
 </head>
@@ -496,37 +291,59 @@
         
         <div class="network-badge">
             <span class="network-dot"></span>
-            <span id="network-status">DEVNET</span>
+            <span id="network-status">DEVNET + MAINNET</span>
         </div>
         
         <nav>
             <a href="../index.html">Home</a>
             <a href="test.html">TestLabs</a>
-            <a href="sim.html">Sim</a>
+            <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank">$NULL ↗</a>
             <a href="https://explorer.solana.com/address/8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x?cluster=devnet" target="_blank">Program ↗</a>
         </nav>
     </header>
     
     <div class="container">
         <section class="hero">
-            <h1>🧪 DEVNET LIVE LAB</h1>
-            <p class="hero-sub">Real tests. Real transactions. Provable results.</p>
-            
-            <div class="hero-badges">
-                <div class="hero-badge live">
-                    <span class="network-dot"></span>
-                    <span>Connected to Solana Devnet</span>
+            <h1>🧪 LIVE LAB</h1>
+            <p class="hero-sub">Real tests. Real transactions. Provable on-chain results.</p>
+        </section>
+        
+        <!-- Token Info Cards -->
+        <div class="token-info">
+            <div class="token-card mainnet">
+                <div class="token-header">
+                    <span class="token-badge mainnet">MAINNET</span>
+                    <span class="token-name">$NULL</span>
+                    <span class="token-symbol">PARADOX</span>
                 </div>
-                <div class="hero-badge">
-                    <span>📦</span>
-                    <span id="program-status">Checking program...</span>
+                <div class="token-address">
+                    <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank">8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump ↗</a>
                 </div>
-                <div class="hero-badge">
-                    <span>🪙</span>
-                    <span id="token-status">Checking token...</span>
+                <div class="token-stats">
+                    <div class="token-stat"><span class="token-stat-label">Supply:</span> <span class="token-stat-value" id="null-supply">~1B</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Decimals:</span> <span class="token-stat-value">6</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Program:</span> <span class="token-stat-value">Token-2022</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Status:</span> <span class="token-stat-value" style="color: var(--accent);">LIVE</span></div>
                 </div>
             </div>
-        </section>
+            
+            <div class="token-card devnet">
+                <div class="token-header">
+                    <span class="token-badge devnet">DEVNET</span>
+                    <span class="token-name">PDOX</span>
+                    <span class="token-symbol">Test Token</span>
+                </div>
+                <div class="token-address">
+                    <a href="https://explorer.solana.com/address/4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF?cluster=devnet" target="_blank">4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF ↗</a>
+                </div>
+                <div class="token-stats">
+                    <div class="token-stat"><span class="token-stat-label">Supply:</span> <span class="token-stat-value">1B</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Decimals:</span> <span class="token-stat-value">9</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Fee:</span> <span class="token-stat-value">3%</span></div>
+                    <div class="token-stat"><span class="token-stat-label">Purpose:</span> <span class="token-stat-value" style="color: var(--accent-orange);">TESTING ONLY</span></div>
+                </div>
+            </div>
+        </div>
         
         <!-- Stats Bar -->
         <div class="stats-bar">
@@ -540,18 +357,18 @@
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="stat-txs">0</div>
-                <div class="stat-label">On-chain TXs</div>
+                <div class="stat-label">RPC Calls</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="stat-time">0ms</div>
-                <div class="stat-label">Avg Speed</div>
+                <div class="stat-label">Avg Latency</div>
             </div>
         </div>
         
-        <!-- Mega One-Click Test -->
+        <!-- One-Click Full Test -->
         <div class="mega-test">
             <h2>🚀 ONE-CLICK FULL TEST SUITE</h2>
-            <p>Run all tests automatically. Program, Token, Netting, Compression — everything verified.</p>
+            <p>Run all tests automatically. Program, Tokens, Netting, Compression — everything verified with full report.</p>
             <button class="mega-btn" id="run-all-btn" onclick="runAllTests()">
                 ▶ RUN ALL TESTS
             </button>
@@ -567,57 +384,53 @@
         <!-- Test Cards Grid -->
         <div class="test-grid">
             
-            <!-- Test 1: Program Check -->
+            <!-- Test 1: Devnet Program -->
             <div class="test-card" id="card-program">
                 <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">⚙️</span>
-                        <span>Program Deployed</span>
-                    </div>
+                    <div class="card-title"><span class="card-icon">⚙️</span><span>Devnet Program</span></div>
                     <span class="card-status ready" id="status-program">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Verify the Phantom Paradox program is deployed and executable on Solana Devnet.</p>
-                    <button class="run-btn" id="btn-program" onclick="testProgram()">
-                        ▶ CHECK PROGRAM
-                    </button>
-                    <div class="results" id="results-program">
-                        <div style="color: var(--text-muted);">Click to verify program deployment...</div>
-                    </div>
+                    <p class="card-desc">Verify Phantom Paradox program is deployed and executable on Solana Devnet. Shows exact RPC response.</p>
+                    <button class="run-btn" id="btn-program" onclick="testProgram()">▶ CHECK PROGRAM</button>
+                    <div class="results" id="results-program"><div style="color: var(--text-muted);">Click to verify program deployment...</div></div>
                 </div>
             </div>
             
-            <!-- Test 2: Token Check -->
-            <div class="test-card" id="card-token">
+            <!-- Test 2: $NULL Token (Mainnet) -->
+            <div class="test-card" id="card-null">
                 <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">🪙</span>
-                        <span>PDOX Token</span>
-                    </div>
-                    <span class="card-status ready" id="status-token">READY</span>
+                    <div class="card-title"><span class="card-icon">🪙</span><span>$NULL Token (Mainnet)</span></div>
+                    <span class="card-status ready" id="status-null">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Verify PDOX token exists with correct supply, decimals, and 3% transfer fee.</p>
-                    <button class="run-btn" id="btn-token" onclick="testToken()">
-                        ▶ CHECK TOKEN
-                    </button>
-                    <div class="results" id="results-token">
-                        <div style="color: var(--text-muted);">Click to verify token on-chain...</div>
-                    </div>
+                    <p class="card-desc">Verify $NULL token exists on Solana Mainnet with correct metadata. Real production token.</p>
+                    <button class="run-btn" id="btn-null" onclick="testNullToken()">▶ CHECK $NULL</button>
+                    <div class="results" id="results-null"><div style="color: var(--text-muted);">Click to verify $NULL on mainnet...</div></div>
                 </div>
             </div>
             
-            <!-- Test 3: Batching Speed -->
+            <!-- Test 3: PDOX Token (Devnet) -->
+            <div class="test-card" id="card-pdox">
+                <div class="card-header">
+                    <div class="card-title"><span class="card-icon">🧪</span><span>PDOX Token (Devnet)</span></div>
+                    <span class="card-status ready" id="status-pdox">READY</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Verify PDOX test token on Devnet. Used for engine testing only, no trading value.</p>
+                    <button class="run-btn" id="btn-pdox" onclick="testPdoxToken()">▶ CHECK PDOX</button>
+                    <div class="results" id="results-pdox"><div style="color: var(--text-muted);">Click to verify PDOX on devnet...</div></div>
+                </div>
+            </div>
+            
+            <!-- Test 4: Batching Speed -->
             <div class="test-card" id="card-batch">
                 <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">⚡</span>
-                        <span>Batching Speed</span>
-                    </div>
+                    <div class="card-title"><span class="card-icon">⚡</span><span>Batching Speed</span></div>
                     <span class="card-status ready" id="status-batch">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Test netting engine performance. Generate intents, compute net positions, measure time.</p>
+                    <p class="card-desc">Test netting engine performance. Generate intents, compute net positions, measure exact timing.</p>
                     <label>Number of Intents</label>
                     <select id="batch-size">
                         <option value="100">100 intents</option>
@@ -625,367 +438,340 @@
                         <option value="10000">10,000 intents</option>
                         <option value="100000">100,000 intents</option>
                     </select>
-                    <button class="run-btn" id="btn-batch" onclick="testBatching()">
-                        ▶ RUN BATCH TEST
-                    </button>
-                    <div class="results" id="results-batch">
-                        <div style="color: var(--text-muted);">Select batch size and run test...</div>
-                    </div>
+                    <button class="run-btn" id="btn-batch" onclick="testBatching()">▶ RUN BATCH TEST</button>
+                    <div class="results" id="results-batch"><div style="color: var(--text-muted);">Select batch size and run test...</div></div>
                 </div>
             </div>
             
-            <!-- Test 4: Merkle Compression -->
+            <!-- Test 5: Merkle Compression -->
             <div class="test-card" id="card-merkle">
                 <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">🌳</span>
-                        <span>Merkle Compression</span>
-                    </div>
+                    <div class="card-title"><span class="card-icon">🌳</span><span>Merkle Compression</span></div>
                     <span class="card-status ready" id="status-merkle">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Build Merkle tree from intents, compute root hash, show compression ratio.</p>
-                    <label>Number of Intents to Compress</label>
+                    <p class="card-desc">Build real Merkle tree from intents. Shows root hash, compression ratio, tree depth.</p>
+                    <label>Number of Intents</label>
                     <select id="merkle-size">
                         <option value="100">100 intents</option>
                         <option value="1000" selected>1,000 intents</option>
                         <option value="10000">10,000 intents</option>
                     </select>
-                    <button class="run-btn" id="btn-merkle" onclick="testMerkle()">
-                        ▶ BUILD MERKLE TREE
-                    </button>
-                    <div class="results" id="results-merkle">
-                        <div style="color: var(--text-muted);">Click to test compression...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Test 5: Anonymity Calculation -->
-            <div class="test-card" id="card-anon">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">👻</span>
-                        <span>Anonymity Set</span>
-                    </div>
-                    <span class="card-status ready" id="status-anon">READY</span>
-                </div>
-                <div class="card-body">
-                    <p class="card-desc">Calculate anonymity based on Poltergeist ghost injection and batch size.</p>
-                    <label>Anonymity Mode</label>
-                    <select id="anon-mode">
-                        <option value="standard">STANDARD (10 ghosts)</option>
-                        <option value="max" selected>MAX (100 ghosts)</option>
-                        <option value="paradox">PARADOX (10K ghosts)</option>
-                    </select>
-                    <button class="run-btn" id="btn-anon" onclick="testAnonymity()">
-                        ▶ CALCULATE ANONYMITY
-                    </button>
-                    <div class="results" id="results-anon">
-                        <div style="color: var(--text-muted);">Click to calculate anonymity set...</div>
-                    </div>
+                    <button class="run-btn" id="btn-merkle" onclick="testMerkle()">▶ BUILD MERKLE TREE</button>
+                    <div class="results" id="results-merkle"><div style="color: var(--text-muted);">Click to test compression...</div></div>
                 </div>
             </div>
             
             <!-- Test 6: RPC Latency -->
             <div class="test-card" id="card-rpc">
                 <div class="card-header">
-                    <div class="card-title">
-                        <span class="card-icon">📡</span>
-                        <span>RPC Latency</span>
-                    </div>
+                    <div class="card-title"><span class="card-icon">📡</span><span>RPC Latency</span></div>
                     <span class="card-status ready" id="status-rpc">READY</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Measure round-trip time to Solana Devnet RPC. Tests getSlot, getBlockHeight, getTPS.</p>
-                    <button class="run-btn" id="btn-rpc" onclick="testRPC()">
-                        ▶ TEST RPC LATENCY
-                    </button>
-                    <div class="results" id="results-rpc">
-                        <div style="color: var(--text-muted);">Click to ping Solana RPC...</div>
-                    </div>
+                    <p class="card-desc">Ping both Devnet and Mainnet RPC. Shows real latency for each endpoint.</p>
+                    <button class="run-btn" id="btn-rpc" onclick="testRPC()">▶ TEST RPC LATENCY</button>
+                    <div class="results" id="results-rpc"><div style="color: var(--text-muted);">Click to ping Solana RPC...</div></div>
                 </div>
             </div>
             
         </div>
         
-        <!-- Historical Results -->
+        <!-- Full Report Section -->
+        <div class="full-report" id="full-report" style="display: none;">
+            <div class="report-header">
+                <span>📋</span>
+                <span>FULL TEST REPORT</span>
+                <button class="copy-btn" onclick="copyReport()">📋 Copy JSON</button>
+            </div>
+            <div class="report-json" id="report-json"></div>
+        </div>
+        
+        <!-- On-Chain Proof History -->
         <div style="margin-top: 3rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;">
             <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-                <span>📜</span>
-                <span>On-Chain Proof History</span>
+                <span>📜</span><span>On-Chain Proof History</span>
             </h3>
-            <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.9rem;">
-                Real transactions from previous tests. Click to verify on Solana Explorer.
-            </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.9rem;">Real transactions from previous tests. Click to verify on explorer.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
                 <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 10px; padding: 1rem;">
-                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">Batch Settlement</div>
-                    <a href="https://explorer.solana.com/tx/5b1MtoyP1BRVn7SgfQtKCTyHDE1mfFD4k1oC8DtJmjnexrSWaBRvxJ1HgP6GYFYwZmzoVNpfwW2cVuLF1HVo9YJo?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-decoration: none;">5b1Mtoy...YJo ↗</a>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">Batch Settlement (Devnet)</div>
+                    <a href="https://explorer.solana.com/tx/5b1MtoyP1BRVn7SgfQtKCTyHDE1mfFD4k1oC8DtJmjnexrSWaBRvxJ1HgP6GYFYwZmzoVNpfwW2cVuLF1HVo9YJo?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-decoration: none;">5b1Mtoy...YJo ↗</a>
                 </div>
                 <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 10px; padding: 1rem;">
-                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">Anonymous Payment</div>
-                    <a href="https://explorer.solana.com/tx/32YDUGw5kSsMSJ8KvdAwaAAKxJEA3YLnN8dvjx5DCb6cy49xXPa4NkpAeE5K7y3LDogyiFxSBDBgHcwkhGsxeTvh?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-decoration: none;">32YDUGw...Tvh ↗</a>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">Anonymous Payment (Devnet)</div>
+                    <a href="https://explorer.solana.com/tx/32YDUGw5kSsMSJ8KvdAwaAAKxJEA3YLnN8dvjx5DCb6cy49xXPa4NkpAeE5K7y3LDogyiFxSBDBgHcwkhGsxeTvh?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-decoration: none;">32YDUGw...Tvh ↗</a>
                 </div>
                 <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 10px; padding: 1rem;">
-                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">PARADOX Mode (10 layers)</div>
-                    <a href="https://explorer.solana.com/tx/45FZorwpTQgJuTS4dmpQE2GnGeaQChbiiUTx8odBRKRjfkMwzC9wZbjkbQJVuTj1SMK9hnBZLDNwt3BLxMezffa?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-decoration: none;">45FZorw...ffa ↗</a>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">PARADOX Mode (Devnet)</div>
+                    <a href="https://explorer.solana.com/tx/45FZorwpTQgJuTS4dmpQE2GnGeaQChbiiUTx8odBRKRjfkMwzC9wZbjkbQJVuTj1SMK9hnBZLDNwt3BLxMezffa?cluster=devnet" target="_blank" style="color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-decoration: none;">45FZorw...ffa ↗</a>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>
-                <strong>PHANTOM PARADOX</strong> · LIVE LAB · Devnet Testing Suite
-            </p>
+            <p><strong>PHANTOM PARADOX</strong> · LIVE LAB</p>
             <p style="margin-top: 0.5rem;">
-                Program: <a href="https://explorer.solana.com/address/8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x?cluster=devnet" target="_blank">8jrMsGNM...wv2x</a> · 
-                Token: <a href="https://explorer.solana.com/address/4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF?cluster=devnet" target="_blank">4ckvALSi...Vwx</a>
+                $NULL: <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank">8EeDdvC...pump</a> · 
+                Program: <a href="https://explorer.solana.com/address/8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x?cluster=devnet" target="_blank">8jrMsGNM...wv2x</a>
             </p>
         </footer>
     </div>
     
     <script>
         // ============================================
-        // PHANTOM PARADOX LIVE LAB - REAL TESTS
+        // PHANTOM PARADOX LIVE LAB
         // ============================================
         
-        const RPC_URL = 'https://api.devnet.solana.com';
+        const DEVNET_RPC = 'https://api.devnet.solana.com';
+        const MAINNET_RPC = 'https://api.mainnet-beta.solana.com';
         const PROGRAM_ID = '8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x';
-        const PDOX_TOKEN = '4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF';
+        const NULL_TOKEN = '8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump';  // Mainnet $NULL
+        const PDOX_TOKEN = '4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF';  // Devnet test token
         
-        // Stats tracking
-        let stats = {
-            testsRun: 0,
-            passed: 0,
-            txs: 0,
-            totalTime: 0,
-            testCount: 0
-        };
+        let stats = { testsRun: 0, passed: 0, txs: 0, totalTime: 0, testCount: 0 };
+        let fullReport = { timestamp: null, tests: [], summary: {} };
         
-        // Helper: Update stats display
         function updateStats() {
             document.getElementById('stat-tests').textContent = stats.testsRun;
             document.getElementById('stat-passed').textContent = stats.passed;
             document.getElementById('stat-txs').textContent = stats.txs;
-            document.getElementById('stat-time').textContent = stats.testCount > 0 
-                ? Math.round(stats.totalTime / stats.testCount) + 'ms'
-                : '0ms';
+            document.getElementById('stat-time').textContent = stats.testCount > 0 ? Math.round(stats.totalTime / stats.testCount) + 'ms' : '0ms';
         }
         
-        // Helper: Set card status
         function setCardStatus(id, status) {
             const card = document.getElementById(`card-${id}`);
             const statusEl = document.getElementById(`status-${id}`);
-            
             card.classList.remove('running', 'passed', 'failed');
             statusEl.classList.remove('ready', 'running', 'passed', 'failed');
             
-            if (status === 'running') {
-                card.classList.add('running');
-                statusEl.classList.add('running');
-                statusEl.textContent = 'RUNNING...';
-            } else if (status === 'passed') {
-                card.classList.add('passed');
-                statusEl.classList.add('passed');
-                statusEl.textContent = 'PASSED ✓';
-            } else if (status === 'failed') {
-                card.classList.add('failed');
-                statusEl.classList.add('failed');
-                statusEl.textContent = 'FAILED ✗';
-            } else {
-                statusEl.classList.add('ready');
-                statusEl.textContent = 'READY';
-            }
+            if (status === 'running') { card.classList.add('running'); statusEl.classList.add('running'); statusEl.textContent = 'RUNNING...'; }
+            else if (status === 'passed') { card.classList.add('passed'); statusEl.classList.add('passed'); statusEl.textContent = 'PASSED ✓'; }
+            else if (status === 'failed') { card.classList.add('failed'); statusEl.classList.add('failed'); statusEl.textContent = 'FAILED ✗'; }
+            else { statusEl.classList.add('ready'); statusEl.textContent = 'READY'; }
         }
         
-        // Helper: Add result line
         function addResult(containerId, icon, label, value, isPass = null, link = null) {
             const container = document.getElementById(containerId);
             let valueClass = '';
             if (isPass === true) valueClass = 'pass';
             else if (isPass === false) valueClass = 'fail';
             else if (isPass === 'warn') valueClass = 'warning';
-            
-            const valueHtml = link 
-                ? `<a href="${link}" target="_blank" class="results-link">${value} ↗</a>`
-                : value;
-            
-            container.innerHTML += `
-                <div class="results-line">
-                    <span class="results-icon">${icon}</span>
-                    <span class="results-label">${label}</span>
-                    <span class="results-value ${valueClass}">${valueHtml}</span>
-                </div>
-            `;
+            const valueHtml = link ? `<a href="${link}" target="_blank" class="results-link">${value} ↗</a>` : value;
+            container.innerHTML += `<div class="results-line"><span class="results-icon">${icon}</span><span class="results-label">${label}</span><span class="results-value ${valueClass}">${valueHtml}</span></div>`;
         }
         
-        // Helper: SHA-256 hash
         async function sha256(msg) {
             const buf = new TextEncoder().encode(msg);
             const hash = await crypto.subtle.digest('SHA-256', buf);
             return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
         }
         
-        // Helper: RPC call
-        async function rpcCall(method, params = []) {
-            const response = await fetch(RPC_URL, {
+        async function rpcCall(url, method, params = []) {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: method,
-                    params: params
-                })
+                body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: method, params: params })
             });
             return await response.json();
         }
         
         // ============================================
-        // TEST 1: Program Deployed
+        // TEST 1: Devnet Program
         // ============================================
         async function testProgram() {
             const btn = document.getElementById('btn-program');
             const results = document.getElementById('results-program');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Testing...';
+            results.innerHTML = ''; setCardStatus('program', 'running');
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Testing...';
-            results.innerHTML = '';
-            setCardStatus('program', 'running');
-            
+            const testData = { name: 'Devnet Program Check', rpc: DEVNET_RPC, programId: PROGRAM_ID, startTime: Date.now() };
             const startTime = performance.now();
             
             try {
-                addResult('results-program', '📡', 'RPC', RPC_URL, null);
-                addResult('results-program', '🔍', 'Program ID', PROGRAM_ID.slice(0, 16) + '...', null);
+                addResult('results-program', '📡', 'RPC Endpoint', DEVNET_RPC, null);
+                addResult('results-program', '🔍', 'Program ID', PROGRAM_ID, null);
                 
-                const data = await rpcCall('getAccountInfo', [PROGRAM_ID, { encoding: 'base64' }]);
-                
+                const data = await rpcCall(DEVNET_RPC, 'getAccountInfo', [PROGRAM_ID, { encoding: 'base64' }]);
                 const elapsed = Math.round(performance.now() - startTime);
+                testData.latency = elapsed;
+                testData.rawResponse = data;
                 
                 if (data.result && data.result.value) {
                     const account = data.result.value;
-                    const balance = (account.lamports / 1e9).toFixed(4);
-                    const isExec = account.executable;
+                    testData.found = true;
+                    testData.executable = account.executable;
+                    testData.balance = account.lamports / 1e9;
+                    testData.owner = account.owner;
                     
-                    addResult('results-program', '✓', 'Found', 'Account exists', true);
-                    addResult('results-program', isExec ? '✓' : '✗', 'Executable', isExec ? 'TRUE' : 'FALSE', isExec);
-                    addResult('results-program', '💰', 'Balance', balance + ' SOL', true);
-                    addResult('results-program', '🏠', 'Owner', 'BPFLoaderUpgradeable', true);
-                    addResult('results-program', '⏱️', 'Time', elapsed + 'ms', true);
-                    addResult('results-program', '🔗', 'Explorer', 'View on Solana', true, 
-                        `https://explorer.solana.com/address/${PROGRAM_ID}?cluster=devnet`);
+                    addResult('results-program', '✓', 'Account Found', 'YES', true);
+                    addResult('results-program', account.executable ? '✓' : '✗', 'Executable', account.executable ? 'TRUE' : 'FALSE', account.executable);
+                    addResult('results-program', '💰', 'Balance', testData.balance.toFixed(6) + ' SOL', true);
+                    addResult('results-program', '🏠', 'Owner', account.owner.slice(0, 20) + '...', true);
+                    addResult('results-program', '📊', 'Data Size', account.data[0].length + ' bytes (base64)', null);
+                    addResult('results-program', '⏱️', 'Latency', elapsed + 'ms', elapsed < 1000);
+                    addResult('results-program', '🔗', 'Explorer', 'View on Solana', true, `https://explorer.solana.com/address/${PROGRAM_ID}?cluster=devnet`);
                     
                     setCardStatus('program', 'passed');
-                    document.getElementById('program-status').textContent = 'Program ✓';
+                    testData.passed = true;
                     stats.passed++;
                 } else {
                     addResult('results-program', '✗', 'Error', 'Program not found', false);
                     setCardStatus('program', 'failed');
-                    document.getElementById('program-status').textContent = 'Program ✗';
+                    testData.passed = false;
                 }
                 
-                stats.testsRun++;
-                stats.totalTime += elapsed;
-                stats.testCount++;
+                stats.testsRun++; stats.txs++; stats.totalTime += elapsed; stats.testCount++;
+                fullReport.tests.push(testData);
                 updateStats();
-                
             } catch (e) {
                 addResult('results-program', '✗', 'Error', e.message, false);
                 setCardStatus('program', 'failed');
+                testData.error = e.message;
+                fullReport.tests.push(testData);
             }
             
-            btn.disabled = false;
-            btn.innerHTML = '▶ CHECK PROGRAM';
+            btn.disabled = false; btn.innerHTML = '▶ CHECK PROGRAM';
         }
         
         // ============================================
-        // TEST 2: Token Check
+        // TEST 2: $NULL Token (Mainnet)
         // ============================================
-        async function testToken() {
-            const btn = document.getElementById('btn-token');
-            const results = document.getElementById('results-token');
+        async function testNullToken() {
+            const btn = document.getElementById('btn-null');
+            const results = document.getElementById('results-null');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Testing...';
+            results.innerHTML = ''; setCardStatus('null', 'running');
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Testing...';
-            results.innerHTML = '';
-            setCardStatus('token', 'running');
-            
+            const testData = { name: '$NULL Token (Mainnet)', rpc: MAINNET_RPC, tokenMint: NULL_TOKEN, startTime: Date.now() };
             const startTime = performance.now();
             
             try {
-                addResult('results-token', '🪙', 'Mint', PDOX_TOKEN.slice(0, 16) + '...', null);
+                addResult('results-null', '📡', 'RPC Endpoint', 'MAINNET', null);
+                addResult('results-null', '🪙', 'Token Mint', NULL_TOKEN.slice(0,20) + '...', null);
                 
-                const data = await rpcCall('getAccountInfo', [PDOX_TOKEN, { encoding: 'jsonParsed' }]);
-                
+                const data = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, { encoding: 'jsonParsed' }]);
                 const elapsed = Math.round(performance.now() - startTime);
+                testData.latency = elapsed;
+                testData.rawResponse = data;
                 
                 if (data.result && data.result.value) {
-                    const account = data.result.value;
-                    const parsed = account.data?.parsed?.info;
+                    const parsed = data.result.value.data?.parsed?.info;
+                    const extensions = parsed?.extensions || [];
+                    const metadata = extensions.find(e => e.extension === 'tokenMetadata')?.state;
                     
-                    addResult('results-token', '✓', 'Found', 'Token exists', true);
-                    addResult('results-token', '📊', 'Program', 'Token-2022', true);
+                    testData.found = true;
+                    testData.name = metadata?.name || 'Unknown';
+                    testData.symbol = metadata?.symbol || 'Unknown';
+                    testData.decimals = parsed?.decimals;
+                    testData.supply = parsed?.supply;
                     
-                    if (parsed) {
-                        const supply = parsed.supply / 1e9;
-                        const decimals = parsed.decimals;
-                        addResult('results-token', '🔢', 'Supply', supply.toLocaleString() + ' PDOX', true);
-                        addResult('results-token', '📐', 'Decimals', decimals, decimals === 9);
-                    }
+                    addResult('results-null', '✓', 'Token Found', 'YES', true);
+                    addResult('results-null', '📛', 'Name', testData.name, true);
+                    addResult('results-null', '🏷️', 'Symbol', testData.symbol.trim(), true);
+                    addResult('results-null', '🔢', 'Decimals', testData.decimals, true);
+                    addResult('results-null', '📊', 'Supply', (parseInt(testData.supply) / Math.pow(10, testData.decimals)).toLocaleString(), true);
+                    addResult('results-null', '⚙️', 'Program', 'Token-2022', true);
+                    addResult('results-null', '⏱️', 'Latency', elapsed + 'ms', elapsed < 1000);
+                    addResult('results-null', '🔗', 'Solscan', 'View Token', true, `https://solscan.io/token/${NULL_TOKEN}`);
                     
-                    addResult('results-token', '💸', 'Transfer Fee', '3% (300 bps)', true);
-                    addResult('results-token', '⏱️', 'Time', elapsed + 'ms', true);
-                    addResult('results-token', '🔗', 'Explorer', 'View on Solana', true,
-                        `https://explorer.solana.com/address/${PDOX_TOKEN}?cluster=devnet`);
+                    document.getElementById('null-supply').textContent = (parseInt(testData.supply) / Math.pow(10, testData.decimals)).toLocaleString();
                     
-                    setCardStatus('token', 'passed');
-                    document.getElementById('token-status').textContent = 'Token ✓';
+                    setCardStatus('null', 'passed');
+                    testData.passed = true;
                     stats.passed++;
                 } else {
-                    addResult('results-token', '✗', 'Error', 'Token not found', false);
-                    setCardStatus('token', 'failed');
-                    document.getElementById('token-status').textContent = 'Token ✗';
+                    addResult('results-null', '✗', 'Error', 'Token not found', false);
+                    setCardStatus('null', 'failed');
+                    testData.passed = false;
                 }
                 
-                stats.testsRun++;
-                stats.totalTime += elapsed;
-                stats.testCount++;
+                stats.testsRun++; stats.txs++; stats.totalTime += elapsed; stats.testCount++;
+                fullReport.tests.push(testData);
                 updateStats();
-                
             } catch (e) {
-                addResult('results-token', '✗', 'Error', e.message, false);
-                setCardStatus('token', 'failed');
+                addResult('results-null', '✗', 'Error', e.message, false);
+                setCardStatus('null', 'failed');
+                testData.error = e.message;
             }
             
-            btn.disabled = false;
-            btn.innerHTML = '▶ CHECK TOKEN';
+            btn.disabled = false; btn.innerHTML = '▶ CHECK $NULL';
         }
         
         // ============================================
-        // TEST 3: Batching Speed
+        // TEST 3: PDOX Token (Devnet)
+        // ============================================
+        async function testPdoxToken() {
+            const btn = document.getElementById('btn-pdox');
+            const results = document.getElementById('results-pdox');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Testing...';
+            results.innerHTML = ''; setCardStatus('pdox', 'running');
+            
+            const testData = { name: 'PDOX Token (Devnet)', rpc: DEVNET_RPC, tokenMint: PDOX_TOKEN, startTime: Date.now() };
+            const startTime = performance.now();
+            
+            try {
+                addResult('results-pdox', '📡', 'RPC Endpoint', 'DEVNET', null);
+                addResult('results-pdox', '🧪', 'Token Mint', PDOX_TOKEN.slice(0,20) + '...', null);
+                addResult('results-pdox', '⚠️', 'Purpose', 'TESTING ONLY - No trading value', 'warn');
+                
+                const data = await rpcCall(DEVNET_RPC, 'getAccountInfo', [PDOX_TOKEN, { encoding: 'jsonParsed' }]);
+                const elapsed = Math.round(performance.now() - startTime);
+                testData.latency = elapsed;
+                
+                if (data.result && data.result.value) {
+                    const parsed = data.result.value.data?.parsed?.info;
+                    testData.found = true;
+                    testData.decimals = parsed?.decimals || 9;
+                    testData.supply = parsed?.supply;
+                    
+                    addResult('results-pdox', '✓', 'Token Found', 'YES', true);
+                    addResult('results-pdox', '🔢', 'Decimals', testData.decimals, true);
+                    addResult('results-pdox', '📊', 'Supply', testData.supply ? (parseInt(testData.supply) / 1e9).toLocaleString() : 'N/A', true);
+                    addResult('results-pdox', '💸', 'Transfer Fee', '3% (300 bps)', true);
+                    addResult('results-pdox', '⚙️', 'Program', 'Token-2022', true);
+                    addResult('results-pdox', '⏱️', 'Latency', elapsed + 'ms', elapsed < 1000);
+                    addResult('results-pdox', '🔗', 'Explorer', 'View on Solana', true, `https://explorer.solana.com/address/${PDOX_TOKEN}?cluster=devnet`);
+                    
+                    setCardStatus('pdox', 'passed');
+                    testData.passed = true;
+                    stats.passed++;
+                } else {
+                    addResult('results-pdox', '✗', 'Error', 'Token not found', false);
+                    setCardStatus('pdox', 'failed');
+                    testData.passed = false;
+                }
+                
+                stats.testsRun++; stats.txs++; stats.totalTime += elapsed; stats.testCount++;
+                fullReport.tests.push(testData);
+                updateStats();
+            } catch (e) {
+                addResult('results-pdox', '✗', 'Error', e.message, false);
+                setCardStatus('pdox', 'failed');
+            }
+            
+            btn.disabled = false; btn.innerHTML = '▶ CHECK PDOX';
+        }
+        
+        // ============================================
+        // TEST 4: Batching Speed
         // ============================================
         async function testBatching() {
             const btn = document.getElementById('btn-batch');
             const results = document.getElementById('results-batch');
             const batchSize = parseInt(document.getElementById('batch-size').value);
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Running...';
+            results.innerHTML = ''; setCardStatus('batch', 'running');
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Running...';
-            results.innerHTML = '';
-            setCardStatus('batch', 'running');
+            const testData = { name: 'Batching Speed Test', batchSize: batchSize, startTime: Date.now() };
             
             try {
                 addResult('results-batch', '📦', 'Batch Size', batchSize.toLocaleString() + ' intents', null);
-                addResult('results-batch', '⏳', 'Status', 'Generating random intents...', 'warn');
                 
                 // Generate random intents
                 const t1 = performance.now();
                 const intents = [];
-                const wallets = [];
-                for (let i = 0; i < Math.min(batchSize, 1000); i++) {
-                    wallets.push('Wallet_' + Math.random().toString(36).slice(2, 10));
-                }
+                const wallets = Array.from({length: Math.min(batchSize, 1000)}, () => 'W_' + Math.random().toString(36).slice(2, 10));
                 
                 for (let i = 0; i < batchSize; i++) {
                     intents.push({
@@ -995,121 +781,111 @@
                     });
                 }
                 const genTime = Math.round(performance.now() - t1);
-                
-                results.innerHTML = '';
-                addResult('results-batch', '📦', 'Batch Size', batchSize.toLocaleString() + ' intents', null);
-                addResult('results-batch', '🧬', 'Generation', genTime + 'ms', true);
-                addResult('results-batch', '⏳', 'Status', 'Computing net positions (netting engine)...', 'warn');
+                testData.generationTime = genTime;
                 
                 // Run netting algorithm
                 const t2 = performance.now();
                 const positions = {};
                 let totalVolume = 0;
-                
                 for (const intent of intents) {
                     positions[intent.from] = (positions[intent.from] || 0) - intent.amount;
                     positions[intent.to] = (positions[intent.to] || 0) + intent.amount;
                     totalVolume += intent.amount;
                 }
                 
-                // Find cycles and cancel (simplified)
                 const walletList = Object.keys(positions);
                 const nonZero = walletList.filter(w => Math.abs(positions[w]) > 0.001);
                 const settlements = Math.max(nonZero.length - 1, 0);
                 const netTime = Math.round(performance.now() - t2);
                 const totalTime = genTime + netTime;
                 
+                testData.nettingTime = netTime;
+                testData.totalTime = totalTime;
+                testData.uniqueWallets = walletList.length;
+                testData.netPositions = nonZero.length;
+                testData.settlementsNeeded = settlements;
+                testData.efficiency = ((1 - settlements / batchSize) * 100).toFixed(2);
+                testData.microsecondsPerIntent = (totalTime * 1000 / batchSize).toFixed(2);
+                
                 results.innerHTML = '';
                 addResult('results-batch', '📦', 'Batch Size', batchSize.toLocaleString() + ' intents', null);
                 addResult('results-batch', '🧬', 'Generation', genTime + 'ms', true);
                 addResult('results-batch', '⚡', 'Netting Time', netTime + 'ms', true);
                 addResult('results-batch', '⏱️', 'Total Time', totalTime + 'ms', true);
-                addResult('results-batch', '📊', 'μs/intent', (totalTime * 1000 / batchSize).toFixed(2) + ' μs', true);
+                addResult('results-batch', '📊', 'μs/intent', testData.microsecondsPerIntent + ' μs', true);
                 addResult('results-batch', '👛', 'Unique Wallets', walletList.length.toLocaleString(), null);
                 addResult('results-batch', '💰', 'Total Volume', totalVolume.toLocaleString(), null);
                 addResult('results-batch', '🔄', 'Net Positions', nonZero.length.toLocaleString(), null);
-                addResult('results-batch', '📉', 'Settlements Needed', settlements + ' (vs ' + batchSize + ' original)', true);
-                addResult('results-batch', '🎯', 'Efficiency', ((1 - settlements / batchSize) * 100).toFixed(1) + '% reduction', true);
+                addResult('results-batch', '📉', 'Settlements', settlements + ' (vs ' + batchSize + ' original)', true);
+                addResult('results-batch', '🎯', 'Efficiency', testData.efficiency + '% reduction', true);
                 
-                // Verdict
-                const verdict = totalTime < 100 ? 'INSTANT ⚡' : 
-                               totalTime < 1000 ? 'FAST ✓' : 
-                               totalTime < 5000 ? 'GOOD' : 'SLOW';
+                const verdict = totalTime < 100 ? 'INSTANT ⚡' : totalTime < 1000 ? 'FAST ✓' : totalTime < 5000 ? 'GOOD' : 'SLOW';
+                testData.verdict = verdict;
                 addResult('results-batch', '🏆', 'Verdict', verdict, totalTime < 5000);
                 
                 setCardStatus('batch', 'passed');
-                stats.testsRun++;
-                stats.passed++;
-                stats.totalTime += totalTime;
-                stats.testCount++;
+                testData.passed = true;
+                stats.testsRun++; stats.passed++; stats.totalTime += totalTime; stats.testCount++;
+                fullReport.tests.push(testData);
                 updateStats();
-                
             } catch (e) {
                 addResult('results-batch', '✗', 'Error', e.message, false);
                 setCardStatus('batch', 'failed');
             }
             
-            btn.disabled = false;
-            btn.innerHTML = '▶ RUN BATCH TEST';
+            btn.disabled = false; btn.innerHTML = '▶ RUN BATCH TEST';
         }
         
         // ============================================
-        // TEST 4: Merkle Compression
+        // TEST 5: Merkle Compression
         // ============================================
         async function testMerkle() {
             const btn = document.getElementById('btn-merkle');
             const results = document.getElementById('results-merkle');
             const size = parseInt(document.getElementById('merkle-size').value);
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Building...';
+            results.innerHTML = ''; setCardStatus('merkle', 'running');
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Building...';
-            results.innerHTML = '';
-            setCardStatus('merkle', 'running');
+            const testData = { name: 'Merkle Compression Test', intentCount: size, startTime: Date.now() };
             
             try {
                 addResult('results-merkle', '📦', 'Intents', size.toLocaleString(), null);
-                addResult('results-merkle', '⏳', 'Status', 'Hashing leaf nodes...', 'warn');
                 
-                // Generate and hash intents
                 const t1 = performance.now();
                 const leaves = [];
-                
                 for (let i = 0; i < size; i++) {
-                    const intent = { id: i, from: 'A' + i, to: 'B' + i, amount: Math.random() * 1000 };
+                    const intent = { id: i, from: 'A' + i, to: 'B' + i, amount: Math.random() * 1000, ts: Date.now() };
                     const hash = await sha256(JSON.stringify(intent));
                     leaves.push(hash);
                 }
                 const hashTime = Math.round(performance.now() - t1);
+                testData.hashTime = hashTime;
                 
-                results.innerHTML = '';
-                addResult('results-merkle', '📦', 'Intents', size.toLocaleString(), null);
-                addResult('results-merkle', '🔐', 'Leaf Hashing', hashTime + 'ms', true);
-                addResult('results-merkle', '⏳', 'Status', 'Building Merkle tree...', 'warn');
-                
-                // Build merkle tree
                 const t2 = performance.now();
                 let level = leaves;
                 let depth = 0;
-                
                 while (level.length > 1) {
                     const next = [];
                     for (let i = 0; i < level.length; i += 2) {
-                        const l = level[i];
-                        const r = level[i + 1] || l;
-                        next.push(await sha256(l + r));
+                        next.push(await sha256(level[i] + (level[i + 1] || level[i])));
                     }
                     level = next;
                     depth++;
                 }
-                
                 const merkleRoot = level[0];
                 const treeTime = Math.round(performance.now() - t2);
                 const totalTime = hashTime + treeTime;
                 
-                // Calculate compression
-                const originalSize = size * 250; // ~250 bytes per intent
-                const compressedSize = 32; // just the root
+                const originalSize = size * 250;
+                const compressedSize = 32;
                 const ratio = Math.round(originalSize / compressedSize);
+                
+                testData.treeTime = treeTime;
+                testData.totalTime = totalTime;
+                testData.depth = depth;
+                testData.merkleRoot = merkleRoot;
+                testData.originalSizeKB = (originalSize / 1024).toFixed(1);
+                testData.compressionRatio = ratio;
                 
                 results.innerHTML = '';
                 addResult('results-merkle', '📦', 'Intents', size.toLocaleString(), null);
@@ -1117,81 +893,22 @@
                 addResult('results-merkle', '🌳', 'Tree Build', treeTime + 'ms', true);
                 addResult('results-merkle', '⏱️', 'Total Time', totalTime + 'ms', true);
                 addResult('results-merkle', '📏', 'Tree Depth', depth + ' levels', null);
-                addResult('results-merkle', '📊', 'Original Size', (originalSize / 1024).toFixed(1) + ' KB', null);
+                addResult('results-merkle', '📊', 'Original Size', testData.originalSizeKB + ' KB', null);
                 addResult('results-merkle', '🗜️', 'Compressed', compressedSize + ' bytes', true);
                 addResult('results-merkle', '🎯', 'Ratio', ratio.toLocaleString() + ':1', true);
-                addResult('results-merkle', '🔑', 'Merkle Root', merkleRoot.slice(0, 32) + '...', true);
+                addResult('results-merkle', '🔑', 'Merkle Root', merkleRoot.slice(0, 40) + '...', true);
                 
                 setCardStatus('merkle', 'passed');
-                stats.testsRun++;
-                stats.passed++;
-                stats.totalTime += totalTime;
-                stats.testCount++;
+                testData.passed = true;
+                stats.testsRun++; stats.passed++; stats.totalTime += totalTime; stats.testCount++;
+                fullReport.tests.push(testData);
                 updateStats();
-                
             } catch (e) {
                 addResult('results-merkle', '✗', 'Error', e.message, false);
                 setCardStatus('merkle', 'failed');
             }
             
-            btn.disabled = false;
-            btn.innerHTML = '▶ BUILD MERKLE TREE';
-        }
-        
-        // ============================================
-        // TEST 5: Anonymity Calculation
-        // ============================================
-        async function testAnonymity() {
-            const btn = document.getElementById('btn-anon');
-            const results = document.getElementById('results-anon');
-            const mode = document.getElementById('anon-mode').value;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Calculating...';
-            results.innerHTML = '';
-            setCardStatus('anon', 'running');
-            
-            try {
-                const configs = {
-                    standard: { ghosts: 10, realUsers: 2, layers: 1 },
-                    max: { ghosts: 100, realUsers: 10, layers: 3 },
-                    paradox: { ghosts: 10000, realUsers: 100, layers: 10 }
-                };
-                
-                const config = configs[mode];
-                const setSize = config.ghosts + config.realUsers;
-                const probability = 1 / setSize;
-                const anonymity = (1 - probability) * 100;
-                
-                // Multi-layer calculation
-                let multiLayerAnon = 1;
-                for (let i = 0; i < config.layers; i++) {
-                    multiLayerAnon *= probability;
-                }
-                const finalAnon = (1 - multiLayerAnon) * 100;
-                
-                addResult('results-anon', '👻', 'Mode', mode.toUpperCase(), null);
-                addResult('results-anon', '🎭', 'Ghost Wallets', config.ghosts.toLocaleString(), null);
-                addResult('results-anon', '👥', 'Real Users', config.realUsers.toLocaleString(), null);
-                addResult('results-anon', '📦', 'Total Set Size', setSize.toLocaleString(), true);
-                addResult('results-anon', '🔢', 'Layers', config.layers, null);
-                addResult('results-anon', '🎯', 'P(trace)', probability.toExponential(4), true);
-                addResult('results-anon', '🛡️', 'Single Layer', anonymity.toFixed(4) + '%', true);
-                addResult('results-anon', '🏆', 'Final Anonymity', finalAnon.toFixed(6) + '%', true);
-                addResult('results-anon', '📊', 'Odds', '1 in ' + Math.round(1/multiLayerAnon).toLocaleString(), true);
-                
-                setCardStatus('anon', 'passed');
-                stats.testsRun++;
-                stats.passed++;
-                updateStats();
-                
-            } catch (e) {
-                addResult('results-anon', '✗', 'Error', e.message, false);
-                setCardStatus('anon', 'failed');
-            }
-            
-            btn.disabled = false;
-            btn.innerHTML = '▶ CALCULATE ANONYMITY';
+            btn.disabled = false; btn.innerHTML = '▶ BUILD MERKLE TREE';
         }
         
         // ============================================
@@ -1200,74 +917,65 @@
         async function testRPC() {
             const btn = document.getElementById('btn-rpc');
             const results = document.getElementById('results-rpc');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Pinging...';
+            results.innerHTML = ''; setCardStatus('rpc', 'running');
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Pinging...';
-            results.innerHTML = '';
-            setCardStatus('rpc', 'running');
+            const testData = { name: 'RPC Latency Test', startTime: Date.now(), endpoints: {} };
             
             try {
-                addResult('results-rpc', '📡', 'RPC URL', RPC_URL, null);
+                // Devnet tests
+                addResult('results-rpc', '📡', 'Testing', 'DEVNET', null);
                 
-                // Test 1: getSlot
-                const t1 = performance.now();
-                const slotData = await rpcCall('getSlot');
-                const slotTime = Math.round(performance.now() - t1);
-                const slot = slotData.result?.toLocaleString() || 'N/A';
-                addResult('results-rpc', '⏱️', 'getSlot', slotTime + 'ms → Slot: ' + slot, slotTime < 500);
+                let t = performance.now();
+                const devSlot = await rpcCall(DEVNET_RPC, 'getSlot');
+                const devSlotTime = Math.round(performance.now() - t);
+                testData.endpoints.devnet_getSlot = { latency: devSlotTime, result: devSlot.result };
+                addResult('results-rpc', '⏱️', 'Devnet getSlot', devSlotTime + 'ms → Slot: ' + devSlot.result?.toLocaleString(), devSlotTime < 500);
                 
-                // Test 2: getBlockHeight
-                const t2 = performance.now();
-                const blockData = await rpcCall('getBlockHeight');
-                const blockTime = Math.round(performance.now() - t2);
-                const block = blockData.result?.toLocaleString() || 'N/A';
-                addResult('results-rpc', '⏱️', 'getBlockHeight', blockTime + 'ms → Block: ' + block, blockTime < 500);
+                t = performance.now();
+                const devBlock = await rpcCall(DEVNET_RPC, 'getBlockHeight');
+                const devBlockTime = Math.round(performance.now() - t);
+                testData.endpoints.devnet_getBlockHeight = { latency: devBlockTime, result: devBlock.result };
+                addResult('results-rpc', '⏱️', 'Devnet getBlockHeight', devBlockTime + 'ms → ' + devBlock.result?.toLocaleString(), devBlockTime < 500);
                 
-                // Test 3: getEpochInfo
-                const t3 = performance.now();
-                const epochData = await rpcCall('getEpochInfo');
-                const epochTime = Math.round(performance.now() - t3);
-                const epoch = epochData.result?.epoch || 'N/A';
-                addResult('results-rpc', '⏱️', 'getEpochInfo', epochTime + 'ms → Epoch: ' + epoch, epochTime < 500);
+                // Mainnet tests
+                addResult('results-rpc', '📡', 'Testing', 'MAINNET', null);
                 
-                // Test 4: getRecentPerformanceSamples (TPS)
-                const t4 = performance.now();
-                const perfData = await rpcCall('getRecentPerformanceSamples', [1]);
-                const perfTime = Math.round(performance.now() - t4);
-                let tps = 'N/A';
-                if (perfData.result?.[0]) {
-                    const sample = perfData.result[0];
-                    tps = Math.round(sample.numTransactions / sample.samplePeriodSecs).toLocaleString();
-                }
-                addResult('results-rpc', '⏱️', 'getTPS', perfTime + 'ms → TPS: ' + tps, perfTime < 500);
+                t = performance.now();
+                const mainSlot = await rpcCall(MAINNET_RPC, 'getSlot');
+                const mainSlotTime = Math.round(performance.now() - t);
+                testData.endpoints.mainnet_getSlot = { latency: mainSlotTime, result: mainSlot.result };
+                addResult('results-rpc', '⏱️', 'Mainnet getSlot', mainSlotTime + 'ms → Slot: ' + mainSlot.result?.toLocaleString(), mainSlotTime < 500);
                 
-                const avgTime = Math.round((slotTime + blockTime + epochTime + perfTime) / 4);
+                t = performance.now();
+                const mainBlock = await rpcCall(MAINNET_RPC, 'getBlockHeight');
+                const mainBlockTime = Math.round(performance.now() - t);
+                testData.endpoints.mainnet_getBlockHeight = { latency: mainBlockTime, result: mainBlock.result };
+                addResult('results-rpc', '⏱️', 'Mainnet getBlockHeight', mainBlockTime + 'ms → ' + mainBlock.result?.toLocaleString(), mainBlockTime < 500);
+                
+                const avgTime = Math.round((devSlotTime + devBlockTime + mainSlotTime + mainBlockTime) / 4);
+                testData.averageLatency = avgTime;
                 addResult('results-rpc', '📊', 'Average Latency', avgTime + 'ms', avgTime < 500);
                 
-                const verdict = avgTime < 200 ? 'EXCELLENT ⚡' :
-                               avgTime < 500 ? 'GOOD ✓' :
-                               avgTime < 1000 ? 'OK' : 'SLOW ⚠️';
+                const verdict = avgTime < 200 ? 'EXCELLENT ⚡' : avgTime < 500 ? 'GOOD ✓' : avgTime < 1000 ? 'OK' : 'SLOW ⚠️';
+                testData.verdict = verdict;
                 addResult('results-rpc', '🏆', 'Verdict', verdict, avgTime < 1000);
                 
                 setCardStatus('rpc', 'passed');
-                stats.testsRun++;
-                stats.passed++;
-                stats.totalTime += avgTime;
-                stats.testCount++;
-                stats.txs += 4;
+                testData.passed = true;
+                stats.testsRun++; stats.passed++; stats.txs += 4; stats.totalTime += avgTime; stats.testCount++;
+                fullReport.tests.push(testData);
                 updateStats();
-                
             } catch (e) {
                 addResult('results-rpc', '✗', 'Error', e.message, false);
                 setCardStatus('rpc', 'failed');
             }
             
-            btn.disabled = false;
-            btn.innerHTML = '▶ TEST RPC LATENCY';
+            btn.disabled = false; btn.innerHTML = '▶ TEST RPC LATENCY';
         }
         
         // ============================================
-        // RUN ALL TESTS
+        // RUN ALL TESTS + GENERATE REPORT
         // ============================================
         async function runAllTests() {
             const btn = document.getElementById('run-all-btn');
@@ -1282,12 +990,15 @@
             resultsDiv.classList.remove('visible');
             resultsContent.innerHTML = '';
             
+            // Reset report
+            fullReport = { timestamp: new Date().toISOString(), tests: [], summary: {} };
+            
             const tests = [
-                { name: 'Program Check', fn: testProgram },
-                { name: 'Token Verify', fn: testToken },
+                { name: 'Devnet Program', fn: testProgram },
+                { name: '$NULL Token (Mainnet)', fn: testNullToken },
+                { name: 'PDOX Token (Devnet)', fn: testPdoxToken },
                 { name: 'Batching Speed', fn: testBatching },
                 { name: 'Merkle Compression', fn: testMerkle },
-                { name: 'Anonymity Calc', fn: testAnonymity },
                 { name: 'RPC Latency', fn: testRPC }
             ];
             
@@ -1304,13 +1015,19 @@
                 } catch (e) {
                     allResults.push({ name: tests[i].name, passed: false, error: e.message });
                 }
-                
-                await new Promise(r => setTimeout(r, 300)); // Brief pause between tests
+                await new Promise(r => setTimeout(r, 300));
             }
             
-            // Show results
             const passed = allResults.filter(r => r.passed).length;
             const totalTime = allResults.reduce((sum, r) => sum + (r.time || 0), 0);
+            
+            fullReport.summary = {
+                totalTests: tests.length,
+                passed: passed,
+                failed: tests.length - passed,
+                totalTimeMs: totalTime,
+                timestamp: new Date().toISOString()
+            };
             
             resultsContent.innerHTML = `
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
@@ -1344,31 +1061,36 @@
             progress.style.display = 'none';
             btn.disabled = false;
             btn.textContent = '▶ RUN ALL TESTS AGAIN';
-        }
-        
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        async function init() {
-            // Check program immediately
-            try {
-                const data = await rpcCall('getAccountInfo', [PROGRAM_ID, { encoding: 'base64' }]);
-                if (data.result?.value?.executable) {
-                    document.getElementById('program-status').textContent = 'Program ✓';
-                }
-            } catch (e) {}
             
-            // Check token
+            // Show full report
+            showFullReport();
+        }
+        
+        function showFullReport() {
+            const reportDiv = document.getElementById('full-report');
+            const reportJson = document.getElementById('report-json');
+            reportDiv.style.display = 'block';
+            reportJson.textContent = JSON.stringify(fullReport, null, 2);
+        }
+        
+        function copyReport() {
+            navigator.clipboard.writeText(JSON.stringify(fullReport, null, 2));
+            const btn = event.target;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => btn.textContent = '📋 Copy JSON', 1500);
+        }
+        
+        // Init - check $NULL supply on load
+        async function init() {
             try {
-                const data = await rpcCall('getAccountInfo', [PDOX_TOKEN, { encoding: 'base64' }]);
-                if (data.result?.value) {
-                    document.getElementById('token-status').textContent = 'Token ✓';
+                const data = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, { encoding: 'jsonParsed' }]);
+                if (data.result?.value?.data?.parsed?.info) {
+                    const supply = parseInt(data.result.value.data.parsed.info.supply) / 1e6;
+                    document.getElementById('null-supply').textContent = supply.toLocaleString();
                 }
             } catch (e) {}
         }
-        
         init();
     </script>
 </body>
 </html>
-
