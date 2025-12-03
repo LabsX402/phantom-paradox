@@ -1,0 +1,5589 @@
+﻿{
+  "address": "8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x",
+  "metadata": {
+    "name": "phantomgrid_gaming",
+    "version": "2.0.0",
+    "spec": "0.1.0",
+    "description": "PHANTOMGRID Gaming v2.0 - HyperScale Edition | Zero-Rent Compression Engine for Enterprise Gaming Marketplaces",
+    "repository": "https://github.com/phantomgrid/gaming"
+  },
+  "instructions": [
+    {
+      "name": "activate_listing",
+      "docs": [
+        "Activate a pending listing.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidListingStatus` if listing is not Pending status",
+        "- `PgError::InvalidTime` if current time is before `start_time`"
+      ],
+      "discriminator": [
+        186,
+        120,
+        180,
+        124,
+        2,
+        197,
+        186,
+        231
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "batch_close_listings",
+      "discriminator": [
+        183,
+        232,
+        17,
+        190,
+        121,
+        30,
+        64,
+        230
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "game"
+          ]
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "buy_fixed",
+      "docs": [
+        "Execute a fixed-price purchase.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidListingStatus` if listing is not Active",
+        "- `PgError::InvalidListingKind` if listing is not Fixed",
+        "- `PgError::InsufficientQuantity` if requested quantity exceeds available",
+        "- `PgError::InsufficientCredits` if buyer doesn't have enough credits",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        204,
+        223,
+        21,
+        126,
+        236,
+        177,
+        34,
+        114
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "buyer_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "buyer_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.seller",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_mint"
+        },
+        {
+          "name": "escrow_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyer_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "buyer_signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "item_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "royalty_recipient_ledger",
+          "docs": [
+            "CRITICAL: Runtime check in handler prevents `init_if_needed` from creating account when `royalty_bps` == 0",
+            "This prevents griefing attacks where someone creates listings with `royalty_recipient` but no actual royalties"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.royalty_recipient",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyer_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "quantity",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "cancel_listing",
+      "docs": [
+        "Cancel an active listing.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidListingStatus` if listing is not Active or `PartiallyFilled`",
+        "- `PgError::Unauthorized` if caller is not the seller",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        41,
+        183,
+        50,
+        232,
+        230,
+        233,
+        157,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "seller_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.seller",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_mint"
+        },
+        {
+          "name": "escrow_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "listing.seller",
+                "account": "Listing"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "item_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_bid_refund",
+      "docs": [
+        "Close an empty player ledger and reclaim rent",
+        "Only the ledger owner can close",
+        "Claim refund for a losing bid (when outbid or auction cancelled).",
+        "",
+        "# Errors",
+        "- `PgError::Unauthorized` if bidder is not the caller",
+        "- `PgError::InvalidAmount` if no locked funds to refund"
+      ],
+      "discriminator": [
+        55,
+        68,
+        245,
+        163,
+        214,
+        74,
+        230,
+        147
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "arg",
+                "path": "listing_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "listing_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close_listing",
+      "docs": [
+        "Close a settled or cancelled listing and reclaim rent",
+        "Only seller, game owner, or governance can close",
+        "Close a listing account to reclaim rent.",
+        "",
+        "# Errors",
+        "- `PgError::Unauthorized` if listing.game doesn't match game key",
+        "- `PgError::InvalidAmount` if listing is not Settled or Cancelled, or `quantity_remaining` != 0",
+        "- `PgError::Unauthorized` if caller is not game owner or governance"
+      ],
+      "discriminator": [
+        33,
+        15,
+        192,
+        81,
+        78,
+        175,
+        159,
+        97
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.listing_id",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "caller",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_player_ledger",
+      "docs": [
+        "Close a player ledger account to reclaim rent.",
+        "",
+        "# Errors",
+        "- `PgError::Unauthorized` if ledger.authority doesn't match `player_signer`",
+        "- `PgError::InvalidAmount` if available or locked credits are not 0"
+      ],
+      "discriminator": [
+        21,
+        143,
+        200,
+        182,
+        27,
+        22,
+        75,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "player_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_game",
+      "docs": [
+        "Create a new game configuration.",
+        "",
+        "# Errors",
+        "- `PgError::ListingsPaused` if new listings are paused globally",
+        "- `PgError::FeeTooHigh` if `fee_bps` exceeds `MAX_GAME_FEE_BPS`",
+        "- `PgError::CancelPenaltyTooHigh` if `cancel_penalty_bps` exceeds `MAX_CANCEL_PENALTY_BPS`"
+      ],
+      "discriminator": [
+        124,
+        69,
+        75,
+        66,
+        184,
+        220,
+        72,
+        206
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "game_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "game_owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "game_id",
+          "type": "u64"
+        },
+        {
+          "name": "currency_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "cancel_penalty_bps",
+          "type": "u16"
+        },
+        {
+          "name": "kyc_required",
+          "type": "bool"
+        },
+        {
+          "name": "use_token_2022",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "create_listing",
+      "docs": [
+        "Create a new listing.",
+        "",
+        "# Errors",
+        "- `PgError::ListingsPaused` if listings are paused",
+        "- `PgError::InvalidAmount` if `quantity_total` is 0 or exceeds `MAX_BULK_QTY`",
+        "- `PgError::InvalidTime` if duration exceeds `MAX_LISTING_DURATION_SECS`",
+        "- `PgError::FeeTooHigh` if total fees (royalty + game + protocol) exceed 100%",
+        "- `PgError::InvalidAmount` if `royalty_bps` > 0 but `royalty_recipient` is default"
+      ],
+      "discriminator": [
+        18,
+        168,
+        45,
+        24,
+        191,
+        31,
+        117,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "seller_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "arg",
+                "path": "listing_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_mint"
+        },
+        {
+          "name": "seller_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller_signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "item_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "listing_id",
+          "type": "u64"
+        },
+        {
+          "name": "kind",
+          "type": {
+            "defined": {
+              "name": "ListingKind"
+            }
+          }
+        },
+        {
+          "name": "quantity_total",
+          "type": "u64"
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        },
+        {
+          "name": "start_price",
+          "type": "u64"
+        },
+        {
+          "name": "reserve_price",
+          "type": "u64"
+        },
+        {
+          "name": "buy_now_price",
+          "type": "u64"
+        },
+        {
+          "name": "dutch_min_price",
+          "type": "u64"
+        },
+        {
+          "name": "royalty_recipient",
+          "type": "pubkey"
+        },
+        {
+          "name": "royalty_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "deposit_credits",
+      "docs": [
+        "Deposit credits into player ledger.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidAmount` if amount is 0",
+        "- `PgError::CurrencyMintMismatch` if `currency_mint` doesn't match game config",
+        "- `PgError::ListingsPaused` if listings are paused",
+        "- `PgError::KycRequired` if game requires KYC and player is not verified",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        198,
+        126,
+        222,
+        119,
+        169,
+        20,
+        127,
+        224
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "player_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "player_signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "currency_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "game_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "currency_mint"
+        },
+        {
+          "name": "player_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "finalize_auction_settlement",
+      "docs": [
+        "Finalize auction settlement (server-authority + winner co-sign).",
+        "",
+        "# Errors",
+        "- `PgError::InvalidListingStatus` if listing is not Active or `PartiallyFilled`",
+        "- `PgError::InvalidListingKind` if listing is not an auction type",
+        "- `PgError::InvalidAmount` if `clearing_price` < `min_expected_price` or quantity > `max_quantity`",
+        "- `PgError::InsufficientQuantity` if quantity exceeds available",
+        "- `PgError::InsufficientCredits` if winner doesn't have enough credits",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        135,
+        61,
+        79,
+        227,
+        252,
+        93,
+        229,
+        157
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "winner_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "winner_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.seller",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_mint"
+        },
+        {
+          "name": "escrow_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "winner_item_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "winner_signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "item_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "royalty_recipient_ledger",
+          "docs": [
+            "CRITICAL: Runtime check in handler prevents `init_if_needed` from creating account when `royalty_bps` == 0",
+            "This prevents griefing attacks where someone creates listings with `royalty_recipient` but no actual royalties"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "listing.royalty_recipient",
+                "account": "Listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "winner_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "server_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "quantity",
+          "type": "u64"
+        },
+        {
+          "name": "clearing_price",
+          "type": "u64"
+        },
+        {
+          "name": "min_expected_price",
+          "type": "u64"
+        },
+        {
+          "name": "max_quantity",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "init_config",
+      "docs": [
+        "Initialize the global configuration for the `PhantomGrid` Gaming protocol.",
+        "",
+        "# Errors",
+        "- `PgError::FeeTooHigh` if `protocol_fee_bps` exceeds `MAX_PROTOCOL_FEE_BPS`"
+      ],
+      "discriminator": [
+        23,
+        235,
+        115,
+        232,
+        168,
+        96,
+        1,
+        231
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "governance",
+          "type": "pubkey"
+        },
+        {
+          "name": "server_authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "protocol_fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "init_net_engine",
+      "docs": [
+        "Initialize net engine - sets up engine authority and signer"
+      ],
+      "discriminator": [
+        204,
+        235,
+        195,
+        151,
+        124,
+        253,
+        194,
+        200
+      ],
+      "accounts": [
+        {
+          "name": "engine",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  101,
+                  116,
+                  95,
+                  101,
+                  110,
+                  103,
+                  105,
+                  110,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "engine_signer"
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Authority (multisig/admin)"
+          ],
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_params",
+          "type": {
+            "defined": {
+              "name": "InitNetEngineParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "place_bid",
+      "docs": [
+        "Place a bid on an active auction.",
+        "",
+        "Automatically refunds the previous highest bidder if the new bid is higher.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidListingStatus` if listing is not Active",
+        "- `PgError::InvalidListingKind` if listing is not an auction type",
+        "- `PgError::InvalidAmount` if bid amount is too low",
+        "- `PgError::InsufficientCredits` if bidder doesn't have enough credits",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        238,
+        77,
+        148,
+        91,
+        200,
+        151,
+        92,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "bidder_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "previous_bidder_ledger",
+          "docs": [
+            "If listing has a previous highest bidder, this must match that bidder",
+            "If no previous bidder, this can be any account (will be ignored)"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "previous_bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "previous_bidder",
+          "docs": [
+            "If listing has a previous highest bidder, this must match",
+            "If no previous bidder, this can be any pubkey (will be ignored)"
+          ]
+        },
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bid_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "register_session_key",
+      "docs": [
+        "Register session key - enables off-chain intent signing"
+      ],
+      "discriminator": [
+        69,
+        94,
+        60,
+        44,
+        49,
+        199,
+        183,
+        233
+      ],
+      "accounts": [
+        {
+          "name": "engine",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  101,
+                  116,
+                  95,
+                  101,
+                  110,
+                  103,
+                  105,
+                  110,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "session_key",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  115,
+                  115,
+                  105,
+                  111,
+                  110,
+                  95,
+                  107,
+                  101,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "session"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "docs": [
+            "Player main wallet"
+          ],
+          "signer": true
+        },
+        {
+          "name": "session"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "max_volume_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "expires_at",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "set_player_kyc",
+      "docs": [
+        "Set or update player KYC status.",
+        "",
+        "# Errors",
+        "- `PgError::Unauthorized` if caller is not the KYC provider or game owner",
+        "",
+        "# Note",
+        "In v1, `governance` acts as the centralized KYC oracle/provider."
+      ],
+      "discriminator": [
+        202,
+        253,
+        128,
+        176,
+        183,
+        38,
+        202,
+        147
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "governance",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "player_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "player_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "kyc_verified",
+          "type": "bool"
+        },
+        {
+          "name": "kyc_provider",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "kyc_proof_hash",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "settle_net_batch",
+      "docs": [
+        "Settle net batch - applies final state changes from off-chain netting engine",
+        "",
+        "Generic interface: accepts batch_id, batch_hash, final item owners, and net cash deltas.",
+        "All netting logic is off-chain. This just applies the final outcomes safely."
+      ],
+      "discriminator": [
+        191,
+        105,
+        4,
+        22,
+        61,
+        119,
+        77,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "batch_id",
+          "type": "u64"
+        },
+        {
+          "name": "batch_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "items",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "SettledItemData"
+              }
+            }
+          }
+        },
+        {
+          "name": "cash_deltas",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "NetDeltaData"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "settle_state_root",
+      "docs": [
+        "Settle state root - compressed Merkle root settlement for netting batches",
+        "",
+        "âš ï¸ CRITICAL: This instruction is AUDIT-ONLY and does NOT perform state changes.",
+        "",
+        "This instruction:",
+        "- Stores the Merkle root + metadata in GlobalConfig (for audit trail)",
+        "- Emits StateRootSettled event (for indexing)",
+        "- Does NOT transfer items or update balances",
+        "- Does NOT validate that the root matches actual state",
+        "",
+        "**TRUST MODEL**: This is a TRUSTED OPERATOR model.",
+        "- The off-chain engine computes the root",
+        "- Users cannot independently verify inclusion from chain alone",
+        "- For actual state changes, use `settle_net_batch` instruction",
+        "",
+        "**SECURITY**: The root is NOT validated on-chain. It is stored for:",
+        "- Audit trail (indexers can verify against DA layer data via da_hash)",
+        "- Event emission (for shadow indexer to sync ownership)",
+        "- NOT for direct state changes (items/balances are NOT updated here)",
+        "",
+        "This instruction reuses `last_net_batch_id` to ensure strict ordering",
+        "between `settle_net_batch` (linear settlement) and `settle_state_root` (compressed).",
+        "This prevents Batch 100 from being processed before Batch 99, regardless of method.",
+        "",
+        "# Errors",
+        "- `PgError::SettlementsPaused` if settlements are paused",
+        "- `PgError::Unauthorized` if authority doesn't match server_authority",
+        "- `PgError::InvalidBatchId` if batch_id is not monotonic"
+      ],
+      "discriminator": [
+        92,
+        231,
+        55,
+        86,
+        236,
+        158,
+        89,
+        40
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "batch_id",
+          "type": "u64"
+        },
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "da_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "num_intents",
+          "type": "u64"
+        },
+        {
+          "name": "num_items",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "submit_net_window",
+      "docs": [
+        "Submit net window - commits a netting window with root hash",
+        "",
+        "Generic interface: accepts window_id, root hash, and aggregates.",
+        "All netting logic is off-chain. This just stores the result."
+      ],
+      "discriminator": [
+        160,
+        105,
+        47,
+        175,
+        246,
+        109,
+        16,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "engine",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  101,
+                  116,
+                  95,
+                  101,
+                  110,
+                  103,
+                  105,
+                  110,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "window",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  101,
+                  116,
+                  95,
+                  119,
+                  105,
+                  110,
+                  100,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "window_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "engine_signer",
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "window_id",
+          "type": "u64"
+        },
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "trade_count",
+          "type": "u64"
+        },
+        {
+          "name": "volume_lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_config",
+      "docs": [
+        "Update the global configuration for the `PhantomGrid` Gaming protocol.",
+        "",
+        "# Errors",
+        "- `PgError::FeeTooHigh` if `new_protocol_fee_bps` exceeds `MAX_PROTOCOL_FEE_BPS` or",
+        "if the fee would cause total fees (protocol + max game + max royalty) to exceed 100%",
+        "- `PgError::Unauthorized` if attempting to change treasury wallet without proper authorization",
+        "",
+        "# Note",
+        "Although the context accepts `governance` signer, the logic allows either governance",
+        "or admin (from config) to authorize treasury updates. In v1, governance is primary."
+      ],
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "governance",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ConfigUpdateParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_game",
+      "docs": [
+        "Update game configuration.",
+        "",
+        "# Errors",
+        "- `PgError::Unauthorized` if caller is not game owner, governance, or admin",
+        "- `PgError::FeeTooHigh` if `new_fee_bps` exceeds `MAX_GAME_FEE_BPS` or would cause total fees to exceed 100%",
+        "- `PgError::CancelPenaltyTooHigh` if `new_cancel_penalty_bps` exceeds `MAX_CANCEL_PENALTY_BPS`",
+        "- `PgError::Unauthorized` if attempting to change `currency_mint` (not allowed in v1)"
+      ],
+      "discriminator": [
+        159,
+        61,
+        132,
+        131,
+        3,
+        234,
+        209,
+        220
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "GameUpdateParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw_credits",
+      "docs": [
+        "Withdraw credits from player ledger.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidAmount` if amount is 0",
+        "- `PgError::InsufficientCredits` if player doesn't have enough available credits",
+        "- `PgError::ListingsPaused` if listings are paused",
+        "- `PgError::Overflow` on arithmetic overflow"
+      ],
+      "discriminator": [
+        128,
+        239,
+        193,
+        140,
+        226,
+        165,
+        44,
+        67
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  101,
+                  100,
+                  103,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "player_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "relations": [
+            "player_ledger"
+          ]
+        },
+        {
+          "name": "player_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "player_signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "currency_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "game_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "currency_mint"
+        },
+        {
+          "name": "player_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_game_fees",
+      "docs": [
+        "Withdraw accumulated game fees to the game owner wallet",
+        "Only game owner can call this",
+        "Withdraw accumulated game fees.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidAmount` if amount is 0",
+        "- `PgError::Unauthorized` if caller is not game payout wallet",
+        "- `PgError::InsufficientCredits` if accumulated fees are less than amount"
+      ],
+      "discriminator": [
+        246,
+        68,
+        250,
+        184,
+        240,
+        255,
+        80,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "game"
+          ]
+        },
+        {
+          "name": "game_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "currency_mint"
+        },
+        {
+          "name": "game_owner_wallet",
+          "docs": [
+            "CRITICAL: Must match `game.payout_wallet` to prevent fat-finger errors"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_protocol_fees",
+      "docs": [
+        "Withdraw accumulated protocol fees to the treasury",
+        "Only governance can call this",
+        "Withdraw accumulated protocol fees.",
+        "",
+        "# Errors",
+        "- `PgError::InvalidAmount` if amount is 0",
+        "- `PgError::Unauthorized` if caller is not protocol treasury",
+        "- `PgError::InsufficientCredits` if accumulated fees are less than amount"
+      ],
+      "discriminator": [
+        11,
+        68,
+        165,
+        98,
+        18,
+        208,
+        134,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "governance",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "game_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "currency_mint"
+        },
+        {
+          "name": "treasury",
+          "docs": [
+            "CRITICAL: Must match `config.protocol_treasury` to prevent fat-finger errors"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GameConfig",
+      "discriminator": [
+        45,
+        146,
+        146,
+        33,
+        170,
+        69,
+        96,
+        133
+      ]
+    },
+    {
+      "name": "GlobalConfig",
+      "discriminator": [
+        149,
+        8,
+        156,
+        202,
+        160,
+        252,
+        176,
+        217
+      ]
+    },
+    {
+      "name": "Listing",
+      "discriminator": [
+        218,
+        32,
+        50,
+        73,
+        43,
+        134,
+        26,
+        58
+      ]
+    },
+    {
+      "name": "NetEngineConfig",
+      "discriminator": [
+        81,
+        171,
+        156,
+        139,
+        13,
+        62,
+        247,
+        101
+      ]
+    },
+    {
+      "name": "NetWindow",
+      "discriminator": [
+        9,
+        35,
+        110,
+        131,
+        126,
+        107,
+        80,
+        134
+      ]
+    },
+    {
+      "name": "PlayerLedger",
+      "discriminator": [
+        216,
+        224,
+        218,
+        1,
+        67,
+        118,
+        105,
+        213
+      ]
+    },
+    {
+      "name": "SessionKey",
+      "discriminator": [
+        93,
+        186,
+        163,
+        139,
+        160,
+        255,
+        81,
+        112
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminAuctionCancelled",
+      "discriminator": [
+        248,
+        184,
+        27,
+        117,
+        255,
+        95,
+        93,
+        214
+      ]
+    },
+    {
+      "name": "AuctionSeized",
+      "discriminator": [
+        194,
+        17,
+        194,
+        202,
+        68,
+        200,
+        198,
+        109
+      ]
+    },
+    {
+      "name": "AuctionSettled",
+      "discriminator": [
+        61,
+        151,
+        131,
+        170,
+        95,
+        203,
+        219,
+        147
+      ]
+    },
+    {
+      "name": "AuctionTreeInitialized",
+      "discriminator": [
+        135,
+        48,
+        225,
+        250,
+        222,
+        42,
+        4,
+        85
+      ]
+    },
+    {
+      "name": "AuctionsRootCommitted",
+      "discriminator": [
+        29,
+        69,
+        1,
+        168,
+        203,
+        206,
+        102,
+        133
+      ]
+    },
+    {
+      "name": "BidPlaced",
+      "discriminator": [
+        135,
+        53,
+        176,
+        83,
+        193,
+        69,
+        108,
+        61
+      ]
+    },
+    {
+      "name": "BidRefunded",
+      "discriminator": [
+        197,
+        100,
+        31,
+        186,
+        67,
+        28,
+        46,
+        103
+      ]
+    },
+    {
+      "name": "CompressedAuctionSettled",
+      "discriminator": [
+        202,
+        1,
+        196,
+        205,
+        159,
+        140,
+        102,
+        189
+      ]
+    },
+    {
+      "name": "ConfigInitialized",
+      "discriminator": [
+        181,
+        49,
+        200,
+        156,
+        19,
+        167,
+        178,
+        91
+      ]
+    },
+    {
+      "name": "ConfigUpdated",
+      "discriminator": [
+        40,
+        241,
+        230,
+        122,
+        11,
+        19,
+        198,
+        194
+      ]
+    },
+    {
+      "name": "CreditsDeposited",
+      "discriminator": [
+        126,
+        93,
+        137,
+        123,
+        137,
+        226,
+        32,
+        75
+      ]
+    },
+    {
+      "name": "CreditsWithdrawn",
+      "discriminator": [
+        183,
+        95,
+        31,
+        250,
+        78,
+        31,
+        234,
+        144
+      ]
+    },
+    {
+      "name": "FixedSaleExecuted",
+      "discriminator": [
+        248,
+        214,
+        116,
+        27,
+        5,
+        112,
+        150,
+        26
+      ]
+    },
+    {
+      "name": "GameCreated",
+      "discriminator": [
+        218,
+        25,
+        150,
+        94,
+        177,
+        112,
+        96,
+        2
+      ]
+    },
+    {
+      "name": "GameFeesWithdrawn",
+      "discriminator": [
+        7,
+        226,
+        246,
+        14,
+        68,
+        100,
+        225,
+        82
+      ]
+    },
+    {
+      "name": "GameUpdated",
+      "discriminator": [
+        100,
+        97,
+        130,
+        101,
+        84,
+        101,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "KycUpdated",
+      "discriminator": [
+        93,
+        95,
+        129,
+        3,
+        177,
+        236,
+        12,
+        233
+      ]
+    },
+    {
+      "name": "ListingActivated",
+      "discriminator": [
+        193,
+        149,
+        103,
+        110,
+        126,
+        80,
+        138,
+        110
+      ]
+    },
+    {
+      "name": "ListingCancelled",
+      "discriminator": [
+        11,
+        46,
+        163,
+        10,
+        103,
+        80,
+        139,
+        194
+      ]
+    },
+    {
+      "name": "ListingCreated",
+      "discriminator": [
+        94,
+        164,
+        167,
+        255,
+        246,
+        186,
+        12,
+        96
+      ]
+    },
+    {
+      "name": "NetBatchSettled",
+      "discriminator": [
+        234,
+        155,
+        138,
+        60,
+        142,
+        199,
+        240,
+        125
+      ]
+    },
+    {
+      "name": "NetWindowSubmitted",
+      "discriminator": [
+        236,
+        82,
+        139,
+        55,
+        57,
+        102,
+        144,
+        218
+      ]
+    },
+    {
+      "name": "PartialFill",
+      "discriminator": [
+        181,
+        186,
+        160,
+        113,
+        129,
+        138,
+        22,
+        181
+      ]
+    },
+    {
+      "name": "ProtocolFeesWithdrawn",
+      "discriminator": [
+        202,
+        213,
+        134,
+        216,
+        108,
+        14,
+        84,
+        99
+      ]
+    },
+    {
+      "name": "RoyaltyPaid",
+      "discriminator": [
+        55,
+        169,
+        210,
+        17,
+        117,
+        180,
+        17,
+        74
+      ]
+    },
+    {
+      "name": "SessionKeyInitialized",
+      "discriminator": [
+        151,
+        202,
+        42,
+        44,
+        176,
+        233,
+        195,
+        226
+      ]
+    },
+    {
+      "name": "StateRootSettled",
+      "discriminator": [
+        187,
+        241,
+        31,
+        39,
+        237,
+        226,
+        152,
+        4
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "name": "Overflow",
+      "msg": "Math overflow"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidTime",
+      "msg": "Invalid time window"
+    },
+    {
+      "code": 6004,
+      "name": "ListingsPaused",
+      "msg": "Listings paused"
+    },
+    {
+      "code": 6005,
+      "name": "SettlementsPaused",
+      "msg": "Settlements paused"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidListingStatus",
+      "msg": "Invalid listing status"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidListingKind",
+      "msg": "Invalid listing kind"
+    },
+    {
+      "code": 6008,
+      "name": "InsufficientCredits",
+      "msg": "Insufficient credits"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientQuantity",
+      "msg": "Insufficient quantity"
+    },
+    {
+      "code": 6010,
+      "name": "FeeTooHigh",
+      "msg": "Fee too high"
+    },
+    {
+      "code": 6011,
+      "name": "CancelPenaltyTooHigh",
+      "msg": "Cancel penalty too high"
+    },
+    {
+      "code": 6012,
+      "name": "KycRequired",
+      "msg": "KYC required"
+    },
+    {
+      "code": 6013,
+      "name": "CurrencyMintMismatch",
+      "msg": "Currency mint mismatch"
+    },
+    {
+      "code": 6014,
+      "name": "ItemMintMismatch",
+      "msg": "Item mint mismatch"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidMerkleProof",
+      "msg": "Invalid Merkle proof"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidMetaTxSignature",
+      "msg": "Invalid meta-transaction signature"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidRoyalty",
+      "msg": "Invalid royalty configuration"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidDataHash",
+      "msg": "Invalid compressed data hash"
+    },
+    {
+      "code": 6019,
+      "name": "ListingNotSettled",
+      "msg": "Listing must be settled or cancelled with zero remaining quantity"
+    },
+    {
+      "code": 6020,
+      "name": "FeatureNotEnabled",
+      "msg": "Feature not enabled"
+    },
+    {
+      "code": 6021,
+      "name": "ReentrancyDetected",
+      "msg": "Reentrancy detected"
+    },
+    {
+      "code": 6022,
+      "name": "AuctionTreeNotInitialized",
+      "msg": "Auction tree not initialized"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidBatchId",
+      "msg": "Invalid batch ID"
+    },
+    {
+      "code": 6024,
+      "name": "RootMismatch",
+      "msg": "Root mismatch - Merkle proof verification failed"
+    },
+    {
+      "code": 6025,
+      "name": "AuctionNotFound",
+      "msg": "Auction not found in batch"
+    },
+    {
+      "code": 6026,
+      "name": "AuctionAlreadyFinalized",
+      "msg": "Auction already settled or cancelled"
+    },
+    {
+      "code": 6027,
+      "name": "AuctionNotSeizable",
+      "msg": "Auction not in seiz-able state"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidLeafIndex",
+      "msg": "Invalid leaf index"
+    },
+    {
+      "code": 6029,
+      "name": "BatchSizeExceeded",
+      "msg": "Batch size exceeds maximum"
+    },
+    {
+      "code": 6030,
+      "name": "AdminAuthorityRequired",
+      "msg": "Admin authority required"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidWindow",
+      "msg": "Invalid window ID"
+    },
+    {
+      "code": 6032,
+      "name": "NetVolumeTooHigh",
+      "msg": "Net volume exceeds maximum"
+    },
+    {
+      "code": 6033,
+      "name": "NetTradeCountTooHigh",
+      "msg": "Net trade count exceeds maximum"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminAuctionCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "auction_id",
+            "type": "u64"
+          },
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "cancelled_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason_code",
+            "type": "u8"
+          },
+          {
+            "name": "refund_destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "cancelled_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuctionSeized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "auction_id",
+            "type": "u64"
+          },
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "seized_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason_code",
+            "type": "u8"
+          },
+          {
+            "name": "seized_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuctionSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "clearing_price",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "game_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuctionTreeInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "tree_config",
+            "type": "pubkey"
+          },
+          {
+            "name": "merkle_tree",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_depth",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuctionsRootCommitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "auction_count",
+            "type": "u32"
+          },
+          {
+            "name": "start_leaf_index",
+            "type": "u64"
+          },
+          {
+            "name": "end_leaf_index",
+            "type": "u64"
+          },
+          {
+            "name": "committed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "committed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidPlaced",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "bid_amount",
+            "type": "u64"
+          },
+          {
+            "name": "previous_highest_bid",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidRefunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompressedAuctionSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "auction_id",
+            "type": "u64"
+          },
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "leaf_index",
+            "type": "u64"
+          },
+          {
+            "name": "settled_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "governance",
+            "type": "pubkey"
+          },
+          {
+            "name": "server_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdateParams",
+      "docs": [
+        "Configuration update parameters for `update_config` instruction.",
+        "This struct reduces the argument count and improves API ergonomics."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "new_governance",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "new_server",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "new_protocol_fee_bps",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "paused_new",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "paused_settlements",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "new_features",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "new_protocol_treasury",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "governance",
+            "type": "pubkey"
+          },
+          {
+            "name": "server_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreditsDeposited",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreditsWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FixedSaleExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "price_total",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "game_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "currency_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "cancel_penalty_bps",
+            "type": "u16"
+          },
+          {
+            "name": "kyc_required",
+            "type": "bool"
+          },
+          {
+            "name": "use_token_2022",
+            "type": "bool"
+          },
+          {
+            "name": "paused_new",
+            "type": "bool"
+          },
+          {
+            "name": "paused_settlements",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "accumulated_game_fees",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fees_accumulated",
+            "type": "u64"
+          },
+          {
+            "name": "payout_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "in_execution",
+            "type": "bool"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                23
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "game_id",
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "currency_mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameFeesWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "payout_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameUpdateParams",
+      "docs": [
+        "Game update parameters for `update_game` instruction.",
+        "This struct reduces the argument count and improves API ergonomics."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_currency_mint",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "new_fee_bps",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "new_cancel_penalty_bps",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "kyc_required",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "use_token_2022",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "paused_new",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "paused_settlements",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "new_payout_wallet",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "updated_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "governance",
+            "type": "pubkey"
+          },
+          {
+            "name": "server_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "paused_new",
+            "type": "bool"
+          },
+          {
+            "name": "paused_settlements",
+            "type": "bool"
+          },
+          {
+            "name": "version",
+            "type": "u32"
+          },
+          {
+            "name": "features",
+            "type": "u64"
+          },
+          {
+            "name": "accumulated_fees",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "last_net_batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "last_state_root",
+            "docs": [
+              "Last settled Merkle root for compressed settlement"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "last_state_num_intents",
+            "docs": [
+              "Number of intents in the last settled batch"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_state_num_items",
+            "docs": [
+              "Number of items in the last settled batch"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_state_timestamp",
+            "docs": [
+              "Timestamp when the last state root was settled"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitNetEngineParams",
+      "docs": [
+        "Parameters for init_net_engine (kept opaque for future extensibility)"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "KycUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          },
+          {
+            "name": "provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Listing",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "listing_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "ListingKind"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "ListingStatus"
+              }
+            }
+          },
+          {
+            "name": "currency_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "item_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity_total",
+            "type": "u64"
+          },
+          {
+            "name": "quantity_remaining",
+            "type": "u64"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          },
+          {
+            "name": "start_price",
+            "type": "u64"
+          },
+          {
+            "name": "reserve_price",
+            "type": "u64"
+          },
+          {
+            "name": "buy_now_price",
+            "type": "u64"
+          },
+          {
+            "name": "dutch_min_price",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "has_interest",
+            "type": "bool"
+          },
+          {
+            "name": "royalty_recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "royalty_bps",
+            "type": "u16"
+          },
+          {
+            "name": "highest_bid",
+            "type": "u64"
+          },
+          {
+            "name": "highest_bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "reserved_u16",
+            "type": "u16"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingActivated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "penalty_charged",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "listing_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "ListingKind"
+              }
+            }
+          },
+          {
+            "name": "quantity_total",
+            "type": "u64"
+          },
+          {
+            "name": "start_price",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Fixed"
+          },
+          {
+            "name": "EnglishAuction"
+          },
+          {
+            "name": "DutchAuction"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "PartiallyFilled"
+          },
+          {
+            "name": "Settled"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetBatchSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "num_items",
+            "type": "u32"
+          },
+          {
+            "name": "num_wallets",
+            "type": "u32"
+          },
+          {
+            "name": "batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "settled_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetDeltaData",
+      "docs": [
+        "Net delta data - net cash movement per wallet"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Wallet public key"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "delta_lamports",
+            "docs": [
+              "Net delta in lamports (can be positive or negative)"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetEngineConfig",
+      "docs": [
+        "Net engine configuration - controls who can submit net windows"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "Authority that controls engine parameters (multisig/admin)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "engine_signer",
+            "docs": [
+              "Engine signer - PDA or dedicated engine wallet (off-chain daemon)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "last_window_id",
+            "docs": [
+              "Monotonic window counter to prevent replay"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA derivation"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved for future use"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetWindow",
+      "docs": [
+        "Net window - represents a single netting window with committed root"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "window_id",
+            "docs": [
+              "Unique window identifier per engine"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "engine",
+            "docs": [
+              "Net engine this window belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "start_ts",
+            "docs": [
+              "Window start timestamp"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "end_ts",
+            "docs": [
+              "Window end timestamp"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "committed_root",
+            "docs": [
+              "Committed root - merkle/transcript root from off-chain engine"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "trade_count",
+            "docs": [
+              "Number of trades folded into this window"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "volume_lamports",
+            "docs": [
+              "Total volume in lamports, for invariants/analytics"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settled",
+            "docs": [
+              "Whether this window has been settled"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA derivation"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved for future use"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetWindowSubmitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "window_id",
+            "type": "u64"
+          },
+          {
+            "name": "engine",
+            "type": "pubkey"
+          },
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "trade_count",
+            "type": "u64"
+          },
+          {
+            "name": "volume_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "submitted_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PartialFill",
+      "docs": [
+        "Partial fill event - emitted when a listing is partially filled but not fully settled",
+        "",
+        "Indexers should track listing state using:",
+        "- `Listing.status` (Pending, Active, `PartiallyFilled`, Settled, Cancelled)",
+        "- `PartialFill` events (for partial fills)",
+        "- `FixedSaleExecuted` / `AuctionSettled` events (for completed trades)",
+        "",
+        "You don't need to replay all transactions - just follow events keyed by listing Pubkey."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity_filled",
+            "type": "u64"
+          },
+          {
+            "name": "quantity_remaining",
+            "type": "u64"
+          },
+          {
+            "name": "price_total",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayerLedger",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "available",
+            "type": "u64"
+          },
+          {
+            "name": "locked",
+            "type": "u64"
+          },
+          {
+            "name": "kyc_verified",
+            "type": "bool"
+          },
+          {
+            "name": "kyc_provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "kyc_verified_at",
+            "type": "i64"
+          },
+          {
+            "name": "kyc_proof_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolFeesWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoyaltyPaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SessionKey",
+      "docs": [
+        "Session Key account - enables off-chain intent signing with on-chain constraints"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Owner's public key (the player who owns this session key)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "session_key",
+            "docs": [
+              "Session key's public key (the key used to sign intents)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "engine",
+            "docs": [
+              "Net engine this session key belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "max_volume_lamports",
+            "docs": [
+              "Maximum volume in lamports this session key can spend"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "used_volume_lamports",
+            "docs": [
+              "Current used volume in lamports during session"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expires_at",
+            "docs": [
+              "Unix timestamp when this session key expires"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "frozen",
+            "docs": [
+              "Whether this session key is frozen (engine or user can freeze if suspicious)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA derivation"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved for future use"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SessionKeyInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "session_key",
+            "type": "pubkey"
+          },
+          {
+            "name": "engine",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_volume_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SettledItemData",
+      "docs": [
+        "Settled item data - final ownership after netting"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "item_id",
+            "docs": [
+              "Item identifier (can be listing_id or item_id depending on system)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "final_owner",
+            "docs": [
+              "Final owner after netting"
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StateRootSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch_id",
+            "type": "u64"
+          },
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "da_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "num_intents",
+            "type": "u64"
+          },
+          {
+            "name": "num_items",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}

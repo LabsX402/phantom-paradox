@@ -1,0 +1,166 @@
+# =============================================
+# PhantomGrid Wraith Testnet - Public Repo
+# =============================================
+
+# ========== BACKUP / EMBEDDED REPOS ==========
+.git_backup/
+PUBLIC_REPO/
+meteora-invent/
+
+# ========== PRIVATE KEYS / WALLETS (CRITICAL) ==========
+*wallet*.json
+*keypair*.json
+*.pem
+*.key
+deployer_wallet.json
+deployer_wallet.backup.json
+server_authority_wallet.json
+test_wallets.json
+test_anon_wallets.json
+test_keypair.json
+DEPLOYMENT_WALLET_INFO.txt
+
+# ========== LOCAL TEST RESULTS / SENSITIVE DATA ==========
+ANON_PAYMENT_TEST_RESULT.json
+anon_infrastructure.json
+trading_workers.json
+PDOX_MINT_INFO.json
+PDOX_V3_MINT_INFO.json
+ORCA_POOL.json
+POOL_INFO.json
+*_RESULT.json
+*_REPORT.json
+*_INFO.json
+*_ERROR.json
+*_CONFIG.json
+LAUNCH_AUTOMATION_LOG.txt
+trading_bot.log
+trading_log.json
+
+# ========== DEPENDENCIES ==========
+node_modules/
+target/
+.anchor/
+
+# ========== BUILD ARTIFACTS ==========
+*.so
+*.wasm
+dist/
+build/
+
+# ========== ENVIRONMENT / SECRETS ==========
+.env
+.env.*
+.env.local
+.env.production
+
+# ========== LOGS ==========
+*.log
+logs/
+
+# ========== IDE ==========
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ========== OS ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========== LOCK FILES (optional - can include if you want) ==========
+# package-lock.json
+# Cargo.lock
+
+# ========== LOCAL SCRIPTS WITH SENSITIVE DATA ==========
+scripts/testing/anon_infra/
+offchain/deployer_wallet.json
+offchain/server_authority_wallet.json
+
+# ========== METEORA LOCAL TEST FILES ==========
+meteora-invent/studio/keypair.json
+meteora-invent/studio/mint-keypair.json
+meteora-invent/studio/src/tests/keys/
+
+# ========== SIMULATION LOCAL DATA ==========
+simulation/node_modules/
+
+# ========== SCRIPTS LOCAL DATA ==========
+scripts/tokenomics/node_modules/
+scripts/tokenomics/*_RESULT*.json
+scripts/tokenomics/*_results.json
+scripts/tokenomics/*_INFO.json
+scripts/tokenomics/*_ERROR.json
+scripts/tokenomics/*_CONFIG.json
+scripts/tokenomics/*_REPORT.json
+scripts/tokenomics/*_POOL*.json
+scripts/tokenomics/x_post_data.json
+scripts/tokenomics/LAUNCH_AUTOMATION_LOG.txt
+scripts/trading/node_modules/
+scripts/trading/*.log
+scripts/trading/*.json
+scripts/testing/node_modules/
+
+# ========== CONSOLIDATED POWERSHELL SCRIPTS WITH LOCAL PATHS ==========
+consolidate_sol.ps1
+consolidate_test_wallets.ps1
+exodus_consolidation.ps1
+recover_smurf.ps1
+sol_farm_fast.ps1
+sol_farm_vpn.ps1
+sol_smuggler.ps1
+sol_smurf.ps1
+
+# ========== VERCEL / SERVERLESS CONFIG (may contain secrets) ==========
+vercel.json
+serverless.yml
+
+# ========== PROPRIETARY IP (SECRET SAUCE) ==========
+# Netting core algorithms
+offchain/src/netting/poltergeist.ts
+offchain/src/netting/scheduler.ts
+offchain/src/netting/conflictResolver.ts
+offchain/src/netting/utopian-optimizations.ts
+offchain/src/netting/engine.ts
+offchain/src/netting/service.ts
+offchain/src/netting/demo.ts
+
+# Hydra rotating shard system
+offchain/src/hydra/
+
+# Tests that expose internal logic
+offchain/src/tests/paradox_chaos.ts
+offchain/src/tests/local_paradox_chaos.ts
+offchain/src/tests/meltdown_simulation.ts
+offchain/src/tests/virtual_universe.ts
+
+# Security hardening internals
+offchain/src/security/hardening.ts
+
+# Internal audit/analysis docs (too detailed)
+*AUDIT*.md
+*AUDIT*.txt
+*ANALYSIS*.md
+*ANALYSIS*.txt
+*SPECIFICATION*.md
+*SPECIFICATION*.txt
+*BLUEPRINT*.md
+*DEEP_DIVE*.md
+*_checklist*.txt
+STUBS_AND_PLACEHOLDERS.txt
+FOR_NEW_CHAT.md
+RULES.md
+SCRIPT_ISSUES_ANALYSIS.txt
+offchain/src/scripts/analysis/
+
+# Local automation scripts
+LAUNCH_AUTOMATION.ps1
+HOW_TO_RUN_LAUNCH_AUTOMATION.txt
+LAUNCH_AUTOMATION_DOCUMENTATION.md
+
+# Recovery scripts with wallet info
+SOL_RECOVERY_GUIDE.md
+SOL_RECOVERY_INFO.txt
+scripts/recover-sol.ps1

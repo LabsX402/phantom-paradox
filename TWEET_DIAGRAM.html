@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anonymous Transfer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d0d12;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'SF Pro Display', -apple-system, sans-serif;
+      padding: 30px;
+    }
+    .card {
+      background: linear-gradient(145deg, #13131a 0%, #1a1a24 100%);
+      border: 1px solid #2a2a3a;
+      border-radius: 20px;
+      padding: 40px 50px;
+      width: 800px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+    .title {
+      color: #fff;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 13px;
+    }
+    .flow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0;
+    }
+    .side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .side-label {
+      color: #888;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+    }
+    .wallet {
+      width: 70px;
+      height: 70px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .sender { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .receiver { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .wallet-name {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .arrow-down {
+      color: #444;
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    .pool {
+      width: 90px;
+      height: 60px;
+      background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
+      border: 1px solid #3a3a5a;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .pool-icon { font-size: 20px; }
+    .pool-name {
+      color: #aaa;
+      font-size: 9px;
+      margin-top: 2px;
+    }
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 30px;
+    }
+    .merkle-box {
+      background: linear-gradient(135deg, #7c3aed20, #a855f720);
+      border: 2px solid #7c3aed;
+      border-radius: 16px;
+      padding: 20px 30px;
+      text-align: center;
+      position: relative;
+    }
+    .merkle-icon {
+      font-size: 32px;
+      margin-bottom: 5px;
+    }
+    .merkle-label {
+      color: #a78bfa;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .merkle-sub {
+      color: #666;
+      font-size: 9px;
+      margin-top: 3px;
+    }
+    .no-link {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-top: 15px;
+      letter-spacing: 0.5px;
+    }
+    .arrows-h {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .arrow-h {
+      width: 50px;
+      height: 2px;
+      background: #444;
+      position: relative;
+    }
+    .arrow-h.left::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: -4px;
+      border: 5px solid transparent;
+      border-right-color: #444;
+    }
+    .arrow-h.right::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: -4px;
+      border: 5px solid transparent;
+      border-left-color: #444;
+    }
+    .x-mark {
+      color: #ef4444;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 1px solid #2a2a3a;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .stat-value.green { color: #22c55e; }
+    .stat-value.blue { color: #3b82f6; }
+    .stat-value.purple { color: #a78bfa; }
+    .stat-label {
+      color: #666;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      color: #444;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="title">🔐 Anonymous Transfer Protocol</div>
+      <div class="subtitle">Solana • Merkle + Keccak • Zero On-Chain Link</div>
+    </div>
+    
+    <div class="flow">
+      <div class="side">
+        <div class="side-label">Deposit Side</div>
+        <div class="wallet sender">💚</div>
+        <div class="wallet-name">Sender</div>
+        <div class="arrow-down">↓</div>
+        <div class="pool">
+          <div class="pool-icon">🏦</div>
+          <div class="pool-name">VAULT</div>
+        </div>
+      </div>
+      
+      <div class="center">
+        <div class="arrows-h">
+          <div class="arrow-h left"></div>
+          <div class="x-mark">✕</div>
+          <div class="arrow-h right"></div>
+        </div>
+        <div class="merkle-box">
+          <div class="merkle-icon">🌳</div>
+          <div class="merkle-label">MERKLE ROOT</div>
+          <div class="merkle-sub">Hashed • Hidden • Batched</div>
+        </div>
+        <div class="no-link">❌ NO DIRECT LINK</div>
+      </div>
+      
+      <div class="side">
+        <div class="side-label">Payout Side</div>
+        <div class="wallet receiver">💙</div>
+        <div class="wallet-name">Receiver</div>
+        <div class="arrow-down">↑</div>
+        <div class="pool">
+          <div class="pool-icon">🪞</div>
+          <div class="pool-name">BLACKMIRROR</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value green">~2s</div>
+        <div class="stat-label">SPEED</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value blue">$0.002</div>
+        <div class="stat-label">COST</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value purple">99.99%</div>
+        <div class="stat-label">ANONYMITY</div>
+      </div>
+    </div>
+    
+    <div class="footer">Vault & BlackMirror never touch • Different funding sources • Ghosts hide real TXs</div>
+  </div>
+</body>
+</html>
+

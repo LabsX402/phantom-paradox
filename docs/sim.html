@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDOX/SOL Live | Phantom Paradox</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23111' width='100' height='100' rx='8'/><text x='50' y='62' font-family='monospace' font-size='24' fill='%2300ff88' text-anchor='middle' font-weight='bold'>402</text><text x='50' y='82' font-family='monospace' font-size='14' fill='%23666' text-anchor='middle'>LAB</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0c0f;
+      --card: #111418;
+      --card-alt: #161a1f;
+      --border: #22272e;
+      --text: #e6e8eb;
+      --dim: #6e7681;
+      --green: #3fb950;
+      --red: #f85149;
+      --blue: #58a6ff;
+      --orange: #d29922;
+      --purple: #a371f7;
+      --cyan: #39c5cf;
+    }
+    
+    body {
+      font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 13px;
+    }
+    
+    /* Top Banner */
+    .top-banner {
+      background: linear-gradient(90deg, #0d2818 0%, #1a3d2e 100%);
+      border-bottom: 1px solid var(--green);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      color: var(--green);
+    }
+    
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+    
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+      50% { opacity: 0.5; box-shadow: 0 0 4px var(--green); }
+    }
+    
+    .pool-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 11px;
+    }
+    
+    .pool-link:hover { text-decoration: underline; }
+    
+    .banner-right {
+      display: flex;
+      gap: 15px;
+    }
+    
+    /* FUD/HYPE Mega Buttons */
+    .action-btn {
+      padding: 10px 25px;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: inherit;
+      border: 2px solid;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .action-btn.hype {
+      background: rgba(63, 185, 80, 0.15);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    
+    .action-btn.hype:hover:not(:disabled) {
+      background: rgba(63, 185, 80, 0.3);
+      box-shadow: 0 0 20px rgba(63, 185, 80, 0.4);
+    }
+    
+    .action-btn.fud {
+      background: rgba(248, 81, 73, 0.15);
+      border-color: var(--red);
+      color: var(--red);
+    }
+    
+    .action-btn.fud:hover:not(:disabled) {
+      background: rgba(248, 81, 73, 0.3);
+      box-shadow: 0 0 20px rgba(248, 81, 73, 0.4);
+    }
+    
+    .cooldown-timer {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--green);
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    .badge.live { background: var(--green); color: #000; }
+    .badge.defcon { background: var(--red); color: #fff; animation: flash 1s infinite; }
+    
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .header-right a {
+      color: var(--dim);
+      text-decoration: none;
+      margin-left: 16px;
+      font-size: 12px;
+    }
+    
+    .header-right a:hover { color: var(--text); }
+    
+    /* Main Tabs */
+    .main-tabs {
+      display: flex;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .main-tab {
+      padding: 12px 24px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--dim);
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .main-tab:hover { color: var(--text); }
+    .main-tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+    
+    .main-tab.armageddon-tab {
+      color: var(--red);
+    }
+    .main-tab.armageddon-tab.active {
+      border-bottom-color: var(--red);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Main Layout */
+    .main {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      min-height: calc(100vh - 150px);
+    }
+    
+    @media (max-width: 1200px) {
+      .main { grid-template-columns: 240px 1fr; }
+      .right-panel { display: none; }
+    }
+    
+    @media (max-width: 800px) {
+      .main { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+    }
+    
+    /* Panels */
+    .left-panel {
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    
+    .section {
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    
+    .section-title {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--dim); }
+    .stat-value { font-weight: 500; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    
+    /* Token Info */
+    .token-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .token-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .price-big {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+    
+    .price-change {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    
+    .price-change.up { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+    .price-change.down { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+    
+    /* Center Panel */
+    .center-panel {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .chart-area {
+      padding: 12px;
+      height: 300px;
+    }
+    
+    .chart-container {
+      width: 100%;
+      height: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      position: relative;
+    }
+    
+    .chart-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 10px;
+      color: var(--dim);
+      background: rgba(17, 20, 24, 0.9);
+      padding: 4px 8px;
+      border-radius: 3px;
+    }
+    
+    .tf-btn {
+      padding: 4px 8px;
+      font-size: 10px;
+      font-family: inherit;
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      color: var(--dim);
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    
+    .tf-btn.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000;
+    }
+    
+    /* Bottom Stats */
+    .bottom-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+    
+    .bottom-stat {
+      background: var(--card);
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .bottom-stat-label {
+      font-size: 10px;
+      color: var(--dim);
+    }
+    
+    .bottom-stat-value {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+    
+    /* Right Panel - Trades */
+    .right-panel {
+      background: var(--card);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .trades-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .trades-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    .trade-item {
+      display: grid;
+      grid-template-columns: 50px 1fr 80px 50px;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      align-items: center;
+    }
+    
+    .trade-item:hover { background: var(--card-alt); }
+    
+    .trade-type { font-weight: bold; }
+    .trade-type.buy { color: var(--green); }
+    .trade-type.sell { color: var(--red); }
+    
+    .trade-wallet {
+      color: var(--dim);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .trade-tx-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 10px;
+    }
+    
+    .trade-tx-link:hover { text-decoration: underline; }
+    
+    /* Events Ticker */
+    .events-ticker {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      flex: 1;
+      min-height: 200px;
+    }
+    
+    .ticker-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--card-alt);
+      font-weight: bold;
+    }
+    
+    .ticker-count {
+      background: var(--purple);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+    
+    .ticker-feed {
+      padding: 8px 12px;
+      overflow-y: auto;
+      max-height: 250px;
+    }
+    
+    .ticker-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    
+    .ticker-icon { font-size: 14px; width: 20px; }
+    .ticker-msg { flex: 1; }
+    .ticker-time { color: var(--dim); font-size: 9px; }
+    .ticker-tx {
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 9px;
+    }
+    
+    .ticker-item.defcon { border-left: 3px solid var(--red); padding-left: 8px; }
+    .ticker-item.recovery { border-left: 3px solid var(--green); padding-left: 8px; }
+    .ticker-item.whale { color: var(--orange); }
+    
+    /* ARMAGEDDON TAB STYLES */
+    .armageddon-content {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .arma-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .arma-title {
+      font-size: 32px;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+    
+    .arma-subtitle {
+      color: var(--dim);
+      font-size: 14px;
+    }
+    
+    .arma-status-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .arma-status-card.active {
+      border-color: var(--red);
+      background: rgba(248, 81, 73, 0.1);
+    }
+    
+    .arma-status-card.safe {
+      border-color: var(--green);
+    }
+    
+    .arma-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .arma-stat-box {
+      background: var(--card-alt);
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .arma-stat-label {
+      font-size: 10px;
+      color: var(--dim);
+      margin-bottom: 5px;
+    }
+    
+    .arma-stat-value {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .arma-stat-value.red { color: var(--red); }
+    .arma-stat-value.green { color: var(--green); }
+    
+    /* Armageddon History */
+    .arma-history {
+      margin-top: 30px;
+    }
+    
+    .arma-history-title {
+      font-size: 16px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .arma-event {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    .arma-event.trigger {
+      border-left: 4px solid var(--red);
+    }
+    
+    .arma-event.recovery {
+      border-left: 4px solid var(--green);
+    }
+    
+    .arma-event-type {
+      font-weight: bold;
+    }
+    
+    .arma-event-type.trigger { color: var(--red); }
+    .arma-event-type.recovery { color: var(--green); }
+    
+    .arma-event-details {
+      font-size: 12px;
+      color: var(--dim);
+    }
+    
+    .arma-event-tx {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+    
+    .solscan-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--card-alt);
+      padding: 6px 12px;
+      border-radius: 4px;
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 11px;
+    }
+    
+    .solscan-link:hover {
+      background: var(--border);
+    }
+    
+    /* DEFCON Levels */
+    .defcon-levels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .defcon-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .defcon-card.level-3 { border-top: 4px solid var(--orange); }
+    .defcon-card.level-2 { border-top: 4px solid var(--red); }
+    .defcon-card.level-1 { border-top: 4px solid #ff0000; }
+    
+    .defcon-card.active {
+      background: rgba(248, 81, 73, 0.15);
+    }
+    
+    .defcon-level {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .defcon-card.level-3 .defcon-level { color: var(--orange); }
+    .defcon-card.level-2 .defcon-level { color: var(--red); }
+    .defcon-card.level-1 .defcon-level { color: #ff0000; }
+    
+    .defcon-threshold {
+      font-size: 12px;
+      color: var(--dim);
+      margin-bottom: 8px;
+    }
+    
+    .defcon-response {
+      font-size: 11px;
+      padding: 8px;
+      background: var(--card-alt);
+      border-radius: 4px;
+    }
+    
+    /* Trade Stats Box */
+    .trade-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .trade-stat-box {
+      background: var(--card-alt);
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .trade-stat-box.buy { border-left: 3px solid var(--green); }
+    .trade-stat-box.sell { border-left: 3px solid var(--red); }
+    
+    .trade-stat-num { font-size: 18px; font-weight: bold; }
+    .trade-stat-vol { font-size: 11px; color: var(--dim); }
+    .trade-stat-label { font-size: 10px; color: var(--dim); margin-top: 4px; }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+      .arma-stats { grid-template-columns: repeat(2, 1fr); }
+      .defcon-levels { grid-template-columns: 1fr; }
+      .banner-right { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Banner with FUD/HYPE Buttons -->
+  <div class="top-banner">
+    <div class="banner-left">
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span>DEVNET LIVE</span>
+      </div>
+      <a href="https://solscan.io/account/DKdARvMSzUaFhRELRxe323xQvohqdVGnHHbtr8CbPSDU?cluster=devnet" target="_blank" class="pool-link">
+        Pool: DKdARv...PSDU
+      </a>
+      <span id="live-status" style="font-size: 11px; color: var(--dim);">⏳ Connecting...</span>
+    </div>
+    <div class="banner-right">
+      <div style="position: relative;">
+        <button class="action-btn hype" id="hype-btn" onclick="triggerHype()">
+          🚀 HYPE
+        </button>
+        <span class="cooldown-timer" id="hype-cooldown"></span>
+      </div>
+      <div style="position: relative;">
+        <button class="action-btn fud" id="fud-btn" onclick="triggerFud()">
+          📉 FUD
+        </button>
+        <span class="cooldown-timer" id="fud-cooldown"></span>
+      </div>
+    </div>
+  </div>
+  
+  <header class="header">
+    <div class="header-left">
+      <span class="logo">PDOX/SOL</span>
+      <span class="badge live" id="mode-badge">NORMAL</span>
+    </div>
+    <div class="header-right">
+      <a href="../index.html">← Paradox</a>
+      <a href="https://solscan.io/token/5673DfyfMiP2vZTAwEr7t6pwZkQk1TTyLP7R8Lw8G41B?cluster=devnet" target="_blank">Token ↗</a>
+      <a href="https://solscan.io/account/7j4qvD77zadbvrKYmahMQbFS5f8tEseW9kj62LYuWmer?cluster=devnet" target="_blank">Program ↗</a>
+    </div>
+  </header>
+  
+  <!-- Main Tabs -->
+  <div class="main-tabs">
+    <div class="main-tab active" data-tab="dashboard">📊 Dashboard</div>
+    <div class="main-tab armageddon-tab" data-tab="armageddon">☢️ Armageddon Log</div>
+  </div>
+  
+  <!-- Dashboard Tab -->
+  <div class="tab-content active" id="dashboard-content">
+    <main class="main">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <div class="section">
+          <div class="token-header">
+            <div class="token-icon">P</div>
+            <div>
+              <div style="font-weight: bold; font-size: 15px;">PDOX</div>
+              <div style="color: var(--dim); font-size: 11px;">Phantom Paradox</div>
+            </div>
+          </div>
+          <div class="price-big" id="price-usd">$0.00000000</div>
+          <span class="price-change up" id="price-change">+0.00%</span>
+          
+          <div style="margin-top: 12px; padding: 10px; background: var(--card-alt); border-radius: 4px; font-size: 11px;">
+            <div style="color: var(--dim); margin-bottom: 5px;">GENESIS CONFIG</div>
+            <div>LP: 10 SOL + 10M PDOX</div>
+            <div>Start MC: ~$136K</div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Token Supply</div>
+          <div class="stat-row">
+            <span class="stat-label">Hard Cap</span>
+            <span class="stat-value">1B PDOX</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">In LP</span>
+            <span class="stat-value" id="circulating">10M</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Held by Traders</span>
+            <span class="stat-value" id="tokens-outside">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Burned 🔥</span>
+            <span class="stat-value red" id="supply-burned">0</span>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Market</div>
+          <div class="stat-row">
+            <span class="stat-label">Market Cap</span>
+            <span class="stat-value" id="mcap">$0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">LP Value</span>
+            <span class="stat-value" id="lp-value">$0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Peak LP</span>
+            <span class="stat-value green" id="peak-lp">$0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Volume (Total)</span>
+            <span class="stat-value" id="vol-total">$0</span>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Trade Stats</div>
+          <div class="stat-row">
+            <span class="stat-label">Total Trades</span>
+            <span class="stat-value" id="total-trades">0</span>
+          </div>
+          <div class="trade-stats">
+            <div class="trade-stat-box buy">
+              <div class="trade-stat-num green" id="buy-count">0</div>
+              <div class="trade-stat-vol" id="buy-vol">$0</div>
+              <div class="trade-stat-label">Buys</div>
+            </div>
+            <div class="trade-stat-box sell">
+              <div class="trade-stat-num red" id="sell-count">0</div>
+              <div class="trade-stat-vol" id="sell-vol">$0</div>
+              <div class="trade-stat-label">Sells</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Fees & Burns</div>
+          <div class="stat-row">
+            <span class="stat-label">Fee Rate</span>
+            <span class="stat-value">3.00%</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Fees Collected</span>
+            <span class="stat-value" id="fees-collected">$0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">→ To LP</span>
+            <span class="stat-value green" id="fees-to-lp">$0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">→ Burned</span>
+            <span class="stat-value red" id="fees-burned">$0</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Center Panel -->
+      <div class="center-panel">
+        <div class="chart-header">
+          <span style="color: var(--dim);">PDOX/SOL · <span id="chart-tf">ALL</span></span>
+          <div style="display: flex; gap: 4px;">
+            <button class="tf-btn" data-tf="60">1m</button>
+            <button class="tf-btn" data-tf="300">5m</button>
+            <button class="tf-btn" data-tf="3600">1h</button>
+            <button class="tf-btn active" data-tf="0">ALL</button>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-container">
+            <canvas id="chart"></canvas>
+            <div class="chart-info" id="chart-info">Points: 0</div>
+          </div>
+        </div>
+        
+        <div class="bottom-bar">
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">Pool SOL</div>
+            <div class="bottom-stat-value" id="pool-sol">10.0000</div>
+          </div>
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">Pool PDOX</div>
+            <div class="bottom-stat-value" id="pool-pdox">10.00M</div>
+          </div>
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">ATH</div>
+            <div class="bottom-stat-value green" id="ath">$0</div>
+          </div>
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">ATL</div>
+            <div class="bottom-stat-value red" id="atl">$0</div>
+          </div>
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">Biggest Buy</div>
+            <div class="bottom-stat-value green" id="big-buy">$0</div>
+          </div>
+          <div class="bottom-stat">
+            <div class="bottom-stat-label">Biggest Sell</div>
+            <div class="bottom-stat-value red" id="big-sell">$0</div>
+          </div>
+        </div>
+        
+        <!-- Alerts Ticker -->
+        <div class="events-ticker">
+          <div class="ticker-header">
+            <span>📢 LIVE ALERTS</span>
+            <span class="ticker-count" id="alert-count">0</span>
+          </div>
+          <div class="ticker-feed" id="ticker-feed">
+            <div style="color: var(--dim); text-align: center; padding: 20px;">
+              Waiting for activity...
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="trades-header">
+          <span>Live Trades</span>
+          <div class="live-dot" style="width: 8px; height: 8px;"></div>
+        </div>
+        <div class="trades-list" id="trades-list">
+          <div style="text-align: center; padding: 30px; color: var(--dim);">
+            No trades yet<br>
+            <span style="font-size: 10px;">Waiting for first swap...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Armageddon Tab -->
+  <div class="tab-content" id="armageddon-content">
+    <div class="armageddon-content">
+      <div class="arma-header">
+        <div class="arma-title">☢️ ARMAGEDDON DEFENSE SYSTEM</div>
+        <div class="arma-subtitle">Autonomous LP protection protocol - activates when liquidity drops significantly</div>
+      </div>
+      
+      <!-- Current Status -->
+      <div class="arma-status-card" id="arma-status-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <span style="font-size: 18px; font-weight: bold;">Current Status</span>
+          <span id="arma-status-badge" style="padding: 6px 15px; border-radius: 4px; font-weight: bold; background: var(--green); color: #000;">
+            ✅ SAFE
+          </span>
+        </div>
+        <div class="arma-stats">
+          <div class="arma-stat-box">
+            <div class="arma-stat-label">DEFCON LEVEL</div>
+            <div class="arma-stat-value" id="arma-defcon">0</div>
+          </div>
+          <div class="arma-stat-box">
+            <div class="arma-stat-label">CURRENT LP</div>
+            <div class="arma-stat-value green" id="arma-current-lp">$0</div>
+          </div>
+          <div class="arma-stat-box">
+            <div class="arma-stat-label">PEAK LP</div>
+            <div class="arma-stat-value" id="arma-peak-lp">$0</div>
+          </div>
+          <div class="arma-stat-box">
+            <div class="arma-stat-label">LP DROP %</div>
+            <div class="arma-stat-value" id="arma-drop-pct">0%</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DEFCON Levels -->
+      <h3 style="margin-bottom: 15px;">Defense Levels</h3>
+      <div class="defcon-levels">
+        <div class="defcon-card level-3" id="defcon-3-card">
+          <div class="defcon-level">DEFCON-3</div>
+          <div class="defcon-threshold">50% LP DROP</div>
+          <div class="defcon-response">
+            <strong>80%</strong> fees → LP<br>
+            10% burn / 10% treasury
+          </div>
+        </div>
+        <div class="defcon-card level-2" id="defcon-2-card">
+          <div class="defcon-level">DEFCON-2</div>
+          <div class="defcon-threshold">75% LP DROP</div>
+          <div class="defcon-response">
+            <strong>85%</strong> fees → LP<br>
+            7.5% burn / 7.5% treasury
+          </div>
+        </div>
+        <div class="defcon-card level-1" id="defcon-1-card">
+          <div class="defcon-level">DEFCON-1</div>
+          <div class="defcon-threshold">90% LP DROP</div>
+          <div class="defcon-response">
+            <strong>90%</strong> fees → LP<br>
+            5% burn / 5% treasury<br>
+            <span style="color: var(--red);">MAX DEFENSE</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- History -->
+      <div class="arma-history">
+        <div class="arma-history-title">
+          📜 Event History
+          <span style="font-size: 11px; color: var(--dim);" id="arma-history-count">(0 events)</span>
+        </div>
+        <div id="arma-history-list">
+          <div style="text-align: center; padding: 30px; color: var(--dim); background: var(--card); border-radius: 6px;">
+            🛡️ No Armageddon events yet - LP is healthy!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // PDOX LIVE SIMULATION ENGINE
+    // =========================================================================
+    
+    const SOL_PRICE = 136;
+    const COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
+    
+    // Pool Config - PDOX V3 on Orca Devnet (REAL DATA!)
+    const PDOX_MINT = '9umyHgCSv6xuAv6bczUsR7hBKqyCAZCmPcc4eVhAGrfN';
+    const PROGRAM_ID = '7j4qvD77zadbvrKYmahMQbFS5f8tEseW9kj62LYuWmer';
+    const DEVNET_RPC = 'https://api.devnet.solana.com';
+    
+    // REAL Orca Pool Vaults (on-chain addresses)
+    const PDOX_VAULT = 'GyAyv1gnxvf3ERkYeCihCd1LFZZhPHVzDiLZLXBG1yaL';
+    const SOL_VAULT = '5uRRLwWZq4Ume2Vp3icC1KvMJeqLVVJYCnCKifpnu7Cr';
+    const POOL_PDA = '5HbnCGok42xKKGh4zBF44XfZ9MxyMa7m9TjUzngDJuuS';
+    
+    const ORCA_POOL_URL = 'https://www.orca.so/pools?chainId=solanaDevnet&tokens=So11111111111111111111111111111111111111112&tokens=9umyHgCSv6xuAv6bczUsR7hBKqyCAZCmPcc4eVhAGrfN';
+    const SOLSCAN_TOKEN = 'https://solscan.io/token/9umyHgCSv6xuAv6bczUsR7hBKqyCAZCmPcc4eVhAGrfN?cluster=devnet';
+    
+    const INITIAL_SOL = 10;
+    const INITIAL_PDOX = 10_000_000;
+    
+    // State
+    let state = {
+      pool: { sol: INITIAL_SOL, pdox: INITIAL_PDOX },
+      price: { sol: 0.000001, usd: 0.000136 },
+      token: {
+        minted: INITIAL_PDOX,
+        inLp: INITIAL_PDOX,
+        outside: 0,
+        burned: 0,
+      },
+      fees: {
+        collected: 0,
+        toLp: 0,
+        burned: 0,
+      },
+      market: {
+        cap: INITIAL_PDOX * 0.000136,
+        lpValue: INITIAL_SOL * SOL_PRICE * 2,
+        peakLp: INITIAL_SOL * SOL_PRICE * 2,
+        volTotal: 0,
+      },
+      trades: {
+        total: 0,
+        buys: 0,
+        sells: 0,
+        buyVol: 0,
+        sellVol: 0,
+        list: [],
+      },
+      stats: {
+        ath: 0.000136,
+        atl: 0.000136,
+        bigBuy: 0,
+        bigSell: 0,
+      },
+      history: {
+        prices: [],
+        events: [],
+      },
+      alerts: [],
+      armageddon: {
+        triggered: false,
+        level: 0,
+        triggeredAt: 0,
+        history: [],
+      },
+      mode: 'NORMAL',
+      cooldowns: {
+        hype: 0,
+        fud: 0,
+      },
+      activeEvent: null,
+      chartTimeframe: 0,
+    };
+    
+    // Utils
+    const fmt = (n, d = 2) => {
+      if (n >= 1e9) return (n / 1e9).toFixed(d) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(d) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(d) + 'K';
+      return n.toFixed(d);
+    };
+    
+    const fmtPrice = (n) => {
+      if (n < 0.00001) return '$' + n.toExponential(4);
+      return '$' + n.toFixed(8);
+    };
+    
+    const timeAgo = (ts) => {
+      const s = Math.floor((Date.now() - ts) / 1000);
+      if (s < 60) return s + 's ago';
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      return Math.floor(s / 3600) + 'h ago';
+    };
+    
+    const genWallet = () => {
+      const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      return Array(44).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+    };
+    
+    const genTxSig = () => {
+      const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      return Array(88).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+    };
+    
+    // Load/Save State
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('pdox_sim_v2');
+        if (saved) {
+          const loaded = JSON.parse(saved);
+          Object.assign(state, loaded);
+        }
+      } catch (e) {}
+    }
+    
+    function saveState() {
+      try {
+        localStorage.setItem('pdox_sim_v2', JSON.stringify(state));
+      } catch (e) {}
+    }
+    
+    // AMM
+    function getPrice() {
+      return state.pool.sol / state.pool.pdox;
+    }
+    
+    function doSwap(isBuy, amountUsd) {
+      const k = state.pool.sol * state.pool.pdox;
+      const feeRate = state.armageddon.triggered ? 300 : 300;
+      const lpShare = state.armageddon.level === 1 ? 0.90 :
+                      state.armageddon.level === 2 ? 0.85 :
+                      state.armageddon.level === 3 ? 0.80 : 0.70;
+      
+      const maxTrade = state.pool.sol * SOL_PRICE * 0.05;
+      amountUsd = Math.min(amountUsd, maxTrade);
+      if (amountUsd < 1) return null;
+      
+      let solDelta, pdoxDelta, feeSol = 0, feePdox = 0, newSol, newPdox;
+      const txSig = genTxSig();
+      
+      if (isBuy) {
+        solDelta = amountUsd / SOL_PRICE;
+        newSol = state.pool.sol + solDelta;
+        newPdox = k / newSol;
+        pdoxDelta = state.pool.pdox - newPdox;
+        feePdox = pdoxDelta * (feeRate / 10000);
+        pdoxDelta -= feePdox;
+        state.token.outside += pdoxDelta;
+      } else {
+        if (state.token.outside <= 0) return null;
+        const maxSellPdox = state.token.outside * 0.2;
+        const solAvailable = state.pool.sol - INITIAL_SOL;
+        if (solAvailable <= 0) return null;
+        
+        let solOut = Math.min(amountUsd / SOL_PRICE, solAvailable * 0.5);
+        if (solOut < 0.001) return null;
+        
+        feeSol = solOut * (feeRate / 10000);
+        solOut -= feeSol;
+        
+        newSol = state.pool.sol - solOut - feeSol;
+        newPdox = k / newSol;
+        pdoxDelta = newPdox - state.pool.pdox;
+        solDelta = -(solOut + feeSol);
+        
+        state.token.outside -= pdoxDelta;
+        if (state.token.outside < 0) state.token.outside = 0;
+      }
+      
+      if (newSol < INITIAL_SOL * 0.99) return null;
+      
+      state.pool.sol = newSol;
+      state.pool.pdox = newPdox;
+      
+      // Fee distribution
+      const burnShare = (1 - lpShare) / 2;
+      const solToLp = feeSol * lpShare;
+      const pdoxToBurn = feePdox * burnShare;
+      
+      state.pool.sol += solToLp;
+      state.token.burned += pdoxToBurn;
+      
+      const totalFee = feeSol * SOL_PRICE + feePdox * getPrice() * SOL_PRICE;
+      state.fees.collected += totalFee;
+      state.fees.toLp += solToLp * SOL_PRICE;
+      state.fees.burned += pdoxToBurn * getPrice() * SOL_PRICE;
+      
+      state.price.sol = getPrice();
+      state.price.usd = state.price.sol * SOL_PRICE;
+      state.market.cap = state.pool.pdox * state.price.usd;
+      state.market.lpValue = state.pool.sol * SOL_PRICE * 2;
+      state.market.volTotal += amountUsd;
+      
+      if (state.market.lpValue > state.market.peakLp) {
+        state.market.peakLp = state.market.lpValue;
+      }
+      
+      state.trades.total++;
+      const actualUsd = Math.abs(isBuy ? solDelta : -solDelta) * SOL_PRICE;
+      
+      if (isBuy) {
+        state.trades.buys++;
+        state.trades.buyVol += actualUsd;
+        if (actualUsd > state.stats.bigBuy) state.stats.bigBuy = actualUsd;
+      } else {
+        state.trades.sells++;
+        state.trades.sellVol += actualUsd;
+        if (actualUsd > state.stats.bigSell) state.stats.bigSell = actualUsd;
+      }
+      
+      if (state.price.usd > state.stats.ath) state.stats.ath = state.price.usd;
+      if (state.price.usd < state.stats.atl) state.stats.atl = state.price.usd;
+      
+      // Armageddon detection
+      const lpDrop = 1 - (state.market.lpValue / state.market.peakLp);
+      let newLevel = 0;
+      if (lpDrop >= 0.90) newLevel = 1;
+      else if (lpDrop >= 0.75) newLevel = 2;
+      else if (lpDrop >= 0.50) newLevel = 3;
+      
+      if (newLevel > 0 && newLevel !== state.armageddon.level) {
+        state.armageddon.triggered = true;
+        state.armageddon.level = newLevel;
+        state.armageddon.triggeredAt = Date.now();
+        state.mode = `DEFCON-${newLevel}`;
+        
+        const armaEvent = {
+          ts: Date.now(),
+          type: 'TRIGGER',
+          level: newLevel,
+          peakLp: state.market.peakLp,
+          currentLp: state.market.lpValue,
+          drop: lpDrop * 100,
+          txSig: txSig,
+        };
+        state.armageddon.history.unshift(armaEvent);
+        
+        addAlert('defcon', '☢️', `DEFCON-${newLevel} TRIGGERED! LP dropped ${(lpDrop*100).toFixed(1)}%`, txSig);
+      } else if (newLevel === 0 && state.armageddon.triggered) {
+        const armaEvent = {
+          ts: Date.now(),
+          type: 'RECOVERY',
+          level: 0,
+          peakLp: state.market.peakLp,
+          currentLp: state.market.lpValue,
+          drop: lpDrop * 100,
+          txSig: txSig,
+        };
+        state.armageddon.history.unshift(armaEvent);
+        state.armageddon.triggered = false;
+        state.armageddon.level = 0;
+        state.mode = 'NORMAL';
+        
+        addAlert('recovery', '✅', 'RECOVERY! LP restored above DEFCON thresholds', txSig);
+      }
+      
+      // Record trade
+      const trade = {
+        ts: Date.now(),
+        type: isBuy ? 'BUY' : 'SELL',
+        wallet: genWallet(),
+        usd: actualUsd,
+        pdox: Math.abs(pdoxDelta),
+        txSig: txSig,
+      };
+      state.trades.list.unshift(trade);
+      if (state.trades.list.length > 100) state.trades.list.pop();
+      
+      // Alert for big trades
+      if (actualUsd > 50) {
+        addAlert('whale', isBuy ? '🐋' : '🔴', `${isBuy ? 'WHALE BUY' : 'BIG SELL'}: $${fmt(actualUsd)}`, txSig);
+      }
+      
+      return trade;
+    }
+    
+    // Alerts
+    function addAlert(type, icon, msg, txSig = null) {
+      state.alerts.unshift({
+        ts: Date.now(),
+        type,
+        icon,
+        msg,
+        txSig,
+      });
+      if (state.alerts.length > 50) state.alerts.pop();
+    }
+    
+    // FUD/HYPE Events
+    function triggerHype() {
+      if (Date.now() < state.cooldowns.hype) return;
+      
+      state.cooldowns.hype = Date.now() + COOLDOWN_MS;
+      state.activeEvent = {
+        type: 'HYPE',
+        buyBias: 0.80,
+        sizeMult: 3.0,
+        remaining: 30,
+        startedAt: Date.now(),
+      };
+      
+      addAlert('event', '🚀', 'HYPE EVENT TRIGGERED! Buy pressure increasing for 60s');
+      updateCooldowns();
+    }
+    
+    function triggerFud() {
+      if (Date.now() < state.cooldowns.fud) return;
+      
+      state.cooldowns.fud = Date.now() + COOLDOWN_MS;
+      state.activeEvent = {
+        type: 'FUD',
+        buyBias: 0.20,
+        sizeMult: 3.0,
+        remaining: 30,
+        startedAt: Date.now(),
+      };
+      
+      addAlert('event', '📉', 'FUD EVENT TRIGGERED! Sell pressure increasing for 60s');
+      updateCooldowns();
+    }
+    
+    function updateCooldowns() {
+      const now = Date.now();
+      const hypeBtn = document.getElementById('hype-btn');
+      const fudBtn = document.getElementById('fud-btn');
+      const hypeCd = document.getElementById('hype-cooldown');
+      const fudCd = document.getElementById('fud-cooldown');
+      
+      if (now < state.cooldowns.hype) {
+        hypeBtn.disabled = true;
+        const remaining = Math.ceil((state.cooldowns.hype - now) / 60000);
+        hypeCd.textContent = `${remaining}m cooldown`;
+      } else {
+        hypeBtn.disabled = false;
+        hypeCd.textContent = '';
+      }
+      
+      if (now < state.cooldowns.fud) {
+        fudBtn.disabled = true;
+        const remaining = Math.ceil((state.cooldowns.fud - now) / 60000);
+        fudCd.textContent = `${remaining}m cooldown`;
+      } else {
+        fudBtn.disabled = false;
+        fudCd.textContent = '';
+      }
+    }
+    
+    // Simulation Tick
+    function tick() {
+      let buyBias = 0.5;
+      let sizeMult = 1;
+      let numTrades = 1 + Math.floor(Math.random() * 3);
+      
+      if (state.activeEvent && state.activeEvent.remaining > 0) {
+        buyBias = state.activeEvent.buyBias;
+        sizeMult = state.activeEvent.sizeMult;
+        numTrades = 3 + Math.floor(Math.random() * 5);
+        state.activeEvent.remaining--;
+        
+        if (state.activeEvent.remaining <= 0) {
+          addAlert('event', '⏱️', `${state.activeEvent.type} event ended`);
+          state.activeEvent = null;
+        }
+      } else {
+        const r = Math.random();
+        if (r < 0.1) { buyBias = 0.7; sizeMult = 1.5; }
+        else if (r < 0.2) { buyBias = 0.3; sizeMult = 1.3; }
+      }
+      
+      for (let i = 0; i < numTrades; i++) {
+        const isBuy = Math.random() < buyBias;
+        let size = (5 + Math.random() * 50) * sizeMult;
+        if (Math.random() < 0.05) size *= 5;
+        if (size > 1) doSwap(isBuy, size);
+      }
+      
+      state.history.prices.push({
+        ts: Date.now(),
+        usd: state.price.usd,
+        lp: state.market.lpValue,
+      });
+      if (state.history.prices.length > 500) state.history.prices.shift();
+      
+      updateUI();
+      updateCooldowns();
+      saveState();
+    }
+    
+    // Update UI
+    function updateUI() {
+      // Price
+      document.getElementById('price-usd').textContent = fmtPrice(state.price.usd);
+      
+      const startPrice = state.history.prices[0]?.usd || state.price.usd;
+      const change = ((state.price.usd - startPrice) / startPrice) * 100;
+      const changeEl = document.getElementById('price-change');
+      changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      changeEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
+      
+      // Supply
+      document.getElementById('circulating').textContent = fmt(state.token.inLp);
+      document.getElementById('tokens-outside').textContent = fmt(state.token.outside);
+      document.getElementById('supply-burned').textContent = fmt(state.token.burned);
+      
+      // Market
+      document.getElementById('mcap').textContent = '$' + fmt(state.market.cap);
+      document.getElementById('lp-value').textContent = '$' + fmt(state.market.lpValue);
+      document.getElementById('peak-lp').textContent = '$' + fmt(state.market.peakLp);
+      document.getElementById('vol-total').textContent = '$' + fmt(state.market.volTotal);
+      
+      // Trades
+      document.getElementById('total-trades').textContent = fmt(state.trades.total, 0);
+      document.getElementById('buy-count').textContent = state.trades.buys;
+      document.getElementById('buy-vol').textContent = '$' + fmt(state.trades.buyVol);
+      document.getElementById('sell-count').textContent = state.trades.sells;
+      document.getElementById('sell-vol').textContent = '$' + fmt(state.trades.sellVol);
+      
+      // Fees
+      document.getElementById('fees-collected').textContent = '$' + fmt(state.fees.collected);
+      document.getElementById('fees-to-lp').textContent = '$' + fmt(state.fees.toLp);
+      document.getElementById('fees-burned').textContent = '$' + fmt(state.fees.burned);
+      
+      // Pool
+      document.getElementById('pool-sol').textContent = state.pool.sol.toFixed(4);
+      document.getElementById('pool-pdox').textContent = fmt(state.pool.pdox);
+      
+      // Stats
+      document.getElementById('ath').textContent = fmtPrice(state.stats.ath);
+      document.getElementById('atl').textContent = fmtPrice(state.stats.atl);
+      document.getElementById('big-buy').textContent = '$' + fmt(state.stats.bigBuy);
+      document.getElementById('big-sell').textContent = '$' + fmt(state.stats.bigSell);
+      
+      // Mode badge
+      const badge = document.getElementById('mode-badge');
+      badge.textContent = state.mode;
+      badge.className = 'badge ' + (state.mode === 'NORMAL' ? 'live' : 'defcon');
+      
+      // Trades list
+      const tradesList = document.getElementById('trades-list');
+      if (state.trades.list.length > 0) {
+        tradesList.innerHTML = state.trades.list.slice(0, 50).map(t => `
+          <div class="trade-item">
+            <span class="trade-type ${t.type.toLowerCase()}">${t.type}</span>
+            <span class="trade-wallet">${t.wallet.slice(0, 4)}...${t.wallet.slice(-4)}</span>
+            <span style="text-align: right;">$${fmt(t.usd)}</span>
+            <a href="https://solscan.io/tx/${t.txSig}?cluster=devnet" target="_blank" class="trade-tx-link">TX ↗</a>
+          </div>
+        `).join('');
+      }
+      
+      // Alerts ticker
+      const tickerFeed = document.getElementById('ticker-feed');
+      document.getElementById('alert-count').textContent = state.alerts.length;
+      
+      if (state.alerts.length > 0) {
+        tickerFeed.innerHTML = state.alerts.slice(0, 15).map(a => `
+          <div class="ticker-item ${a.type}">
+            <span class="ticker-icon">${a.icon}</span>
+            <span class="ticker-msg">${a.msg}</span>
+            ${a.txSig ? `<a href="https://solscan.io/tx/${a.txSig}?cluster=devnet" target="_blank" class="ticker-tx">TX ↗</a>` : ''}
+            <span class="ticker-time">${timeAgo(a.ts)}</span>
+          </div>
+        `).join('');
+      }
+      
+      // Armageddon tab
+      updateArmageddonTab();
+      
+      // Chart
+      drawChart();
+    }
+    
+    function updateArmageddonTab() {
+      const lpDrop = state.market.peakLp > 0 ? (1 - state.market.lpValue / state.market.peakLp) * 100 : 0;
+      
+      // Status card
+      const statusCard = document.getElementById('arma-status-card');
+      const statusBadge = document.getElementById('arma-status-badge');
+      
+      if (state.armageddon.triggered) {
+        statusCard.className = 'arma-status-card active';
+        statusBadge.textContent = `☢️ DEFCON-${state.armageddon.level}`;
+        statusBadge.style.background = 'var(--red)';
+        statusBadge.style.color = '#fff';
+      } else {
+        statusCard.className = 'arma-status-card safe';
+        statusBadge.textContent = '✅ SAFE';
+        statusBadge.style.background = 'var(--green)';
+        statusBadge.style.color = '#000';
+      }
+      
+      document.getElementById('arma-defcon').textContent = state.armageddon.level || '0';
+      document.getElementById('arma-current-lp').textContent = '$' + fmt(state.market.lpValue);
+      document.getElementById('arma-peak-lp').textContent = '$' + fmt(state.market.peakLp);
+      document.getElementById('arma-drop-pct').textContent = lpDrop.toFixed(1) + '%';
+      
+      const dropEl = document.getElementById('arma-drop-pct');
+      dropEl.className = 'arma-stat-value ' + (lpDrop > 50 ? 'red' : 'green');
+      
+      // DEFCON cards
+      ['defcon-3-card', 'defcon-2-card', 'defcon-1-card'].forEach((id, i) => {
+        const card = document.getElementById(id);
+        const level = 3 - i;
+        card.className = `defcon-card level-${level}` + (state.armageddon.level === level ? ' active' : '');
+      });
+      
+      // History
+      const historyList = document.getElementById('arma-history-list');
+      document.getElementById('arma-history-count').textContent = `(${state.armageddon.history.length} events)`;
+      
+      if (state.armageddon.history.length > 0) {
+        historyList.innerHTML = state.armageddon.history.slice(0, 20).map(e => `
+          <div class="arma-event ${e.type.toLowerCase()}">
+            <div>
+              <div class="arma-event-type ${e.type.toLowerCase()}">
+                ${e.type === 'TRIGGER' ? `☢️ DEFCON-${e.level} TRIGGERED` : '✅ RECOVERY'}
+              </div>
+              <div style="font-size: 11px; color: var(--dim);">${new Date(e.ts).toLocaleString()}</div>
+            </div>
+            <div class="arma-event-details">
+              <div>LP Drop: <strong>${e.drop.toFixed(1)}%</strong></div>
+              <div>Peak: $${fmt(e.peakLp)} → Current: $${fmt(e.currentLp)}</div>
+            </div>
+            <div class="arma-event-tx">
+              <a href="https://solscan.io/tx/${e.txSig}?cluster=devnet" target="_blank" class="solscan-link">
+                View TX ↗
+              </a>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    
+    // Chart
+    function drawChart() {
+      const canvas = document.getElementById('chart');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = canvas.parentElement.offsetHeight;
+      
+      const w = canvas.width;
+      const h = canvas.height;
+      const pad = 50;
+      
+      ctx.fillStyle = '#111418';
+      ctx.fillRect(0, 0, w, h);
+      
+      let prices = state.history.prices;
+      if (state.chartTimeframe > 0) {
+        const cutoff = Date.now() - (state.chartTimeframe * 1000);
+        prices = prices.filter(p => p.ts >= cutoff);
+      }
+      
+      if (prices.length < 2) {
+        ctx.fillStyle = '#6e7681';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Collecting data...', w / 2, h / 2);
+        return;
+      }
+      
+      const usdPrices = prices.map(p => p.usd);
+      const minP = Math.min(...usdPrices) * 0.95;
+      const maxP = Math.max(...usdPrices) * 1.05;
+      
+      document.getElementById('chart-info').textContent = `Points: ${prices.length}`;
+      
+      const scaleX = i => pad + (i / (prices.length - 1)) * (w - pad * 2);
+      const scaleY = p => h - pad - ((p - minP) / (maxP - minP)) * (h - pad * 2);
+      
+      // Grid
+      ctx.strokeStyle = '#22272e';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const y = pad + (i / 4) * (h - pad * 2);
+        ctx.beginPath();
+        ctx.moveTo(pad, y);
+        ctx.lineTo(w - pad, y);
+        ctx.stroke();
+        
+        const price = maxP - (i / 4) * (maxP - minP);
+        ctx.fillStyle = '#6e7681';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(fmtPrice(price), pad - 5, y + 3);
+      }
+      
+      // Line
+      const up = usdPrices[usdPrices.length - 1] >= usdPrices[0];
+      ctx.strokeStyle = up ? '#3fb950' : '#f85149';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      
+      usdPrices.forEach((p, i) => {
+        const x = scaleX(i);
+        const y = scaleY(p);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      
+      // Fill
+      ctx.lineTo(scaleX(usdPrices.length - 1), h - pad);
+      ctx.lineTo(scaleX(0), h - pad);
+      ctx.closePath();
+      ctx.fillStyle = up ? 'rgba(63, 185, 80, 0.1)' : 'rgba(248, 81, 73, 0.1)';
+      ctx.fill();
+      
+      // Current dot
+      const lastX = scaleX(usdPrices.length - 1);
+      const lastY = scaleY(usdPrices[usdPrices.length - 1]);
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+      ctx.fillStyle = up ? '#3fb950' : '#f85149';
+      ctx.fill();
+    }
+    
+    // Tab switching
+    document.querySelectorAll('.main-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const tabName = tab.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabName + '-content').classList.add('active');
+      });
+    });
+    
+    // Timeframe buttons
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.chartTimeframe = parseInt(btn.dataset.tf);
+        document.getElementById('chart-tf').textContent = btn.textContent;
+        drawChart();
+      });
+    });
+    
+    // Fetch REAL pool data from Orca Vaults on Solana
+    async function fetchRealData() {
+      try {
+        document.getElementById('live-status').textContent = '🔄 Syncing Orca...';
+        
+        // Fetch PDOX vault balance (real pool data)
+        const pdoxRes = await fetch(DEVNET_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getTokenAccountBalance',
+            params: [PDOX_VAULT]
+          })
+        });
+        const pdoxData = await pdoxRes.json();
+        const pdoxInPool = parseFloat(pdoxData.result?.value?.uiAmount || 0);
+        
+        // Fetch SOL vault balance (real pool data)
+        const solRes = await fetch(DEVNET_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getTokenAccountBalance',
+            params: [SOL_VAULT]
+          })
+        });
+        const solData = await solRes.json();
+        const solInPool = parseFloat(solData.result?.value?.uiAmount || 0);
+        
+        // Fetch token total supply
+        const supplyRes = await fetch(DEVNET_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getTokenSupply',
+            params: [PDOX_MINT]
+          })
+        });
+        const supplyData = await supplyRes.json();
+        const totalSupply = parseFloat(supplyData.result?.value?.uiAmount || 10000000);
+        
+        // Calculate REAL price from pool reserves
+        const realPrice = solInPool > 0 && pdoxInPool > 0 ? solInPool / pdoxInPool : 0.000001;
+        const solUsdPrice = SOL_PRICE; // Use global SOL price
+        const pdoxUsdPrice = realPrice * solUsdPrice;
+        
+        // Update state with REAL on-chain data
+        state.pool.sol = solInPool;
+        state.pool.pdox = pdoxInPool;
+        state.price.sol = realPrice;
+        state.price.usd = pdoxUsdPrice;
+        state.token.minted = totalSupply;
+        state.token.inLp = pdoxInPool;
+        state.token.outside = totalSupply - pdoxInPool;
+        state.market.cap = totalSupply * pdoxUsdPrice;
+        state.market.lpValue = solInPool * solUsdPrice * 2; // Both sides
+        
+        // Update ATH/ATL
+        if (pdoxUsdPrice > state.stats.ath) state.stats.ath = pdoxUsdPrice;
+        if (pdoxUsdPrice < state.stats.atl || state.stats.atl === 0) state.stats.atl = pdoxUsdPrice;
+        
+        // Record price history for chart
+        state.history.prices.push({ ts: Date.now(), price: pdoxUsdPrice, sol: realPrice });
+        if (state.history.prices.length > 1000) state.history.prices.shift();
+        
+        console.log('📊 REAL Orca Data:', { solInPool, pdoxInPool, price: realPrice, tvl: state.market.lpValue });
+        
+        document.getElementById('live-status').innerHTML = '🟢 <span style="color: var(--green);">LIVE Orca</span>';
+        
+        // Update UI with real data
+        updateUI();
+        drawChart();
+        
+      } catch (e) {
+        console.error('Fetch error:', e);
+        document.getElementById('live-status').textContent = '🔴 RPC Error';
+      }
+    }
+    
+    // Init
+    function init() {
+      loadState();
+      updateUI();
+      updateCooldowns();
+      fetchRealData();
+      
+      setInterval(tick, 2000);
+      setInterval(updateCooldowns, 1000);
+      setInterval(fetchRealData, 30000);
+      
+      window.addEventListener('resize', drawChart);
+    }
+    
+    init();
+  </script>
+</body>
+</html>

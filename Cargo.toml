@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "programs/phantomgrid_gaming"
+]
+resolver = "2"
+
+[profile.release]
+opt-level = "s"          # size-optimized (common for Solana)
+lto = "fat"              # better optimization, slower build
+codegen-units = 1        # more consistent binaries
+panic = "abort"          # required for Solana programs
+overflow-checks = true   # keep arithmetic checks ON
+
+# Zeroize conflicts handled in program Cargo.toml

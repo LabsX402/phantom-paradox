@@ -1,0 +1,303 @@
+================================================================================
+DEPLOYMENT CHECKLIST - QUICK FIXES (1-2 HOURS)
+================================================================================
+
+Generated: 2025-01-XX
+Status: ⚠️  ACTION REQUIRED BEFORE DEPLOY
+Priority: HIGH
+
+================================================================================
+1. SECURITY QUICK-SWEEP (HIGH PRIORITY - 30-60 MINS)
+================================================================================
+
+STATUS: ⚠️  NEEDS VERIFICATION
+
+✅ DONE:
+- checked_add/checked_sub used in critical paths
+- Reentrancy guards implemented
+- Account validation in place
+
+❌ TODO:
+- [ ] Fuzz test netting engine with 10k+ simulations
+- [ ] Fuzz test vesting with edge cases
+- [ ] Check all math operations for overflow
+- [ ] Verify signer checks (no unauthorized access)
+
+QUICK FIX:
+```rust
+// Add overflow checks to any unchecked math
+let result = a.checked_add(b).ok_or(PgError::Overflow)?;
+```
+
+FILES TO CHECK:
+- programs/phantomgrid_gaming/src/lib.rs (settle_net_batch, vesting)
+- programs/phantomgrid_gaming/src/instructions/vesting.rs
+- programs/phantomgrid_gaming/src/instructions/lp_growth.rs
+
+TOOL: Use Trident fuzzer or manual testing
+
+================================================================================
+2. FIX PENDING EXTENSIONS (MEDIUM PRIORITY - 30 MINS)
+================================================================================
+
+STATUS: ⚠️  PARTIAL - NEEDS STUBS
+
+✅ DONE:
+- ArmageddonPolicy struct defined
+- ConfigChangeProposal struct defined
+- BundleGuardConfig struct defined
+- LP Growth Manager FULLY implemented
+- Enhanced vesting FULLY implemented
+
+❌ TODO - ADD STUB INSTRUCTIONS:
+
+A. Armageddon Policy Stubs:
+```rust
+// Add to lib.rs program module:
+pub fn init_armageddon_policy(
+    ctx: Context<InitArmageddonPolicy>,
+    low_risk_timelock_secs: i64,
+    medium_risk_timelock_secs: i64,
+    high_risk_timelock_secs: i64,
+    min_timelock_secs: i64,
+) -> Result<()> {
+    let policy = &mut ctx.accounts.policy;
+    policy.config = ctx.accounts.config.key();
+    policy.low_risk_timelock_secs = low_risk_timelock_secs;
+    policy.medium_risk_timelock_secs = medium_risk_timelock_secs;
+    policy.high_risk_timelock_secs = high_risk_timelock_secs;
+    policy.min_timelock_secs = min_timelock_secs;
+    policy.authority = ctx.accounts.authority.key();
+    policy.bump = ctx.bumps.policy;
+    Ok(())
+}
+
+pub fn create_config_change_proposal(
+    ctx: Context<CreateConfigChangeProposal>,
+    new_armageddon_threshold: Option<u8>,
+    change_hash: [u8; 32],
+) -> Result<()> {
+    let proposal = &mut ctx.accounts.proposal;
+    let clock = Clock::get()?;
+    proposal.config = ctx.accounts.config.key();
+    proposal.proposer = ctx.accounts.proposer.key();
+    proposal.created_ts = clock.unix_timestamp;
+    proposal.earliest_execution_ts = clock.unix_timestamp + (14 * 24 * 60 * 60); // 14 days default
+    proposal.executed = false;
+    proposal.new_armageddon_threshold = new_armageddon_threshold;
+    proposal.change_hash = change_hash;
+    proposal.bump = ctx.bumps.proposal;
+    Ok(())
+}
+```
+
+B. Bundle Guard Stub:
+```rust
+pub fn init_bundle_guard(
+    ctx: Context<InitBundleGuard>,
+    enabled: bool,
+    min_risk_to_enable: u8,
+    max_accounts_per_tx: u16,
+    min_bundle_amount: u64,
+) -> Result<()> {
+    let guard = &mut ctx.accounts.guard;
+    guard.config = ctx.accounts.config.key();
+    guard.enabled = enabled;
+    guard.min_risk_to_enable = min_risk_to_enable;
+    guard.max_accounts_per_tx = max_accounts_per_tx;
+    guard.min_bundle_amount = min_bundle_amount;
+    guard.authority = ctx.accounts.authority.key();
+    guard.bump = ctx.bumps.guard;
+    Ok(())
+}
+```
+
+C. Initialize.rs - Already just greeting, but that's OK (init_config is the real init)
+
+FILES TO MODIFY:
+- programs/phantomgrid_gaming/src/lib.rs (add stub instructions to program module)
+
+================================================================================
+3. SIZE/RENT OPTIMIZATION (HIGH PRIORITY - 15 MINS)
+================================================================================
+
+STATUS: ⚠️  NEEDS CHECK
+
+CURRENT SIZE:
+- lib.rs: 7,654 lines (might be too large)
+- Risk: "max retries" error if >1MB compiled
+
+QUICK FIXES:
+- [ ] Check compiled size: `anchor build` then check target/deploy/*.so size
+- [ ] If >800KB, consider splitting into modules
+- [ ] Remove unused code/comments
+- [ ] Airdrop 2-3 SOL to deployer wallet for rent buffers
+
+COMMAND:
+```bash
+anchor build
+ls -lh target/deploy/phantomgrid_gaming.so
+```
+
+IF TOO LARGE:
+- Split large modules (netting, marketplace) into separate files
+- Remove debug code
+- Optimize struct packing
+
+RENT BUFFER:
+```bash
+solana airdrop 2 <DEPLOYER_WALLET> --url devnet
+```
+
+================================================================================
+4. TEST DEPLOY DRY-RUN (HIGH PRIORITY - 30 MINS)
+================================================================================
+
+STATUS: ✅ SCRIPTS EXIST
+
+✅ DONE:
+- scripts/deploy-production.sh exists
+- scripts/deploy-production.ps1 exists
+
+❌ TODO:
+- [ ] Run deploy script locally first
+- [ ] Test on Solana Playground (if no local setup)
+- [ ] Add priority fees to transactions
+- [ ] Check devnet status (https://status.solana.com)
+
+QUICK TEST:
+```bash
+# Test build
+anchor build
+
+# Test deploy (dry-run)
+anchor deploy --provider.cluster devnet --dry-run
+
+# Check devnet status
+curl https://api.devnet.solana.com/health
+```
+
+PRIORITY FEES:
+Add to deploy scripts:
+```typescript
+const tx = await program.methods.initConfig(...)
+  .accounts({...})
+  .rpc({
+    skipPreflight: false,
+    commitment: "confirmed",
+    maxRetries: 3,
+    // Add priority fee
+  });
+```
+
+================================================================================
+5. MONITORING/ALERTS (LOW PRIORITY - 15 MINS)
+================================================================================
+
+STATUS: ✅ MOSTLY DONE
+
+✅ DONE:
+- Sentry configured (offchain/src/serverless/monitoring.ts)
+- Prometheus mentioned in docs
+- E2E tests exist
+
+❌ TODO:
+- [ ] Set Sentry alerts for Vercel bandwidth >80%
+- [ ] Set Prometheus alerts for high error rates
+- [ ] Test E2E with 1k intents post-deploy
+
+QUICK SETUP:
+```typescript
+// In monitoring.ts
+if (bandwidthUsage > 0.8) {
+  Sentry.captureMessage("Vercel bandwidth >80%", "warning");
+}
+```
+
+================================================================================
+6. DOCS/HYPE ALIGNMENT (LOW PRIORITY - 10 MINS)
+================================================================================
+
+STATUS: ⚠️  NEEDS UPDATE
+
+✅ DONE:
+- DEVNET_READINESS_REPORT.txt has realistic costs
+- Serverless cost analysis exists
+
+❌ TODO:
+- [ ] Update README.md with realistic costs:
+  * Devnet: <$10/month
+  * Production (1M trades): $150-300/month
+  * 70-85% savings vs traditional
+- [ ] Remove any "free forever" claims
+- [ ] Add scaling cost projections
+
+QUICK UPDATE:
+Add to README.md:
+```markdown
+## Costs
+- Devnet: <$10/month (free tiers cover most usage)
+- Production (1M trades/month): $150-300/month
+- Savings: 70-85% vs traditional server infrastructure
+```
+
+================================================================================
+QUICK ACTION SUMMARY (1-2 HOURS TOTAL)
+================================================================================
+
+PRIORITY 1 (MUST DO - 45 MINS):
+1. Add stub instructions for Armageddon/Bundle Guard (30 mins)
+2. Check program size, airdrop SOL if needed (15 mins)
+
+PRIORITY 2 (SHOULD DO - 30 MINS):
+3. Quick security sweep (check overflow, signers) (30 mins)
+
+PRIORITY 3 (NICE TO HAVE - 15 MINS):
+4. Test deploy dry-run (15 mins)
+5. Update README with costs (5 mins)
+6. Set basic alerts (10 mins)
+
+TOTAL TIME: ~90 MINS (1.5 HOURS)
+
+================================================================================
+FILES TO MODIFY
+================================================================================
+
+1. programs/phantomgrid_gaming/src/lib.rs
+   - Add stub instructions (lines ~5600-5700, after LP growth)
+
+2. README.md (if exists)
+   - Add cost section
+
+3. scripts/deploy-production.sh/ps1
+   - Add priority fees
+   - Add size check
+
+================================================================================
+DEPLOYMENT COMMAND (AFTER FIXES)
+================================================================================
+
+```bash
+# 1. Build
+anchor build
+
+# 2. Check size
+ls -lh target/deploy/phantomgrid_gaming.so
+
+# 3. Airdrop SOL
+solana airdrop 2 <WALLET> --url devnet
+
+# 4. Deploy
+anchor deploy --provider.cluster devnet
+
+# 5. Initialize
+npx ts-node offchain/src/scripts/initGlobalConfig.ts
+
+# 6. Verify
+solana program show <PROGRAM_ID> --url devnet
+```
+
+================================================================================
+END OF CHECKLIST
+================================================================================
+

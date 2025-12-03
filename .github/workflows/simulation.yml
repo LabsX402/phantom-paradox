@@ -1,0 +1,45 @@
+name: PDOX Trading Simulation
+
+# DISABLED - Real trading now on Orca, no simulation needed
+# on:
+#   schedule:
+#     - cron: '*/15 * * * *'
+#   workflow_dispatch:
+#   push:
+#     paths:
+#       - 'simulation/**'
+
+on:
+  workflow_dispatch: # Manual only - don't auto-run
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: |
+          cd simulation
+          npm install
+          
+      - name: Run simulation tick
+        run: |
+          cd simulation
+          node simulate.js
+          
+      - name: Commit updated data
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "PDOX Simulator"
+          git add simulation/data.json simulation/logs/*.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 Simulation tick $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
+

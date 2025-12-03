@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDOX Token | Degen Guide</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23111' width='100' height='100' rx='8'/><text x='50' y='62' font-family='monospace' font-size='24' fill='%2300ff88' text-anchor='middle' font-weight='bold'>402</text><text x='50' y='82' font-family='monospace' font-size='14' fill='%23666' text-anchor='middle'>LAB</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0a0a;
+      --card: #111;
+      --border: #222;
+      --text: #e0e0e0;
+      --dim: #888;
+      --green: #00ff88;
+      --red: #ff4444;
+      --orange: #ff9500;
+      --purple: #b392f0;
+      --blue: #58a6ff;
+      --yellow: #ffd700;
+    }
+    
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+    
+    nav {
+      display: flex; gap: 1rem; padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem; flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--dim); text-decoration: none; font-size: 0.8rem;
+      padding: 0.3rem 0.6rem; border-radius: 4px;
+    }
+    nav a:hover { color: var(--green); background: rgba(0,255,136,0.1); }
+    
+    h1 { font-size: 1.8rem; color: var(--green); margin-bottom: 0.5rem; }
+    .tagline { color: var(--dim); font-size: 1rem; margin-bottom: 2rem; }
+    
+    h2 {
+      font-size: 1.1rem; color: var(--text); margin: 3rem 0 1.5rem;
+      padding-bottom: 0.5rem; border-bottom: 2px solid var(--green);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    h2 .emoji { font-size: 1.3rem; }
+    
+    h3 { font-size: 0.95rem; color: var(--green); margin: 2rem 0 1rem; }
+    
+    p { color: var(--dim); font-size: 0.85rem; margin-bottom: 1rem; }
+    
+    .box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.5rem; margin: 1rem 0;
+    }
+    .box.green { border-color: var(--green); }
+    .box.orange { border-color: var(--orange); }
+    .box.red { border-color: var(--red); }
+    
+    .ascii {
+      background: #000; border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem; margin: 1rem 0;
+      font-size: 0.7rem; line-height: 1.3; overflow-x: auto;
+      color: var(--green);
+    }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem;
+    }
+    .stat-card .label { color: var(--dim); font-size: 0.7rem; margin-bottom: 0.3rem; }
+    .stat-card .value { color: var(--green); font-size: 1.5rem; font-weight: bold; }
+    .stat-card .sub { color: var(--dim); font-size: 0.7rem; }
+    
+    .timeline {
+      position: relative; padding-left: 2rem; margin: 1.5rem 0;
+    }
+    .timeline::before {
+      content: ''; position: absolute; left: 6px; top: 0; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .timeline-item {
+      position: relative; margin-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -2rem; top: 4px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--green); border: 2px solid var(--bg);
+    }
+    .timeline-item.orange::before { background: var(--orange); }
+    .timeline-item.red::before { background: var(--red); }
+    .timeline-item .time { color: var(--green); font-size: 0.8rem; font-weight: bold; }
+    .timeline-item .desc { color: var(--dim); font-size: 0.8rem; }
+    
+    .comparison {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;
+    }
+    .comparison .bad { border-color: var(--red); }
+    .comparison .good { border-color: var(--green); }
+    .comparison h4 { font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .comparison .bad h4 { color: var(--red); }
+    .comparison .good h4 { color: var(--green); }
+    .comparison ul { list-style: none; padding: 0; }
+    .comparison li { font-size: 0.75rem; color: var(--dim); padding: 0.3rem 0; }
+    .comparison .bad li::before { content: '❌ '; }
+    .comparison .good li::before { content: '✅ '; }
+    
+    .fee-flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; flex-wrap: wrap; margin: 1.5rem 0;
+      font-size: 0.8rem;
+    }
+    .fee-box {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 0.5rem 1rem; border-radius: 6px; text-align: center;
+    }
+    .fee-box.highlight { border-color: var(--green); color: var(--green); }
+    .fee-arrow { color: var(--dim); }
+    
+    table {
+      width: 100%; border-collapse: collapse; margin: 1rem 0;
+      font-size: 0.8rem;
+    }
+    th, td {
+      padding: 0.75rem; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--green); font-weight: normal; }
+    td { color: var(--dim); }
+    
+    .tag {
+      display: inline-block; padding: 0.2rem 0.5rem;
+      border-radius: 4px; font-size: 0.7rem; margin-right: 0.3rem;
+    }
+    .tag.green { background: rgba(0,255,136,0.15); color: var(--green); }
+    .tag.orange { background: rgba(255,149,0,0.15); color: var(--orange); }
+    .tag.red { background: rgba(255,68,68,0.15); color: var(--red); }
+    
+    .tldr {
+      background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(88,166,255,0.1));
+      border: 1px solid var(--green); border-radius: 8px;
+      padding: 1.5rem; margin: 2rem 0;
+    }
+    .tldr h3 { margin-top: 0; }
+    .tldr ul { list-style: none; padding: 0; }
+    .tldr li { padding: 0.3rem 0; font-size: 0.85rem; color: var(--text); }
+    .tldr li::before { content: '→ '; color: var(--green); }
+    
+    @media (max-width: 600px) {
+      .comparison { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="../index.html">← Paradox</a>
+      <a href="test.html">TestLabs</a>
+      <a href="sim.html">Simulation</a>
+      <a href="api.html">API</a>
+    </nav>
+
+    <h1>PDOX Token</h1>
+    <p class="tagline">Token-2022 with built-in rug protection. Degen safe.</p>
+
+    <!-- TL;DR -->
+    <div class="tldr">
+      <h3>🦍 TL;DR FOR DEGENS</h3>
+      <ul>
+        <li><strong>3% tax</strong> on every transfer (goes down over time)</li>
+        <li><strong>70%</strong> of tax goes back to LP (makes your bags worth more)</li>
+        <li><strong>LP locked</strong> with progressive timelock (12h → 15d → 30d notice)</li>
+        <li><strong>Snapshot system</strong> = if relaunch needed, your bags get restored</li>
+        <li><strong>Can't rug fast</strong> = everyone sees LP withdrawal 12h-30d before it happens</li>
+      </ul>
+    </div>
+
+    <!-- WHY DIFFERENT -->
+    <h2><span class="emoji">🤔</span> Why Different From Other Tokens?</h2>
+    
+    <div class="comparison">
+      <div class="box bad">
+        <h4>❌ NORMAL SHITCOIN</h4>
+        <ul>
+          <li>Dev can pull LP anytime</li>
+          <li>No warning before rug</li>
+          <li>Tax goes to dev wallet</li>
+          <li>If bug found = you're fucked</li>
+          <li>Promises mean nothing</li>
+        </ul>
+      </div>
+      <div class="box good">
+        <h4>✅ PDOX</h4>
+        <ul>
+          <li>LP pull needs 12h-30d notice</li>
+          <li>Everyone sees withdrawal on-chain</li>
+          <li>Tax grows the LP automatically</li>
+          <li>Bug found = snapshot + relaunch</li>
+          <li>Code enforces everything</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- LP LOCK TIMELINE -->
+    <h2><span class="emoji">🔒</span> LP Lock: The Anti-Rug Timeline</h2>
+    
+    <p>LP can ONLY be withdrawn with advance notice. The notice period increases over time:</p>
+    
+    <div class="ascii">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        LP LOCK PROGRESSIVE TIMELINE                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  DAY 0          DAY 3              DAY 15                    FOREVER        │
+│    │              │                   │                         │           │
+│    ▼              ▼                   ▼                         ▼           │
+│  ┌────────────┐ ┌──────────────────┐ ┌─────────────────────────────────┐   │
+│  │ EMERGENCY  │ │  STABILIZATION   │ │         PERMANENT MODE          │   │
+│  │  12h wait  │ │    15 day wait   │ │         30 day wait             │   │
+│  └────────────┘ └──────────────────┘ └─────────────────────────────────┘   │
+│                                                                             │
+│  WHY: Fix bugs   WHY: Careful        WHY: Maximum trust                    │
+│       quickly         changes              unruggable AF                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time">📍 DAYS 0-3: EMERGENCY PHASE</div>
+        <div class="desc">
+          <span class="tag green">12h notice</span>
+          Just launched. If critical bug found, dev can fix it with 12h warning.
+          You see the withdrawal announced on-chain. You have 12h to decide.
+        </div>
+      </div>
+      <div class="timeline-item orange">
+        <div class="time">📍 DAYS 3-15: STABILIZATION</div>
+        <div class="desc">
+          <span class="tag orange">15 day notice</span>
+          Token is stable. Any LP changes need 15 DAYS advance notice.
+          If dev announces withdrawal, you have 2 weeks to exit.
+        </div>
+      </div>
+      <div class="timeline-item red">
+        <div class="time">📍 AFTER DAY 15: PERMANENT</div>
+        <div class="desc">
+          <span class="tag red">30 day notice</span>
+          Fully locked. LP withdrawal needs 30 DAYS notice.
+          Basically unruggable. Any sus activity = everyone exits first.
+        </div>
+      </div>
+    </div>
+
+    <!-- SNAPSHOT SYSTEM -->
+    <h2><span class="emoji">📸</span> Snapshot System: Your Bags Are Safe</h2>
+    
+    <p>Before ANY LP withdrawal, the system takes a snapshot of:</p>
+    
+    <div class="grid">
+      <div class="stat-card">
+        <div class="label">CAPTURED</div>
+        <div class="value">LP State</div>
+        <div class="sub">SOL + Token reserves</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">CAPTURED</div>
+        <div class="value">Holders</div>
+        <div class="sub">Every wallet balance</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">CAPTURED</div>
+        <div class="value">Supply</div>
+        <div class="sub">Total + Circulating</div>
+      </div>
+    </div>
+
+    <div class="ascii">
+┌──────────────────────────────────────────────────────────────────┐
+│                    RELAUNCH FLOW                                 │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   BUG FOUND          SNAPSHOT              FIX                   │
+│      │                  │                   │                    │
+│      ▼                  ▼                   ▼                    │
+│  ┌────────┐        ┌────────┐         ┌────────┐                │
+│  │ OH SHIT│───────▶│ 📸 SAVE│────────▶│ DEPLOY │                │
+│  └────────┘        │ STATE  │         │  V2    │                │
+│                    └────────┘         └────────┘                │
+│                         │                  │                     │
+│                         ▼                  ▼                     │
+│                    ┌─────────────────────────────┐               │
+│                    │      RESTORE BALANCES      │               │
+│                    │   Everyone gets same bags   │               │
+│                    │    LP same size as before   │               │
+│                    └─────────────────────────────┘               │
+│                                                                  │
+│   RESULT: Bug fixed, no one lost money, everyone happy          │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <div class="box green">
+      <strong style="color: var(--green);">🛡️ WHY THIS MATTERS:</strong>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">
+        Normal token: bug = everyone loses everything<br>
+        PDOX: bug = snapshot → fix → restore → continue as if nothing happened
+      </p>
+    </div>
+
+    <!-- TAX BREAKDOWN -->
+    <h2><span class="emoji">💸</span> The 3% Tax: Where It Goes</h2>
+    
+    <div class="fee-flow">
+      <div class="fee-box">YOU TRADE<br><strong>100 PDOX</strong></div>
+      <span class="fee-arrow">→</span>
+      <div class="fee-box highlight">3% TAX<br><strong>collected</strong></div>
+      <span class="fee-arrow">→</span>
+      <div class="fee-box">SMART<br><strong>ROUTING</strong></div>
+    </div>
+
+    <p style="text-align: center; color: var(--dim);">Tax flow depends on trade type (this is the KEY to sustainable LP):</p>
+
+    <div class="ascii">
+┌────────────────────────────────────────────────────────────────────┐
+│              TAX DISTRIBUTION (CORRECT MATH)                       │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  ┌─────────────────────────────────────────────────────────────┐  │
+│  │ BUY TRADE: You pay SOL → get PDOX                           │  │
+│  │ Fee = 3% of PDOX you receive                                │  │
+│  │                                                              │  │
+│  │    Fee PDOX ──┬──▶ 15% BURNED (supply shrinks)              │  │
+│  │               └──▶ 15% TREASURY (development)               │  │
+│  │                    (70% can't go to LP - would dilute!)     │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                    │
+│  ┌─────────────────────────────────────────────────────────────┐  │
+│  │ SELL TRADE: You pay PDOX → get SOL                          │  │
+│  │ Fee = 3% of SOL you receive                                 │  │
+│  │                                                              │  │
+│  │    Fee SOL ───▶ 70% → SOL VAULT (accumulates)               │  │
+│  │               ▶ 15% → Treasury                               │  │
+│  │               ▶ 15% → (converted)                            │  │
+│  │                                                              │  │
+│  │    When vault hits threshold:                                │  │
+│  │    ┌─────────────────────────────────────────────────────┐  │  │
+│  │    │  SOL from vault + MINT matching PDOX at ratio       │  │  │
+│  │    │  = ADD BOTH TO LP = ratio maintained!               │  │  │
+│  │    │  = LP GROWS without price dilution!                 │  │  │
+│  │    └─────────────────────────────────────────────────────┘  │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                    │
+│  WHY THIS WORKS:                                                   │
+│  • LP can only grow (SOL accumulates from sell fees)              │
+│  • New PDOX is always backed 1:1 by SOL                           │
+│  • Ratio stays same = no price impact from LP growth              │
+│  • More depth = less slippage = better trades for everyone        │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <table>
+      <tr>
+        <th>Source</th>
+        <th>Share</th>
+        <th>What Happens</th>
+        <th>Result</th>
+      </tr>
+      <tr>
+        <td><span class="tag green">SELL FEES (SOL)</span></td>
+        <td>70%</td>
+        <td>Accumulates in vault → triggers LP injection</td>
+        <td>LP grows sustainably</td>
+      </tr>
+      <tr>
+        <td><span class="tag orange">BUY FEES (PDOX)</span></td>
+        <td>15%</td>
+        <td>Burned forever</td>
+        <td>Supply decreases</td>
+      </tr>
+      <tr>
+        <td><span class="tag">BOTH</span></td>
+        <td>15%</td>
+        <td>Treasury for development</td>
+        <td>Protocol growth</td>
+      </tr>
+    </table>
+    
+    <div class="box green">
+      <strong style="color: var(--green);">🧠 KEY INSIGHT:</strong>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">
+        You can't just add PDOX to LP - that would crash the price!<br>
+        SOL fees accumulate → mint matching PDOX → add BOTH at ratio.<br>
+        <strong>LP floor = initial 5 SOL. Can ONLY grow from there!</strong>
+      </p>
+    </div>
+
+    <!-- TAX DESCENT -->
+    <h2><span class="emoji">📉</span> Tax Goes Down Over Time</h2>
+    
+    <p>Tax starts at 3% and decreases based on LP health:</p>
+
+    <div class="ascii">
+┌────────────────────────────────────────────────────────────────┐
+│                   TAX RATE VS LP SIZE                          │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  TAX %                                                         │
+│    │                                                           │
+│  3%├────●                                                      │
+│    │     ╲                                                     │
+│ 2.5├──────●                                                    │
+│    │       ╲                                                   │
+│  2%├────────●                                                  │
+│    │         ╲                                                 │
+│ 1.5├──────────●                                                │
+│    │           ╲                                               │
+│  1%├────────────●─────────────────────────────────             │
+│    │             (MINIMUM - never goes below)                  │
+│    └────────────────────────────────────────────────▶ LP SIZE │
+│        $1K    $10K    $50K    $100K    $500K+                 │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <div class="box">
+      <strong>🧠 The Logic:</strong>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">
+        Small LP = needs more protection = higher tax to grow LP faster<br>
+        Big LP = already safe = lower tax to encourage trading
+      </p>
+    </div>
+
+    <!-- ARMAGEDDON -->
+    <h2><span class="emoji">🚨</span> Armageddon Mode: Emergency Protection</h2>
+    
+    <p>If LP drops significantly <strong>from its PEAK value</strong>, emergency measures kick in automatically:</p>
+    
+    <div class="box orange">
+      <strong style="color: var(--orange);">⚠️ IMPORTANT:</strong>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">
+        Armageddon triggers based on drop from <strong>ALL-TIME HIGH LP</strong>, not initial.<br>
+        If LP grew from $680 to $10K, then drops to $5K = 50% drop = DEFCON-3.<br>
+        LP can NEVER go below initial 5 SOL (floor protection).
+      </p>
+    </div>
+
+    <table>
+      <tr>
+        <th>Level</th>
+        <th>Trigger</th>
+        <th>Response</th>
+        <th>Fee to LP</th>
+      </tr>
+      <tr>
+        <td><span class="tag orange">DEFCON 3</span></td>
+        <td>LP -50% from peak</td>
+        <td>Alert mode, increased LP share</td>
+        <td>80%</td>
+      </tr>
+      <tr>
+        <td><span class="tag red">DEFCON 2</span></td>
+        <td>LP -75% from peak</td>
+        <td>High defense mode</td>
+        <td>85%</td>
+      </tr>
+      <tr>
+        <td><span class="tag red">DEFCON 1</span></td>
+        <td>LP -90% from peak</td>
+        <td>MAX DEFENSE - all resources to LP</td>
+        <td>90%</td>
+      </tr>
+    </table>
+    
+    <div class="ascii">
+┌────────────────────────────────────────────────────────────────┐
+│                    LP FLOOR PROTECTION                         │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   At launch: ALL tokens in LP (no airdrops, no premint)       │
+│                                                                │
+│   To SELL, you must have BOUGHT first.                        │
+│   Every BUY adds SOL to LP.                                   │
+│   Every SELL returns PDOX but fee SOL stays.                  │
+│                                                                │
+│   RESULT: LP SOL can NEVER go below initial 5 SOL!            │
+│                                                                │
+│   ┌─────────────────────────────────────────────────────────┐ │
+│   │  FLOOR: 5 SOL ($680)                                    │ │
+│   │  ════════════════════════════════════════════════════   │ │
+│   │  ↑ LP can only grow from here via fee accumulation      │ │
+│   └─────────────────────────────────────────────────────────┘ │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <div class="box orange">
+      <strong style="color: var(--orange);">⚠️ WHAT THIS MEANS:</strong>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">
+        If someone tries to dump hard, the system fights back automatically.
+        More fees → more LP → price recovers faster. Diamond hands rewarded.
+      </p>
+    </div>
+
+    <!-- TOKENOMICS -->
+    <h2><span class="emoji">📊</span> Tokenomics: The Numbers</h2>
+    
+    <div class="grid">
+      <div class="stat-card">
+        <div class="label">TOTAL SUPPLY</div>
+        <div class="value">1B</div>
+        <div class="sub">Hard cap, cannot change</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">DEV ALLOCATION</div>
+        <div class="value">3%</div>
+        <div class="sub">30M max, vests slowly</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">DAO TREASURY</div>
+        <div class="value">5%</div>
+        <div class="sub">50M max, governance</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">INITIAL LP</div>
+        <div class="value">5 SOL + 10M</div>
+        <div class="sub">$680 + 1% supply, locked</div>
+      </div>
+    </div>
+
+    <div class="ascii">
+┌────────────────────────────────────────────────────────────────┐
+│                    TOKEN DISTRIBUTION                          │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  AT LAUNCH (TGE):                                              │
+│  5 SOL ($680) + 10M PDOX (1% of supply) = LP                  │
+│  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 1% in LP   │
+│  REST = 0 (mint-as-you-go for dev/dao)                        │
+│                                                                │
+│  AFTER 3 YEARS:                                                │
+│  ████████████████████████████████████████████████ LP + MARKET │
+│  ██ DEV (3% max)                                               │
+│  ███ DAO (5% max)                                              │
+│  ████ BURNED (grows via tax)                                   │
+│                                                                │
+│  KEY: Dev & DAO tokens MINT SLOWLY over years                 │
+│       They don't exist at launch = no dump risk               │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <!-- VERIFICATION -->
+    <h2><span class="emoji">✅</span> Verify It Yourself</h2>
+    
+    <div class="box">
+      <p><strong>Check LP Lock on-chain:</strong></p>
+      <pre style="background: #000; padding: 0.5rem; border-radius: 4px; overflow-x: auto; font-size: 0.75rem; color: var(--green);">
+# See LP Lock state (when deployed)
+solana account [LP_LOCK_PDA] --url devnet
+
+# Check pending withdrawals
+# Any withdrawal will be visible here DAYS before execution
+      </pre>
+    </div>
+
+    <div class="box">
+      <p><strong>Verify tax on any transfer:</strong></p>
+      <pre style="background: #000; padding: 0.5rem; border-radius: 4px; overflow-x: auto; font-size: 0.75rem; color: var(--green);">
+# Send 100 PDOX → Receiver gets 97 PDOX
+# 3 PDOX taken as tax
+# Check on explorer to verify
+      </pre>
+    </div>
+
+    <!-- BOTTOM LINE -->
+    <div class="tldr" style="margin-top: 3rem;">
+      <h3>🎯 THE BOTTOM LINE</h3>
+      <ul>
+        <li>Can dev rug? <strong>NO</strong> - LP locked with 12h-30d notice, you see it coming</li>
+        <li>Can dev fix bugs? <strong>YES</strong> - But everyone knows before LP moves</li>
+        <li>What if relaunch needed? <strong>SNAPSHOT</strong> - Your bags get restored</li>
+        <li>Where does tax go? <strong>70% LP</strong> - Makes your bags worth more</li>
+        <li>Is this audited? <strong>Code is public</strong> - Check it yourself</li>
+      </ul>
+    </div>
+
+    <p style="text-align: center; color: var(--dim); margin-top: 2rem; font-size: 0.75rem;">
+      Built by <a href="https://x.com/LabsX402" style="color: var(--green);">LabsX402</a> • 
+      <a href="https://github.com/LabsX402/token-2022-paradox" style="color: var(--blue);">View Code</a>
+    </p>
+  </div>
+</body>
+</html>

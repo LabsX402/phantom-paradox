@@ -1,0 +1,460 @@
+================================================================================
+PHANTOMGRID FEE MODELS - COMPLETE BREAKDOWN
+================================================================================
+How Much We Take, From What, and Where It Goes
+
+Status: ✅ PRODUCTION READY - ALL FEES IMPLEMENTED
+
+================================================================================
+1. ON-CHAIN FEES (Per Trade/Listing)
+================================================================================
+
+1.1 PROTOCOL FEE
+----------------
+What: Fee charged by PhantomGrid protocol on every trade
+
+Calculation:
+- protocol_fee = trade_price × protocol_fee_bps / 10,000
+- Recommended Default: 50 bps (0.5%) - competitive with Tensor, justified by netting benefits
+- Current Default: 100 bps (1%) - can be updated via governance
+- Maximum: 1,000 bps (10%) - set at initialization
+- Configurable: Can be updated via governance (with timelock)
+
+Example (Recommended 0.5%):
+- Trade price: 100 SOL
+- Protocol fee: 100 SOL × 50 / 10,000 = 0.5 SOL (0.5%)
+
+Example (Current 1%):
+- Trade price: 100 SOL
+- Protocol fee: 100 SOL × 100 / 10,000 = 1 SOL (1%)
+
+Where It Goes:
+- Destination: protocol_treasury wallet (set at initialization)
+- Storage: Tracked per-game in game.protocol_fees_accumulated
+- Withdrawal: Can be withdrawn via withdraw_protocol_fees instruction
+- Governance: Only governance wallet can withdraw
+
+Code Location:
+- programs/phantomgrid_gaming/src/lib.rs (lines 2337-2342, 2645-2649, 3401-3407)
+- Stored in: game.protocol_fees_accumulated (per-game tracking)
+- Withdrawn from: game_vault → protocol_treasury
+
+1.2 GAME FEE
+------------
+What: Fee charged by game owner on every trade in their game
+
+Calculation:
+- game_fee = trade_price × game.fee_bps / 10,000
+- Set per-game: Each game can set its own fee_bps
+- Maximum: 2,000 bps (20%)
+- Configurable: Game owner sets at game initialization
+
+Example:
+- Trade price: 100 SOL
+- Game fee: 100 SOL × 500 / 10,000 = 5 SOL (5%)
+
+Where It Goes:
+- Destination: Game owner wallet (game.payout_wallet)
+- Storage: Tracked in game.accumulated_game_fees
+- Withdrawal: Game owner can withdraw via withdraw_game_fees instruction
+
+Code Location:
+- programs/phantomgrid_gaming/src/lib.rs (lines 2349-2352, 2639-2643, 3409-3415)
+- Stored in: game.accumulated_game_fees
+- Withdrawn from: game_vault → game.payout_wallet
+
+1.3 ROYALTY FEE (Creator Royalty)
+----------------------------------
+What: Fee paid to item creator/royalty recipient
+
+Calculation:
+- royalty_fee = trade_price × listing.royalty_bps / 10,000
+- Set per-listing: Each listing can specify royalty_bps
+- Maximum: 2,500 bps (25%)
+- Minimum: 50 bps (0.5%) - prevents griefing via dust royalties
+- Optional: Can be 0 if no royalty recipient
+
+Example:
+- Trade price: 100 SOL
+- Royalty: 100 SOL × 1,000 / 10,000 = 10 SOL (10%)
+
+Where It Goes:
+- Destination: listing.royalty_recipient (creator wallet)
+- Storage: Tracked in royalty_recipient_ledger (Token-2022 compatible)
+- Automatic: Paid immediately on trade settlement
+
+Code Location:
+- programs/phantomgrid_gaming/src/lib.rs (lines 2651-2660, 3417-3423)
+- Paid to: listing.royalty_recipient
+- Compatible with: Metaplex royalty standard
+
+1.4 SELLER AMOUNT (After All Fees)
+-----------------------------------
+What: Amount seller receives after all fees deducted
+
+Calculation:
+- seller_amount = trade_price - protocol_fee - game_fee - royalty_fee
+
+Example:
+- Trade price: 100 SOL
+- Protocol fee: 1 SOL (1%)
+- Game fee: 5 SOL (5%)
+- Royalty: 10 SOL (10%)
+- Seller receives: 100 - 1 - 5 - 10 = 84 SOL (84%)
+
+Where It Goes:
+- Destination: Seller wallet (listing.seller)
+- Storage: Credited to seller's PlayerLedger.available balance
+
+================================================================================
+2. OFF-CHAIN FEES (From Netting Savings - Pi-Standard "Alive Fee")
+================================================================================
+
+2.1 PI FEE / ALIVE FEE
+----------------------
+What: Fee taken from transaction cost savings via netting batching
+
+Calculation:
+- Theoretical cost = BASE_GAS × compression_ratio
+  (If all trades were on-chain individually)
+- Actual cost = BASE_GAS (1 batched transaction)
+- Total savings = theoretical_cost - actual_cost
+- Protocol take = total_savings × 0.10 (10% of savings)
+- User rebate = total_savings × 0.90 (90% of savings)
+- Final fee = (BASE_GAS - rebate_per_user) × chaos_level
+- Minimum: 1,000 lamports (floor)
+
+Example:
+- 1,000 trades would cost: 1,000 × $0.00025 = $0.25 (theoretical)
+- Actually costs: 1 × $0.00025 = $0.00025 (batched)
+- Savings: $0.24975
+- Protocol takes: $0.24975 × 0.10 = $0.024975 (10%)
+- Users save: $0.24975 × 0.90 = $0.224775 (90%)
+
+At Scale (1M trades):
+- Theoretical: 1,000,000 × $0.00025 = $250
+- Actual: 1,000 × $0.00025 = $0.25 (1,000 batches)
+- Savings: $249.75
+- Protocol takes: $249.75 × 0.10 = $24.975 (10%)
+- Users save: $249.75 × 0.90 = $224.775 (90%)
+
+Where It Goes:
+- Destination: Protocol treasury (via pi_fee in settlement)
+- Storage: Included in settlement transaction as pi_fee
+- Withdrawal: Same as protocol fees (withdraw_protocol_fees)
+
+Code Location:
+- offchain/src/netting/poltergeist.ts (lines 178-204)
+- offchain/src/netting/engine.ts (lines 416-420)
+- Calculated per batch, included in settlement
+
+Factors:
+- Anonymity set: Number of unique wallets (higher = better)
+- Compression ratio: Raw volume / Net volume (higher = more savings)
+- Chaos level: Market volatility factor (0.9 - 1.1)
+
+================================================================================
+3. FEE DISTRIBUTION SUMMARY
+================================================================================
+
+For a $100 Trade (Recommended 0.5% Protocol Fee):
+
+1. Protocol Fee (0.5% recommended): $0.50
+   → Goes to: protocol_treasury wallet
+   → Tracked in: game.protocol_fees_accumulated
+
+2. Game Fee (5% example): $5.00
+   → Goes to: game.payout_wallet (game owner)
+   → Tracked in: game.accumulated_game_fees
+
+3. Royalty (10% example): $10.00
+   → Goes to: listing.royalty_recipient (creator)
+   → Paid immediately
+
+4. Seller Receives: $84.50
+   → Goes to: listing.seller wallet
+   → Credited to: PlayerLedger.available
+
+For a $100 Trade (Current 1% Protocol Fee):
+
+1. Protocol Fee (1%): $1.00
+   → Goes to: protocol_treasury wallet
+   → Tracked in: game.protocol_fees_accumulated
+
+2. Game Fee (5% example): $5.00
+   → Goes to: game.payout_wallet (game owner)
+   → Tracked in: game.accumulated_game_fees
+
+3. Royalty (10% example): $10.00
+   → Goes to: listing.royalty_recipient (creator)
+   → Paid immediately
+
+4. Seller Receives: $84.00
+   → Goes to: listing.seller wallet
+   → Credited to: PlayerLedger.available
+
+5. Pi Fee (from netting savings): ~$0.000025 per 1,000 trades
+   → Goes to: protocol_treasury wallet
+   → From: 10% of saved transaction fees
+
+================================================================================
+4. FEE ACCUMULATION & WITHDRAWAL
+================================================================================
+
+4.1 PROTOCOL FEES
+-----------------
+Accumulation:
+- Fees accumulate in game.protocol_fees_accumulated (per-game)
+- Each trade adds protocol_fee to this balance
+- Tracked separately per game (prevents "Robin Hood" risk)
+
+Withdrawal:
+- Instruction: withdraw_protocol_fees
+- Authority: Only governance wallet can call
+- Source: game_vault (game's token vault)
+- Destination: protocol_treasury wallet
+- Amount: Specified in withdrawal instruction (must be <= accumulated)
+
+Code:
+- programs/phantomgrid_gaming/src/lib.rs (lines 2876-2925)
+- Withdraws from: game_vault → protocol_treasury
+
+4.2 GAME FEES
+-------------
+Accumulation:
+- Fees accumulate in game.accumulated_game_fees
+- Each trade adds game_fee to this balance
+- Tracked per game
+
+Withdrawal:
+- Instruction: withdraw_game_fees
+- Authority: Only game.payout_wallet can call
+- Source: game_vault
+- Destination: game.payout_wallet
+- Amount: Specified in withdrawal instruction (must be <= accumulated)
+
+Code:
+- programs/phantomgrid_gaming/src/lib.rs (lines 2927-2970)
+- Withdrawn by: game owner (payout_wallet)
+
+4.3 PI FEES (Alive Fee)
+-----------------------
+Accumulation:
+- Calculated per batch during netting
+- Included in settlement transaction as pi_fee
+- Added to protocol fees pool
+
+Withdrawal:
+- Same as protocol fees
+- Withdrawn via withdraw_protocol_fees instruction
+- Goes to protocol_treasury wallet
+
+================================================================================
+5. FEE CONFIGURATION
+================================================================================
+
+5.1 PROTOCOL FEE CONFIGURATION
+------------------------------
+Recommended Default: 50 bps (0.5%) - competitive with Tensor, justified by netting benefits
+Current Default: 100 bps (1%) - can be updated via governance
+Maximum: 1,000 bps (10%)
+Set at: Program initialization (init_config)
+Update: Via governance (update_config instruction)
+Timelock: Required for fee changes (transparency)
+
+Competitive Positioning:
+- Magic Eden: 0.1-0.3% (lower, but no netting benefits)
+- Tensor: 0.5-1% (similar range, but no netting benefits)
+- PhantomGrid: 0.5% recommended - justified by:
+  * Netting batching (99.9% transaction fee savings)
+  * ZK privacy options
+  * Agent marketplace support
+  * Nano-trade profitability
+
+Code:
+- programs/phantomgrid_gaming/src/lib.rs (lines 82, 163, 1174-1191)
+- MAX_PROTOCOL_FEE_BPS = 1,000 (10%)
+
+5.2 GAME FEE CONFIGURATION
+--------------------------
+Default: Set by game owner at game initialization
+Maximum: 2,000 bps (20%)
+Update: Via update_game_config instruction (game owner only)
+
+Code:
+- programs/phantomgrid_gaming/src/lib.rs (lines 83, 205)
+- MAX_GAME_FEE_BPS = 2,000 (20%)
+
+5.3 ROYALTY CONFIGURATION
+--------------------------
+Set per-listing: Each listing specifies royalty_bps
+Maximum: 2,500 bps (25%)
+Minimum: 50 bps (0.5%) - prevents griefing
+Optional: Can be 0 if no royalty recipient
+
+Code:
+- programs/phantomgrid_gaming/src/lib.rs (lines 85-86, 275-276)
+- MAX_ROYALTY_BPS = 2,500 (25%)
+- MIN_ROYALTY_BPS = 50 (0.5%)
+
+================================================================================
+6. FEE EXAMPLES AT SCALE
+================================================================================
+
+6.1 SMALL SCALE (1,000 trades/month)
+------------------------------------
+Trade volume: $100,000 (1,000 trades × $100 average)
+
+On-Chain Fees:
+- Protocol fee (1%): $1,000
+- Game fee (5%): $5,000
+- Royalty (10%): $10,000
+- Total on-chain fees: $16,000
+
+Pi Fee (from netting):
+- Transaction savings: $0.24975 (1,000 trades batched)
+- Protocol takes (10%): $0.024975
+- Users save (90%): $0.224775
+
+6.2 MEDIUM SCALE (1M trades/month)
+----------------------------------
+Trade volume: $100,000,000 (1M trades × $100 average)
+
+On-Chain Fees:
+- Protocol fee (1%): $1,000,000
+- Game fee (5%): $5,000,000
+- Royalty (10%): $10,000,000
+- Total on-chain fees: $16,000,000
+
+Pi Fee (from netting):
+- Transaction savings: $249.75 (1M trades batched into 1,000 transactions)
+- Protocol takes (10%): $24.975
+- Users save (90%): $224.775
+
+6.3 LARGE SCALE (10M trades/month)
+-----------------------------------
+Trade volume: $1,000,000,000 (10M trades × $100 average)
+
+On-Chain Fees:
+- Protocol fee (1%): $10,000,000
+- Game fee (5%): $50,000,000
+- Royalty (10%): $100,000,000
+- Total on-chain fees: $160,000,000
+
+Pi Fee (from netting):
+- Transaction savings: $2,497.50 (10M trades batched)
+- Protocol takes (10%): $249.75
+- Users save (90%): $2,247.75
+
+================================================================================
+7. FEE DESTINATIONS SUMMARY
+================================================================================
+
+Protocol Treasury (protocol_treasury wallet):
+- Protocol fees (1% of trade price)
+- Pi fees (10% of netting savings)
+- Total: ~1% of trade volume + 10% of transaction savings
+
+Game Owner (game.payout_wallet):
+- Game fees (5% example, set per-game)
+- Total: ~5% of trade volume in their game
+
+Creator (listing.royalty_recipient):
+- Royalty fees (10% example, set per-listing)
+- Total: ~10% of trade price for their items
+
+Seller (listing.seller):
+- Remaining amount after all fees
+- Total: ~84% of trade price (example with 1% protocol + 5% game + 10% royalty)
+
+Users (via netting):
+- 90% of transaction cost savings
+- Example: Save $0.224775 per 1,000 trades (vs $0.25 without netting)
+
+================================================================================
+8. FEE MODEL COMPARISON
+================================================================================
+
+Traditional Marketplace (Magic Eden/Tensor):
+- Protocol fee: 0.1-0.3% of trade value
+- Transaction fees: $0.00025 per trade (no batching)
+- Total cost: 0.1-0.3% + $0.00025 per trade
+
+PhantomGrid:
+- Protocol fee: 1% of trade value (higher, but justified by netting)
+- Game fee: 0-20% (set by game owner)
+- Royalty: 0-25% (set by creator)
+- Transaction fees: $0.00025 per 1,000 trades (batched) - 99.9% savings
+- Pi fee: 10% of transaction savings (from netting)
+- Total cost: 1% protocol + game fee + royalty + minimal transaction fees
+
+Value Proposition:
+- Higher protocol fee (1% vs 0.1-0.3%) but:
+  - 99.9% reduction in transaction fees (netting)
+  - 1,000x-1,000,000x faster settlement
+  - ZK privacy options
+  - Agent marketplace support
+  - Nano-trade profitability
+
+================================================================================
+9. FEE TRACKING & TRANSPARENCY
+================================================================================
+
+On-Chain Tracking:
+- Protocol fees: game.protocol_fees_accumulated (per-game)
+- Game fees: game.accumulated_game_fees (per-game)
+- Royalty: Paid immediately (no accumulation)
+- All fees visible on-chain via events
+
+Events Emitted:
+- TradeExecuted: Includes protocol_fee, game_fee, royalty_amount
+- ProtocolFeesWithdrawn: When protocol fees are withdrawn
+- GameFeesWithdrawn: When game fees are withdrawn
+- RoyaltyPaid: When royalty is paid to creator
+
+Transparency:
+- All fees visible on-chain
+- Per-game tracking prevents cross-game fee mixing
+- Governance-controlled protocol fee updates
+- Timelock required for fee changes
+
+================================================================================
+10. FEE MODEL SUMMARY
+================================================================================
+
+WHAT WE TAKE:
+1. Protocol Fee: 0.5% recommended (1% current default, max 10%)
+2. Game Fee: 0-20% of trade price (set by game owner)
+3. Royalty: 0-25% of trade price (set by creator, min 0.5%)
+4. Pi Fee: 10% of transaction cost savings (from netting)
+
+FROM WHAT:
+1. Protocol/Game/Royalty: From trade price (buyer pays)
+2. Pi Fee: From transaction cost savings (netting batching)
+
+WHERE IT GOES:
+1. Protocol fees → protocol_treasury wallet (governance-controlled)
+2. Game fees → game.payout_wallet (game owner)
+3. Royalty → listing.royalty_recipient (creator)
+4. Pi fees → protocol_treasury wallet (same as protocol fees)
+
+TOTAL FEES (Example - Recommended 0.5% Protocol):
+- Trade price: $100
+- Protocol (0.5%): $0.50
+- Game (5%): $5.00
+- Royalty (10%): $10.00
+- Seller receives: $84.50
+- Pi fee: ~$0.000025 per 1,000 trades (from savings)
+
+TOTAL FEES (Example - Current 1% Protocol):
+- Trade price: $100
+- Protocol (1%): $1.00
+- Game (5%): $5.00
+- Royalty (10%): $10.00
+- Seller receives: $84.00
+- Pi fee: ~$0.000025 per 1,000 trades (from savings)
+
+================================================================================
+END OF FEE MODELS BREAKDOWN
+================================================================================
+

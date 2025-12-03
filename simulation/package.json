@@ -1,0 +1,12 @@
+{
+  "name": "pdox-simulation",
+  "version": "1.0.0",
+  "description": "24/7 PDOX trading simulation",
+  "main": "simulate.js",
+  "scripts": {
+    "sim": "node simulate.js",
+    "init": "node init.js"
+  },
+  "dependencies": {}
+}
+

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compression — Phantom Paradox</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230d1117' width='100' height='100' rx='8'/><text y='42' x='50' text-anchor='middle' font-size='28' font-family='monospace' fill='%236cb6ff'>402</text><text y='72' x='50' text-anchor='middle' font-size='22' font-family='monospace' fill='%234ac26b'>LAB</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --accent-green: #4ac26b;
+            --accent-blue: #6cb6ff;
+            --accent-purple: #b392f0;
+            --accent-red: #f47067;
+            --accent-orange: #d4a72c;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); line-height: 1.7; }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        
+        nav { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        nav a { color: var(--text-secondary); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        nav a:hover { color: var(--accent-green); }
+        .nav-links { display: flex; gap: 2rem; }
+        
+        h1 { font-size: 2.5rem; margin: 3rem 0 1rem; }
+        h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; color: var(--accent-purple); font-family: 'JetBrains Mono', monospace; }
+        p { margin: 1rem 0; color: var(--text-secondary); }
+        
+        .highlight { color: var(--accent-green); }
+        
+        .diagram { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin: 2rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; overflow-x: auto; }
+        .diagram pre { white-space: pre; }
+        
+        .compare-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+        .compare-table th, .compare-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
+        .compare-table th { color: var(--text-secondary); font-weight: 400; font-size: 0.8rem; text-transform: uppercase; }
+        .pass { color: var(--accent-green); }
+        .fail { color: var(--accent-red); }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+        .stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 2rem; color: var(--accent-green); }
+        .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+        
+        footer { margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-secondary); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html">← phantom_paradox</a>
+        <div class="nav-links">
+            <a href="anonymity.html">anonymity</a>
+            <a href="compression.html" style="color: var(--accent-green);">compression</a>
+            <a href="compare.html">compare</a>
+            <a href="test.html">test</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Merkle Compression</h1>
+        <p>How we fit 1,000,000 transactions into 1 on-chain commit.</p>
+
+        <div class="stat-grid">
+            <div class="stat">
+                <div class="stat-value">1M+</div>
+                <div class="stat-label">intents per batch</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">1 TX</div>
+                <div class="stat-label">on-chain settlement</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">32 bytes</div>
+                <div class="stat-label">merkle root size</div>
+            </div>
+        </div>
+
+        <h2>// the problem with individual transactions</h2>
+        
+        <div class="diagram">
+<pre>
+TRADITIONAL APPROACH (1000 transfers):
+
+    TX 1:  A₁ → B₁  (signature, accounts, data) = ~250 bytes
+    TX 2:  A₂ → B₂  (signature, accounts, data) = ~250 bytes
+    TX 3:  A₃ → B₃  (signature, accounts, data) = ~250 bytes
+    ...
+    TX 1000: A₁₀₀₀ → B₁₀₀₀ = ~250 bytes
+
+    TOTAL: 1000 transactions × $0.00025 = $0.25 (gas only)
+           1000 transactions × ~250 bytes = 250KB on-chain
+           1000 transactions × ~400ms = 6.7 minutes total time
+</pre>
+        </div>
+
+        <h2>// merkle tree compression</h2>
+        
+        <div class="diagram">
+<pre>
+PHANTOM PARADOX APPROACH (1000 transfers):
+
+    STEP 1: Collect intents off-chain
+    ───────────────────────────────────
+    intent_1: A₁ → B₁ (100 SOL)
+    intent_2: A₂ → B₂ (50 SOL)
+    intent_3: A₃ → B₃ (200 SOL)
+    ...
+    intent_1000: A₁₀₀₀ → B₁₀₀₀ (75 SOL)
+
+
+    STEP 2: Build Merkle tree
+    ───────────────────────────────────
+                    ┌─────────────┐
+                    │  ROOT HASH  │  ◀── 32 bytes (this goes on-chain)
+                    │  0x94164f...│
+                    └──────┬──────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+         ┌────┴────┐               ┌────┴────┐
+         │ hash_01 │               │ hash_23 │
+         └────┬────┘               └────┬────┘
+              │                         │
+        ┌─────┴─────┐             ┌─────┴─────┐
+        │           │             │           │
+    ┌───┴───┐   ┌───┴───┐     ┌───┴───┐   ┌───┴───┐
+    │leaf_0 │   │leaf_1 │     │leaf_2 │   │leaf_3 │
+    │intent₁│   │intent₂│     │intent₃│   │intent₄│
+    └───────┘   └───────┘     └───────┘   └───────┘
+        ...         ...           ...         ...
+    (each leaf = hash of intent data)
+
+
+    STEP 3: Submit single TX to Solana
+    ───────────────────────────────────
+    settle_state_root(
+        batch_id: 42,
+        root: 0x94164fb6fdbf78ec...,
+        num_intents: 1000,
+        num_items: 847
+    )
+
+    TOTAL: 1 transaction × $0.00025 = $0.00025
+           1 merkle root = 32 bytes on-chain
+           1 transaction × ~500ms = 0.5 seconds
+</pre>
+        </div>
+
+        <h2>// cost comparison</h2>
+
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th>intents</th>
+                    <th>traditional cost</th>
+                    <th>phantom paradox</th>
+                    <th>savings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>100</td>
+                    <td>$0.025</td>
+                    <td class="pass">$0.00025</td>
+                    <td class="pass">100x</td>
+                </tr>
+                <tr>
+                    <td>1,000</td>
+                    <td>$0.25</td>
+                    <td class="pass">$0.00025</td>
+                    <td class="pass">1,000x</td>
+                </tr>
+                <tr>
+                    <td>10,000</td>
+                    <td>$2.50</td>
+                    <td class="pass">$0.00025</td>
+                    <td class="pass">10,000x</td>
+                </tr>
+                <tr>
+                    <td>100,000</td>
+                    <td>$25.00</td>
+                    <td class="pass">$0.00025</td>
+                    <td class="pass">100,000x</td>
+                </tr>
+                <tr>
+                    <td>1,000,000</td>
+                    <td>$250.00</td>
+                    <td class="pass">$0.00025</td>
+                    <td class="pass">1,000,000x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>// how verification works</h2>
+        
+        <div class="diagram">
+<pre>
+USER WANTS TO VERIFY THEIR TRANSACTION:
+
+    1. User has: intent data + proof path
+    
+    2. Compute leaf hash:
+       leaf = hash(intent_data)
+       
+    3. Walk up the tree:
+       hash_1 = hash(leaf + sibling_1)
+       hash_2 = hash(hash_1 + sibling_2)
+       ...
+       computed_root = hash(hash_n + sibling_n)
+       
+    4. Compare:
+       computed_root == on_chain_root ?
+       
+       ✓ MATCH = transaction included in batch
+       ✗ NO MATCH = transaction not in batch
+
+
+    PROOF SIZE: O(log n)
+    ─────────────────────
+    1,000 intents = 10 hashes (~320 bytes)
+    1,000,000 intents = 20 hashes (~640 bytes)
+</pre>
+        </div>
+
+        <h2>// data availability</h2>
+        
+        <p>The Merkle root proves <span class="highlight">what</span> was settled, but you need the full intent data to verify inclusion. We store batch data on:</p>
+        
+        <div class="diagram">
+<pre>
+ON-CHAIN (Solana):
+├── batch_id: 42
+├── merkle_root: 0x94164fb6fdbf78ec...
+├── num_intents: 1000
+├── da_hash: 0xabc123... (pointer to off-chain data)
+└── timestamp: 1706645396
+
+OFF-CHAIN (IPFS / Arweave):
+├── full intent list
+├── proof paths
+├── settlement details
+└── cryptographic signatures
+
+VERIFICATION:
+1. Fetch da_hash from on-chain
+2. Retrieve data from IPFS/Arweave
+3. Verify hash(data) == da_hash
+4. Verify your intent is in data
+5. Verify merkle proof to root
+</pre>
+        </div>
+
+        <footer>
+            <a href="../index.html">← back to home</a>
+        </footer>
+    </div>
+</body>
+</html>
+

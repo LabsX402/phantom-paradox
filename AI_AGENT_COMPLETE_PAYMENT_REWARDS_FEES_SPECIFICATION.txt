@@ -1,0 +1,1082 @@
+================================================================================
+AI AGENT COMPLETE PAYMENT, REWARDS & FEES SPECIFICATION
+================================================================================
+Comprehensive Documentation of All Agent-Related Financial Flows
+Status: ✅ PRODUCTION READY - ALL SYSTEMS IMPLEMENTED
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. AGENT REGISTRATION & ONBOARDING
+2. AGENT MARKETPLACE (0.3% RULE)
+3. CREATOR ROYALTIES & REWARDS
+4. JOB MARKETPLACE SYSTEM
+   4.7 Worker Profiles & Fiat Payouts (NEW)
+   4.8 Automatic Job Matching (NEW)
+   4.9 Fiat Payout Processing (NEW)
+5. WORKER PAYMENTS & BUDGET MANAGEMENT
+6. ANALYTICS & METRICS TRACKING
+7. DATA COLLECTION & PERMISSIONS
+8. FEE ACCUMULATION & WITHDRAWAL
+9. PAYMENT FLOWS DIAGRAMS
+10. COMPLETE FEE BREAKDOWN
+
+================================================================================
+1. AGENT REGISTRATION & ONBOARDING
+================================================================================
+
+1.1 REGISTRATION FEE
+-------------------
+What: One-time fee to register an agent in the marketplace
+
+Amount: 0.01 SOL (10,000,000 lamports)
+Constant: REGISTRATION_FEE_LAMPORTS = 10_000_000
+
+Payment Flow:
+- User calls `register_agent(agent_id, creator)`
+- 0.01 SOL transferred from payer → protocol_treasury
+- AgentRegistry account is created
+- Agent is now available in marketplace
+
+Where It Goes:
+- Destination: protocol_treasury wallet
+- Purpose: Protocol revenue (covers account creation costs)
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:91-129
+- Instruction: register_agent()
+
+1.2 AGENT TYPES
+---------------
+User Agent (with creator):
+- creator: Some(creator_pubkey)
+- Creator receives 5 bps (0.05%) of trade volume
+- Protocol keeps 0.25% (25 bps)
+
+Protocol/Dev Agent (no creator):
+- creator: None
+- Protocol keeps full 0.3% (30 bps)
+- No creator royalties
+
+1.3 REGISTRATION REQUIREMENTS
+-----------------------------
+- Must provide agent_id (unique identifier)
+- Must provide optional creator (None for Protocol/Dev Agents)
+- Must have sufficient balance for 0.01 SOL fee
+- Must sign transaction as authority
+
+================================================================================
+2. AGENT MARKETPLACE (0.3% RULE)
+================================================================================
+
+2.1 THE 0.3% RULE (HARDCODED)
+------------------------------
+Total Agent Trade Fee: 0.3% (30 basis points) of trade volume
+Constant: AGENT_TRADE_FEE_BPS = 30
+
+This fee is ALWAYS 0.3% - hardcoded, not configurable.
+
+2.2 FEE DISTRIBUTION
+--------------------
+During Trade Settlement (settle_net_batch):
+
+Step 1: Calculate Total Fee
+- agent_trade_fee = trade_volume × 0.003 (30 bps)
+- Full 0.3% is deducted from user during trade
+
+Step 2: Calculate Creator Share
+- creator_share = trade_volume × 0.0005 (5 bps)
+- Only if agent_registry.creator is set (User Agent)
+
+Step 3: Distribution Logic
+
+IF agent_registry.creator is Some (User Agent):
+  - creator_share (5 bps) → accumulated_royalties
+  - Remaining 0.25% (25 bps) → protocol_treasury (automatic)
+
+IF agent_registry.creator is None (Protocol/Dev Agent):
+  - accumulated_royalties = 0 (no increment)
+  - Full 0.3% → protocol_treasury (automatic)
+
+2.3 FEE ACCUMULATION
+--------------------
+Agent Trade Fees:
+- Accumulated in: config.accumulated_fees (global)
+- Also tracked per-game in: game.protocol_fees_accumulated
+- Withdrawable via: withdraw_protocol_fees instruction
+
+Creator Royalties:
+- Accumulated in: agent_registry.accumulated_royalties
+- Claimable via: claim_royalties instruction
+- Minimum payout: 0.01 SOL (prevents dust payouts)
+
+2.4 FEE CALCULATION EXAMPLE
+----------------------------
+Trade Volume: 100 SOL
+
+Total Agent Trade Fee: 100 SOL × 0.003 = 0.3 SOL
+
+IF User Agent (creator set):
+  - Creator Share: 100 SOL × 0.0005 = 0.05 SOL → accumulated_royalties
+  - Protocol Revenue: 0.25 SOL → protocol_treasury
+
+IF Protocol/Dev Agent (no creator):
+  - Creator Share: 0 SOL (not accumulated)
+  - Protocol Revenue: 0.3 SOL → protocol_treasury
+
+Code Location:
+- programs/phantomgrid_gaming/src/lib.rs:5534-5573
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:28-32
+
+================================================================================
+3. CREATOR ROYALTIES & REWARDS
+================================================================================
+
+3.1 CREATOR SHARE
+-----------------
+Rate: 0.05% (5 basis points) of trade volume
+Constant: CREATOR_SHARE_BPS = 5
+
+Who Gets It:
+- Only User Agents (agent_registry.creator is Some)
+- Protocol/Dev Agents (creator is None) get 0
+
+3.2 ROYALTY ACCUMULATION
+------------------------
+How It Works:
+- During settle_net_batch, creator_share is calculated
+- Added to agent_registry.accumulated_royalties
+- Accumulates over time until claimed
+
+Tracking:
+- Field: agent_registry.accumulated_royalties (u64, lamports)
+- Updated: Every time agent is used in a trade
+- Reset: To 0 after claim_royalties is called
+
+3.3 CLAIMING ROYALTIES
+----------------------
+Instruction: claim_royalties()
+
+Requirements:
+- Only the creator can claim (not the authority)
+- Must have accumulated_royalties >= 0.01 SOL (minimum threshold)
+- Creator must sign the transaction
+
+Minimum Payout Threshold:
+- Amount: 0.01 SOL (10,000,000 lamports)
+- Constant: MIN_PAYOUT_THRESHOLD_LAMPORTS = 10_000_000
+- Reason: Prevents dust payouts where tx fees eat most of the payout
+- Transaction fees: ~0.000005 SOL, so 0.01 SOL ensures meaningful payouts
+
+Payment Flow:
+- Transfers from: protocol vault (where royalties accumulate)
+- Transfers to: creator wallet
+- Resets: accumulated_royalties = 0
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:189-239
+
+3.4 ROYALTY CALCULATION EXAMPLE
+--------------------------------
+Agent processes 1,000 SOL in volume:
+
+Creator Share: 1,000 SOL × 0.0005 = 0.5 SOL
+- Accumulated in: agent_registry.accumulated_royalties
+- Claimable when: accumulated_royalties >= 0.01 SOL
+
+If agent processes 10 SOL:
+Creator Share: 10 SOL × 0.0005 = 0.005 SOL
+- Below minimum threshold (0.01 SOL)
+- Cannot claim yet (must accumulate more)
+
+================================================================================
+4. JOB MARKETPLACE SYSTEM
+================================================================================
+
+4.1 JOB POSTING FLOW
+---------------------
+Step 1: Job Giver Selects Agent Type
+- Chooses agent_id (e.g., "computing power agent")
+- Sees average price (calculated off-chain from historical data)
+
+Step 2: Set Price & Budget
+- Sets price_per_worker (can be same/lower/higher than average)
+- Sets max_workers (prevents budget overflow)
+- Calculates total_budget = price_per_worker × max_workers
+
+Step 3: Top Up Balance
+- Transfers total_budget from job_giver → job_budget_token_account
+- Funds are locked in job budget account
+
+Step 4: Job Posted
+- Job status: Open
+- Waiting for workers to take jobs
+
+4.2 JOB CREATION FEES
+---------------------
+No Fee for Creating Job:
+- Job creation is free
+- Only cost is the budget you allocate
+
+Budget Requirements:
+- Must have balance >= total_budget
+- total_budget = price_per_worker × max_workers
+- Funds are transferred to job budget account (locked)
+
+4.3 WORKER TAKING JOBS
+----------------------
+Instruction: take_job(assignment_id)
+
+Rate Limiting:
+- Checks: workers_taken < max_workers
+- Checks: budget_remaining >= price_per_worker
+- Prevents too many workers from taking the same job
+
+Cost to Worker:
+- FREE - Workers don't pay to take jobs
+- They only get paid when they complete work
+
+4.4 WORKER PAYMENT
+------------------
+Instruction: complete_job()
+
+Payment Flow:
+- Worker completes the work
+- Payment transferred: job_budget_token_account → worker_token_account
+- Amount: price_per_worker (set when job was created)
+- Budget deducted: budget_remaining -= payment_amount
+
+Payment Guarantee:
+- Workers only get paid when they complete work
+- Payment is guaranteed if budget_remaining >= price_per_worker
+- No payment if worker doesn't complete
+
+4.5 BUDGET PROTECTION
+---------------------
+Problem Solved:
+- Budget: 10 SOL
+- 1000 workers want to take job
+- Solution: max_workers limits how many can take
+
+Example:
+- Budget: 10 SOL
+- Price per worker: 0.01 SOL
+- Max workers: 100 (prevents 1000 workers from taking)
+- Total cost: 1 SOL (100 workers × 0.01 SOL)
+- Budget remaining: 9 SOL (can create more jobs)
+
+Automatic Closure:
+- Job closes when: workers_taken >= max_workers
+- Job closes when: budget_remaining < price_per_worker
+- Prevents over-commitment
+
+4.6 JOB CANCELLATION & REFUNDS
+-------------------------------
+Instruction: cancel_job()
+
+Who Can Cancel:
+- Only job_giver can cancel
+
+Refund Logic:
+- Remaining budget refunded to job_giver
+- Completed workers keep their payment
+- Workers who haven't completed don't get paid
+
+Example:
+- Budget: 10 SOL
+- Workers taken: 50
+- Workers completed: 30 (paid 0.3 SOL total)
+- Budget remaining: 9.7 SOL
+- Refund: 9.7 SOL → job_giver
+
+4.7 WORKER PROFILES & FIAT PAYOUTS (NEW)
+------------------------------------------
+Status: ✅ IMPLEMENTED - Production Ready
+
+Worker Registration:
+- Instruction: register_worker()
+- Workers can register/update their profile
+- Set payout preferences (SOL, USDC, or fiat)
+- Set bid prices in lamports or USD cents
+
+Payout Methods Supported:
+- SOL (default) - Native Solana
+- USDC - USD Coin stablecoin
+- PAYPAL - PayPal email payments
+- MPESA - M-Pesa mobile money (Kenya/Africa)
+- UPI - Unified Payments Interface (India)
+- ALIPAY - Alipay/WeChat Pay (China)
+
+Worker Profile Fields:
+- authority: Worker's wallet public key
+- payout_method: Chosen payout method
+- payout_address: PayPal email, UPI ID, phone number, etc. (max 64 chars)
+- bid_price_lamports: Price per job in lamports (for SOL/USDC)
+- bid_price_usd_cents: Price per job in USD cents (for fiat)
+- total_jobs_completed: Number of jobs completed
+- total_volume_earned: Total earnings (lamports)
+- avg_response_time_ms: Average response time
+- success_rate_bps: Success rate (10000 = 100%)
+
+Fiat Pricing Support:
+- Jobs can now specify price_per_worker_usd_cents
+- Workers can bid in USD cents for fiat payouts
+- Automatic conversion between SOL and fiat based on preferences
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/job_marketplace.rs:154-206
+- Instruction: register_worker()
+- Account: WorkerProfile
+
+4.8 AUTOMATIC JOB MATCHING (NEW)
+---------------------------------
+Status: ✅ IMPLEMENTED - Production Ready
+
+Matching Algorithm:
+- Runs every 30 seconds automatically
+- Ranks workers by: success_rate × log(jobs) × (100000 / response_time)
+- Filters workers by price (must be <= job price)
+- Auto-assigns top-ranked workers to open jobs
+
+Ranking Formula:
+score = (success_rate_bps / 10000) × 
+        log(total_jobs + 1) × 
+        (100000 / avg_response_time_ms)
+
+Price Matching:
+- Worker's bid_price_lamports <= job.price_per_worker_lamports OR
+- Worker's bid_price_usd_cents <= job.price_per_worker_usd_cents
+
+Code Location:
+- offchain/src/jobs/matcher.ts
+- Function: matchJobs()
+- Runs: Every 30 seconds
+
+4.9 FIAT PAYOUT PROCESSING (NEW)
+----------------------------------
+Status: ✅ IMPLEMENTED - Production Ready
+
+Payout Batcher:
+- Processes fiat payouts hourly
+- Groups by payout method (PayPal, M-Pesa, UPI, Alipay)
+- Calls payment provider APIs in batch
+- Marks as paid after successful processing
+
+Payment Providers:
+- PayPal: Email-based payments
+- M-Pesa: Mobile money (phone number)
+- UPI: India payment system (UPI ID)
+- Alipay: China payment system (Alipay account)
+
+Processing Flow:
+1. Query completed_jobs where fiat_paid = false
+2. Group by payout_method
+3. Call payment provider API for each batch
+4. Update database: fiat_paid = true, fiat_paid_at = NOW()
+
+Code Location:
+- offchain/src/scripts/fiat-payout.ts
+- Function: processFiatPayouts()
+- Runs: Every hour (cron: "0 * * * *")
+
+API Endpoints:
+- POST /api/worker/register - Register/update worker profile
+- GET /api/worker/profile/:walletPubkey - Get worker profile
+- GET /api/worker/rankings - Get worker rankings for matching
+
+Code Location:
+- offchain/src/api/worker.ts
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/job_marketplace.rs
+
+================================================================================
+5. WORKER PAYMENTS & BUDGET MANAGEMENT
+================================================================================
+
+5.1 PAYMENT SCHEDULE
+--------------------
+When Workers Get Paid:
+- ONLY when they complete the job (complete_job instruction)
+- NOT when they take the job (take_job is free)
+- Payment is guaranteed if budget is available
+
+Payment Amount:
+- Fixed: price_per_worker (set when job was created)
+- Cannot be changed after job is created
+
+5.2 BUDGET TRACKING
+-------------------
+Job Budget Account:
+- Holds: total_budget (locked funds)
+- Tracks: budget_remaining (decreases as workers are paid)
+- Authority: Job PDA (can transfer to workers)
+
+Budget States:
+- Initial: budget_remaining = total_budget
+- After payment: budget_remaining -= payment_amount
+- Exhausted: budget_remaining < price_per_worker (job closes)
+
+5.3 PAYMENT GUARANTEES
+----------------------
+Guaranteed Payment:
+- If worker completes job AND budget_remaining >= price_per_worker
+- Payment is made immediately on completion
+- No waiting period
+
+No Payment Scenarios:
+- Worker doesn't complete the job
+- Budget is exhausted (budget_remaining < price_per_worker)
+- Job is cancelled before completion
+
+5.4 MULTIPLE WORKERS SCENARIO
+------------------------------
+Example: 10 SOL Budget, 0.01 SOL per Worker
+
+Scenario 1: max_workers = 100
+- 100 workers can take the job
+- Total cost: 1 SOL
+- Budget remaining: 9 SOL
+- All 100 workers get paid when they complete
+
+Scenario 2: max_workers = 1000 (DANGEROUS)
+- 1000 workers can take the job
+- Total cost: 10 SOL
+- Budget remaining: 0 SOL
+- All 1000 workers get paid (budget exactly covers it)
+
+Scenario 3: max_workers = 2000 (PROTECTED)
+- Only 1000 workers can take (limited by budget)
+- Job closes when budget_remaining < price_per_worker
+- Prevents over-commitment
+
+5.5 PAYMENT DISTRIBUTION
+------------------------
+Sequential Payments:
+- Workers complete jobs one at a time
+- Each completion triggers payment
+- Budget is deducted immediately
+
+Concurrent Completions:
+- Multiple workers can complete simultaneously
+- Each gets paid from budget_remaining
+- Job closes when budget is insufficient
+
+================================================================================
+6. ANALYTICS & METRICS TRACKING
+================================================================================
+
+6.1 AGENT REGISTRY METRICS
+---------------------------
+On-Chain Tracking (AgentRegistry):
+
+User Adoption:
+- unique_users_count: Number of unique users who adopted the agent
+- active_users_count: Active users (last 30 days)
+- total_adoptions: Total number of adoption events
+- avg_volume_per_user: Average volume per user
+- retention_rate_bps: Retention rate (basis points)
+
+Performance:
+- total_volume_processed: Total volume (u128, lamports)
+- successful_executions: Number of successful executions
+- failed_executions: Number of failed executions
+- success_rate_bps: Success rate (basis points)
+- avg_execution_time_ms: Average execution time
+
+Financial:
+- accumulated_royalties: Royalties waiting to be claimed
+- registered_at: Registration timestamp
+- last_used_at: Last usage timestamp
+
+6.2 AGENT PERFORMANCE METRICS
+------------------------------
+On-Chain Tracking (AgentPerformance):
+
+Financial Performance:
+- total_volume: Total volume processed (u64)
+- total_pnl: Total profit/loss (i64, can be negative)
+- max_drawdown: Maximum drawdown (u64)
+- trade_count: Number of trades executed
+- last_update: Last update timestamp
+
+6.3 OFF-CHAIN ANALYTICS
+-----------------------
+Enterprise Analytics (offchain/src/indexer/analytics.ts):
+
+Availability Metrics:
+- uptime24h, uptime7d, uptime30d: Uptime percentages
+- meanTimeToReact: Mean time to react (ms)
+- ghostingRate: Ghosting rate
+
+Quality Metrics:
+- completionRate: Completion rate
+- disputeRate: Dispute rate
+- arbitrationWinRate: Arbitration win rate
+- oneShotSuccessRate: One-shot success rate
+
+Financial Risk:
+- slashCount: Number of slashes
+- totalValueSecured: Total value secured
+- retentionRate: Retention rate
+
+Agent DNA:
+- specializationTag: Specialization category
+- computeBurstCapacity: Compute burst capacity
+
+Composite:
+- slaScore: SLA score (0-100)
+- riskLevel: Risk level (Low/Medium/High)
+
+6.4 TRACKING INSTRUCTIONS
+-------------------------
+record_agent_adoption():
+- Updates: unique_users_count, total_adoptions
+- Emits: AgentAdopted event
+
+record_agent_usage():
+- Updates: total_volume_processed, success/failure counts
+- Updates: success_rate_bps, avg_execution_time_ms
+- Emits: AgentUsed event
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:241-297
+
+================================================================================
+7. DATA COLLECTION & PERMISSIONS
+================================================================================
+
+7.1 PRIVACY-PRESERVING DATA COLLECTION
+--------------------------------------
+Instruction: record_agent_data_collection()
+
+REQUIRES EXPLICIT PERMISSION:
+- permission_granted MUST be true
+- Data collection is 100% opt-in
+- Users can revoke permission at any time
+
+7.2 DATA COLLECTED (WITH PERMISSION)
+------------------------------------
+Geographic Data:
+- latitude: GPS latitude (scaled by 1e6)
+- longitude: GPS longitude (scaled by 1e6)
+
+Device Data:
+- phone_model_hash: Hash of phone model (e.g., "iPhone 15 Pro")
+- mobile_operator_hash: Hash of mobile operator (e.g., "Verizon")
+
+Network Data:
+- signal_strength_dbm: Signal strength in dBm (-120 to -50)
+- network_type: Network type (0=Unknown, 1=2G, 2=3G, 3=4G/LTE, 4=5G)
+- wifi_ssid_hash: Optional WiFi SSID hash (if WiFi used, with permission)
+
+7.3 PRIVACY PROTECTION
+----------------------
+On-Chain Storage:
+- Sensitive data stored as hashes (not plaintext)
+- Full data stored off-chain in encrypted database
+- Users can revoke permission at any time
+
+Use Cases:
+- Mobile operators: Build real-world network coverage maps
+- Device manufacturers: Track device compatibility
+- Network providers: Map actual coverage (not theoretical)
+
+7.4 DATA COLLECTION FEES
+------------------------
+No Fee:
+- Data collection is free
+- No payment required
+- Purely opt-in for analytics
+
+Code Location:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:401-460
+
+================================================================================
+8. FEE ACCUMULATION & WITHDRAWAL
+================================================================================
+
+8.1 PROTOCOL FEES
+-----------------
+Accumulation:
+- Location: config.accumulated_fees (global)
+- Also: game.protocol_fees_accumulated (per-game)
+- Source: Agent trade fees (0.3% rule)
+- Also: Regular protocol fees from trades
+
+Withdrawal:
+- Instruction: withdraw_protocol_fees()
+- Authority: Only governance wallet
+- Source: game_vault → protocol_treasury
+- Amount: Specified in withdrawal (must be <= accumulated)
+
+8.2 CREATOR ROYALTIES
+---------------------
+Accumulation:
+- Location: agent_registry.accumulated_royalties
+- Source: Creator share (5 bps) from agent trades
+- Only for: User Agents (creator is Some)
+
+Withdrawal:
+- Instruction: claim_royalties()
+- Authority: Only the creator (not authority)
+- Source: protocol vault → creator wallet
+- Minimum: 0.01 SOL (prevents dust payouts)
+- Resets: accumulated_royalties = 0 after claim
+
+8.3 JOB BUDGET
+--------------
+Accumulation:
+- Location: job_budget_token_account
+- Source: Job giver deposits when creating job
+- Locked: Funds are locked until workers are paid
+
+Withdrawal:
+- Workers: Paid when they complete jobs
+- Job Giver: Refunded if job is cancelled
+- Automatic: Budget decreases as workers are paid
+
+================================================================================
+9. PAYMENT FLOWS DIAGRAMS
+================================================================================
+
+9.1 AGENT REGISTRATION FLOW
+----------------------------
+User → register_agent(agent_id, creator)
+  ↓
+0.01 SOL → protocol_treasury
+  ↓
+AgentRegistry created
+  ↓
+Agent available in marketplace
+
+9.2 AGENT TRADE FEE FLOW (0.3% RULE)
+-------------------------------------
+Trade Volume: 100 SOL
+  ↓
+Agent Trade Fee: 0.3 SOL (0.3%)
+  ↓
+IF User Agent (creator set):
+  ├─ Creator Share: 0.05 SOL (5 bps) → accumulated_royalties
+  └─ Protocol: 0.25 SOL (25 bps) → protocol_treasury
+
+IF Protocol/Dev Agent (no creator):
+  └─ Protocol: 0.3 SOL (30 bps) → protocol_treasury
+
+9.3 CREATOR ROYALTY CLAIM FLOW
+-------------------------------
+Creator → claim_royalties()
+  ↓
+Check: accumulated_royalties >= 0.01 SOL
+  ↓
+Transfer: protocol_vault → creator_wallet
+  ↓
+Reset: accumulated_royalties = 0
+
+9.4 JOB MARKETPLACE FLOW
+-------------------------
+Job Giver → create_job_posting(price_per_worker, max_workers)
+  ↓
+Calculate: total_budget = price_per_worker × max_workers
+  ↓
+Transfer: job_giver → job_budget_token_account
+  ↓
+Job Posted (status: Open)
+  ↓
+Worker → take_job(assignment_id)
+  ├─ Check: workers_taken < max_workers
+  ├─ Check: budget_remaining >= price_per_worker
+  └─ Create: WorkerAssignment (status: Assigned)
+  ↓
+Worker → complete_job()
+  ├─ Transfer: job_budget → worker_token_account
+  ├─ Deduct: budget_remaining -= payment_amount
+  └─ Update: assignment.status = Paid
+
+9.5 JOB CANCELLATION FLOW
+--------------------------
+Job Giver → cancel_job()
+  ↓
+Refund: job_budget → job_giver_token_account
+  ↓
+Status: Cancelled
+  ↓
+Completed workers: Keep their payment
+  ↓
+Incomplete workers: No payment
+
+================================================================================
+10. COMPLETE FEE BREAKDOWN
+================================================================================
+
+10.1 ALL FEES SUMMARY
+----------------------
+
+AGENT REGISTRATION:
+- Fee: 0.01 SOL (one-time)
+- Destination: protocol_treasury
+- Purpose: Account creation cost
+
+AGENT TRADE FEE (0.3% RULE):
+- Fee: 0.3% (30 bps) of trade volume
+- Hardcoded: Not configurable
+- Distribution:
+  * User Agent: 5 bps → creator, 25 bps → protocol
+  * Protocol/Dev Agent: 30 bps → protocol
+
+CREATOR ROYALTIES:
+- Rate: 5 bps (0.05%) of trade volume
+- Minimum Payout: 0.01 SOL
+- Destination: creator wallet
+- Claimable: Only by creator
+
+JOB MARKETPLACE:
+- Job Creation: FREE (no fee)
+- Worker Taking Job: FREE (no fee)
+- Worker Payment: price_per_worker (set by job giver)
+- Budget: Locked in job_budget_token_account
+- Fiat Payouts: Supported (PayPal, M-Pesa, UPI, Alipay)
+- Automatic Matching: Workers auto-assigned based on ranking
+
+DATA COLLECTION:
+- Fee: FREE (no fee)
+- Permission: 100% opt-in required
+
+10.2 FEE CALCULATION EXAMPLES
+------------------------------
+
+Example 1: User Agent with 100 SOL Volume
+------------------------------------------
+Registration Fee: 0.01 SOL (one-time)
+Trade Volume: 100 SOL
+Agent Trade Fee: 0.3 SOL (0.3%)
+  ├─ Creator Share: 0.05 SOL (5 bps) → accumulated_royalties
+  └─ Protocol: 0.25 SOL (25 bps) → protocol_treasury
+
+Total Fees: 0.3 SOL
+Creator Earnings: 0.05 SOL (claimable when >= 0.01 SOL)
+Protocol Earnings: 0.25 SOL
+
+Example 2: Protocol/Dev Agent with 100 SOL Volume
+--------------------------------------------------
+Registration Fee: 0.01 SOL (one-time)
+Trade Volume: 100 SOL
+Agent Trade Fee: 0.3 SOL (0.3%)
+  └─ Protocol: 0.3 SOL (30 bps) → protocol_treasury
+
+Total Fees: 0.3 SOL
+Creator Earnings: 0 SOL (no creator)
+Protocol Earnings: 0.3 SOL
+
+Example 3: Job Marketplace with 10 SOL Budget
+-----------------------------------------------
+Job Creation: FREE
+Budget: 10 SOL
+Price per Worker: 0.01 SOL
+Max Workers: 100
+
+Total Cost: 1 SOL (100 workers × 0.01 SOL)
+Budget Remaining: 9 SOL
+Workers Paid: 0.01 SOL each (on completion)
+
+Example 4: Job Marketplace with Fiat Pricing
+-----------------------------------------------
+Job Creation: FREE
+Budget: 1000 USD (in SOL equivalent)
+Price per Worker: 10 USD cents (0.10 USD)
+Price per Worker (SOL): 0.001 SOL (converted)
+Max Workers: 100
+
+Workers:
+- Worker A: bid_price_usd_cents = 8 (accepts job)
+- Worker B: bid_price_usd_cents = 12 (rejected, too high)
+- Worker C: bid_price_lamports = 0.0008 SOL (accepts job)
+
+Total Cost: 10 USD (100 workers × 0.10 USD)
+Workers Paid: 0.10 USD each (via PayPal/M-Pesa/UPI/Alipay)
+
+10.3 REVENUE STREAMS
+--------------------
+
+PROTOCOL REVENUE:
+1. Agent Registration Fees: 0.01 SOL per agent
+2. Agent Trade Fees: 0.25-0.3% of volume (depending on agent type)
+3. Regular Protocol Fees: From non-agent trades
+
+CREATOR REVENUE:
+1. Creator Royalties: 5 bps (0.05%) of agent trade volume
+2. Minimum Payout: 0.01 SOL
+3. Claimable: Only by creator
+
+WORKER REVENUE:
+1. Job Completion Payments: price_per_worker (set by job giver)
+2. Payment Guarantee: Only on completion
+3. No Fee: Taking jobs is free
+4. Fiat Payouts: Support for PayPal, M-Pesa, UPI, Alipay
+5. Automatic Matching: Top-ranked workers auto-assigned to jobs
+
+10.4 COST STRUCTURE
+-------------------
+
+FOR JOB GIVERS:
+- Job Creation: FREE
+- Budget: Locked in job_budget_token_account
+- Refund: Available if job is cancelled
+
+FOR WORKERS:
+- Taking Jobs: FREE
+- Payment: Only on completion
+- No Upfront Cost: Workers don't pay anything
+- Payout Options: SOL, USDC, PayPal, M-Pesa, UPI, Alipay
+- Profile Registration: FREE (one-time setup)
+- Automatic Matching: System matches workers to jobs based on ranking
+
+FOR AGENT CREATORS:
+- Registration: 0.01 SOL (one-time)
+- Royalties: 5 bps of volume (User Agents only)
+- Minimum Payout: 0.01 SOL
+
+================================================================================
+11. CONSTANTS & CONFIGURATION
+================================================================================
+
+11.1 FEE CONSTANTS
+------------------
+AGENT_TRADE_FEE_BPS = 30 (0.3%)
+CREATOR_SHARE_BPS = 5 (0.05%)
+REGISTRATION_FEE_LAMPORTS = 10_000_000 (0.01 SOL)
+MIN_PAYOUT_THRESHOLD_LAMPORTS = 10_000_000 (0.01 SOL)
+
+11.2 CONFIGURATION
+------------------
+Agent Trade Fee: HARDCODED (not configurable)
+- Always 0.3% (30 bps)
+- Cannot be changed via governance
+- Ensures consistent fee structure
+
+Creator Share: HARDCODED (not configurable)
+- Always 5 bps (0.05%)
+- Cannot be changed
+- Ensures fair creator compensation
+
+Registration Fee: HARDCODED (not configurable)
+- Always 0.01 SOL
+- Covers account creation costs
+
+Minimum Payout: HARDCODED (not configurable)
+- Always 0.01 SOL
+- Prevents dust payouts
+
+================================================================================
+12. SECURITY & SAFETY FEATURES
+================================================================================
+
+12.1 BUDGET PROTECTION
+----------------------
+- max_workers: Prevents too many workers from taking jobs
+- budget_remaining: Tracks available budget
+- Automatic closure: Job closes when budget insufficient
+- Payment guarantee: Workers only paid if budget available
+
+12.2 PAYMENT SAFETY
+-------------------
+- Payment on completion: Workers only paid when they deliver
+- Budget locking: Funds locked in job_budget_token_account
+- Refund support: Remaining budget refunded on cancellation
+- No over-payment: Cannot pay more than budget_remaining
+
+12.3 ROYALTY PROTECTION
+-----------------------
+- Minimum payout: Prevents dust payouts
+- Creator-only: Only creator can claim (not authority)
+- Accumulation: Royalties accumulate until claimed
+- Reset on claim: Prevents double-claiming
+
+12.4 DATA PRIVACY
+-----------------
+- Explicit permission: 100% opt-in required
+- Hash storage: Sensitive data stored as hashes on-chain
+- Encrypted off-chain: Full data in encrypted database
+- Revocable: Users can revoke permission
+
+================================================================================
+13. COMPLETE CODE LOCATIONS
+================================================================================
+
+13.1 AGENT MARKETPLACE
+----------------------
+Registration:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:91-129
+- programs/phantomgrid_gaming/src/lib.rs:5768-5774
+
+Royalties:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:189-239
+- programs/phantomgrid_gaming/src/lib.rs:5534-5573 (settlement logic)
+
+Analytics:
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:241-297
+- programs/phantomgrid_gaming/src/lib.rs:1436-1500 (events)
+
+13.2 JOB MARKETPLACE
+--------------------
+Job Creation:
+- programs/phantomgrid_gaming/src/instructions/job_marketplace.rs:170-230
+- programs/phantomgrid_gaming/src/lib.rs:6090-6105
+
+Worker Operations:
+- programs/phantomgrid_gaming/src/instructions/job_marketplace.rs:232-320
+- programs/phantomgrid_gaming/src/lib.rs:6107-6125
+
+13.3 DATA COLLECTION
+--------------------
+- programs/phantomgrid_gaming/src/instructions/marketplace.rs:401-460
+- programs/phantomgrid_gaming/src/lib.rs:5804-5825
+
+13.4 EVENTS
+-----------
+- programs/phantomgrid_gaming/src/lib.rs:1419-1500
+- programs/phantomgrid_gaming/src/lib.rs:1502-1540 (job events)
+
+================================================================================
+14. TESTING SCENARIOS
+================================================================================
+
+14.1 AGENT REGISTRATION
+-----------------------
+Test 1: Register User Agent
+- Fee: 0.01 SOL → protocol_treasury
+- Creator: Some(creator_pubkey)
+- Result: Agent registered, creator can claim royalties
+
+Test 2: Register Protocol/Dev Agent
+- Fee: 0.01 SOL → protocol_treasury
+- Creator: None
+- Result: Agent registered, no creator royalties
+
+14.2 AGENT TRADE FEE
+--------------------
+Test 1: User Agent Trade (100 SOL)
+- Trade Volume: 100 SOL
+- Agent Trade Fee: 0.3 SOL
+- Creator Share: 0.05 SOL → accumulated_royalties
+- Protocol: 0.25 SOL → protocol_treasury
+
+Test 2: Protocol/Dev Agent Trade (100 SOL)
+- Trade Volume: 100 SOL
+- Agent Trade Fee: 0.3 SOL
+- Creator Share: 0 SOL (not accumulated)
+- Protocol: 0.3 SOL → protocol_treasury
+
+14.3 ROYALTY CLAIMING
+---------------------
+Test 1: Claim Above Minimum
+- Accumulated: 0.5 SOL
+- Minimum: 0.01 SOL
+- Result: 0.5 SOL transferred to creator
+
+Test 2: Claim Below Minimum
+- Accumulated: 0.005 SOL
+- Minimum: 0.01 SOL
+- Result: Error (InvalidAmount)
+
+14.4 JOB MARKETPLACE
+--------------------
+Test 1: Create Job (10 SOL, 100 workers, 0.01 SOL each)
+- Budget: 10 SOL
+- Max Workers: 100
+- Price: 0.01 SOL
+- Result: Job created, 1 SOL locked, 9 SOL remaining
+
+Test 2: Take Job (Worker 1)
+- Workers Taken: 0 → 1
+- Budget Remaining: 10 SOL (not deducted yet)
+- Result: Assignment created, status: Assigned
+
+Test 3: Complete Job (Worker 1)
+- Payment: 0.01 SOL → worker
+- Budget Remaining: 10 SOL → 9.99 SOL
+- Workers Completed: 0 → 1
+- Result: Worker paid, assignment status: Paid
+
+Test 4: Budget Exhaustion
+- Workers Completed: 999
+- Budget Remaining: 0.01 SOL
+- Next Worker Completes: 0.01 SOL → worker
+- Budget Remaining: 0 SOL
+- Result: Job closes (status: Closed)
+
+================================================================================
+15. SUMMARY CHECKLIST
+================================================================================
+
+✅ AGENT REGISTRATION
+  ✅ Registration fee: 0.01 SOL
+  ✅ User Agent vs Protocol/Dev Agent support
+  ✅ Creator field tracking
+
+✅ AGENT MARKETPLACE (0.3% RULE)
+  ✅ Hardcoded 0.3% fee
+  ✅ Creator share: 5 bps
+  ✅ Protocol revenue: 25 bps (User Agent) or 30 bps (Protocol/Dev Agent)
+  ✅ Fee accumulation in settlement
+
+✅ CREATOR ROYALTIES
+  ✅ 5 bps accumulation
+  ✅ Minimum payout: 0.01 SOL
+  ✅ Creator-only claiming
+  ✅ Payment on claim
+
+✅ JOB MARKETPLACE
+  ✅ Job creation (free)
+  ✅ Budget management
+  ✅ Worker rate limiting (max_workers)
+  ✅ Payment on completion
+  ✅ Refund on cancellation
+  ✅ Worker profiles & payout preferences
+  ✅ Fiat payout support (PayPal, M-Pesa, UPI, Alipay)
+  ✅ Automatic job matching (every 30 seconds)
+  ✅ Worker ranking algorithm
+  ✅ Fiat payout batcher (hourly processing)
+
+✅ ANALYTICS & METRICS
+  ✅ User adoption tracking
+  ✅ Performance metrics
+  ✅ Volume tracking
+  ✅ Success rate tracking
+
+✅ DATA COLLECTION
+  ✅ Privacy-preserving (opt-in)
+  ✅ Geographic data
+  ✅ Device/network data
+  ✅ Hash storage on-chain
+
+✅ PAYMENT FLOWS
+  ✅ Registration → protocol_treasury
+  ✅ Trade fees → protocol_treasury / creator
+  ✅ Job payments → workers (SOL/USDC/fiat)
+  ✅ Refunds → job givers
+  ✅ Fiat payouts → PayPal/M-Pesa/UPI/Alipay (hourly batch)
+
+✅ SAFETY FEATURES
+  ✅ Budget protection
+  ✅ Rate limiting
+  ✅ Payment guarantees
+  ✅ Minimum payout thresholds
+
+================================================================================
+END OF SPECIFICATION
+================================================================================
+
+This document covers ALL aspects of AI agent creation, payment, rewards, and fees.
+All systems are production-ready and fully implemented.
+
+RECENT UPDATES (Latest):
+- ✅ Worker Profile System: Workers can register with payout preferences
+- ✅ Fiat Payout Support: PayPal, M-Pesa, UPI, Alipay integration
+- ✅ Automatic Job Matching: Workers auto-assigned based on ranking algorithm
+- ✅ Multi-Currency Pricing: Jobs can specify prices in SOL or USD cents
+- ✅ Fiat Payout Batcher: Hourly processing of fiat payments
+
+For questions or clarifications, refer to the code locations specified in Section 13.
+

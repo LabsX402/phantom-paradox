@@ -1,0 +1,43 @@
+[package]
+name = "phantomgrid_gaming"
+version = "2.0.0"
+edition = "2021"
+description = "PHANTOMGRID Gaming v2.0 - HyperScale Edition | Zero-Rent Compression Engine for Enterprise Gaming Marketplaces"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/phantomgrid/gaming"
+readme = "README.md"
+keywords = ["solana", "gaming", "marketplace", "nft", "auction", "compression", "zk", "enterprise"]
+categories = ["blockchain", "gaming"]
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "phantomgrid_gaming"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+# WORKAROUND: Using Anchor 0.31.x to avoid dependency conflict
+# This is a temporary workaround until Anchor 0.32.2+ fixes the issue
+default = ["core"]
+core = []
+compression = ["spl-account-compression", "spl-noop"]
+zk = ["light-sdk"]
+insanity = ["compression", "zk"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+meta-tx = []
+
+[dependencies]
+# WORKAROUND: Downgraded to 0.31.0 to avoid solana-instruction conflict
+# anchor-lang 0.32.1 → solana-instruction ^2 → 2.3.3
+# spl-token-2022 → solana-zk-sdk → solana-instruction =2.2.1
+# Conflict cannot be resolved in 0.32.1
+anchor-lang = { version = "0.31.0", features = ["init-if-needed"] }
+anchor-spl = { version = "0.31.0", features = ["token", "associated_token"] }
+spl-account-compression = { version = "0.4.0", features = ["cpi"], optional = true }
+spl-noop = { version = "0.2.0", optional = true }
+light-sdk = { version = "0.8.0", optional = true }
+# Note: solana-program is included via anchor-lang, no need to add separately
+# ed25519-dalek can be added later if explicit signature verification is needed
+
