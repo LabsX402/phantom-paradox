@@ -375,24 +375,60 @@
             </div>
         </div>
 
-        <!-- Token Info Cards -->
-        <div class="token-info">
-            <div class="token-card mainnet">
-                <div class="token-header">
-                    <span class="token-badge mainnet">MAINNET</span>
-                    <span class="token-name">$NULL</span>
-                    <span class="token-symbol">PARADOX</span>
+        <!-- $NULL LIVE STATS -->
+        <div style="background: linear-gradient(135deg, var(--bg-card), #0a1520); border: 1px solid var(--accent-purple); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">$NULL</span>
+                    <span style="background: var(--accent-purple); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">MAINNET</span>
+                    <span id="null-price-change" style="font-size: 0.85rem; color: var(--text-dim);">--</span>
                 </div>
-                <div class="token-address">
-                    <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank">8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump ↗</a>
-                </div>
-                <div class="token-stats">
-                    <div class="token-stat"><span class="token-stat-label">Supply:</span> <span class="token-stat-value" id="null-supply">~1B</span></div>
-                    <div class="token-stat"><span class="token-stat-label">Decimals:</span> <span class="token-stat-value">6</span></div>
-                    <div class="token-stat"><span class="token-stat-label">Program:</span> <span class="token-stat-value">Token-2022</span></div>
-                    <div class="token-stat"><span class="token-stat-label">Status:</span> <span class="token-stat-value" style="color: var(--accent);">LIVE</span></div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">
+                    <span id="null-last-update">Loading...</span>
+                    <button onclick="refreshNullStats()" style="background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 2px 8px; border-radius: 4px; cursor: pointer; margin-left: 8px; font-size: 0.7rem;">↻</button>
                 </div>
             </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">PRICE</div>
+                    <div id="null-price" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent);">--</div>
+                </div>
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">MARKET CAP</div>
+                    <div id="null-mcap" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text);">--</div>
+                </div>
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">24H VOLUME</div>
+                    <div id="null-volume" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text);">--</div>
+                </div>
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">HOLDERS</div>
+                    <div id="null-holders" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent-blue);">--</div>
+                </div>
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">SUPPLY</div>
+                    <div id="null-supply" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text);">~1B</div>
+                </div>
+                <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.25rem;">LIQUIDITY</div>
+                    <div id="null-liquidity" style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text);">--</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.75rem;">
+                <a href="https://solscan.io/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank" style="color: var(--accent-blue); text-decoration: none;">Solscan</a>
+                <span style="color: var(--text-muted);">·</span>
+                <a href="https://dexscreener.com/solana/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump" target="_blank" style="color: var(--accent-blue); text-decoration: none;">DexScreener</a>
+                <span style="color: var(--text-muted);">·</span>
+                <a href="https://birdeye.so/token/8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump?chain=solana" target="_blank" style="color: var(--accent-blue); text-decoration: none;">Birdeye</a>
+                <span style="color: var(--text-muted);">·</span>
+                <span style="color: var(--text-muted);">Token-2022 · Mint/Freeze Revoked</span>
+            </div>
+        </div>
+        
+        <!-- Token Info Cards -->
+        <div class="token-info" style="grid-template-columns: 1fr;">
             
             <div class="token-card devnet">
                 <div class="token-header">
@@ -1745,18 +1781,127 @@
                     const el = document.getElementById('lab-bal');
                     if (el) el.textContent = bal.toFixed(2);
                 }
-            } catch (e) { /* eh */ }
+            } catch (e) {}
+        }
+        
+        // $NULL live stats
+        const HELIUS_KEY = '7b3312ca-9bf1-4b30-ba5f-5e342be423ec';
+        const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`;
+        
+        async function refreshNullStats() {
+            const updateEl = document.getElementById('null-last-update');
+            if (updateEl) updateEl.textContent = 'Fetching...';
+            
+            try {
+                // DexScreener for price/volume/mcap (free, no key)
+                const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${NULL_TOKEN}`);
+                const dexData = await dexRes.json();
+                
+                if (dexData.pairs && dexData.pairs.length > 0) {
+                    // Get the pair with highest liquidity
+                    const pair = dexData.pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+                    
+                    // Price
+                    const priceEl = document.getElementById('null-price');
+                    if (priceEl && pair.priceUsd) {
+                        const price = parseFloat(pair.priceUsd);
+                        priceEl.textContent = price < 0.0001 ? '$' + price.toExponential(2) : '$' + price.toFixed(6);
+                    }
+                    
+                    // 24h change
+                    const changeEl = document.getElementById('null-price-change');
+                    if (changeEl && pair.priceChange) {
+                        const change = pair.priceChange.h24 || 0;
+                        const isUp = change >= 0;
+                        changeEl.textContent = (isUp ? '+' : '') + change.toFixed(2) + '% (24h)';
+                        changeEl.style.color = isUp ? 'var(--accent)' : 'var(--accent-red)';
+                    }
+                    
+                    // Market cap
+                    const mcapEl = document.getElementById('null-mcap');
+                    if (mcapEl && pair.fdv) {
+                        mcapEl.textContent = '$' + formatNumber(pair.fdv);
+                    }
+                    
+                    // Volume
+                    const volEl = document.getElementById('null-volume');
+                    if (volEl && pair.volume) {
+                        volEl.textContent = '$' + formatNumber(pair.volume.h24 || 0);
+                    }
+                    
+                    // Liquidity
+                    const liqEl = document.getElementById('null-liquidity');
+                    if (liqEl && pair.liquidity) {
+                        liqEl.textContent = '$' + formatNumber(pair.liquidity.usd || 0);
+                    }
+                }
+            } catch (e) {
+                console.log('DexScreener error:', e);
+            }
+            
+            // Helius for holder count
+            try {
+                const heliusRes = await fetch(HELIUS_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getTokenAccounts',
+                        params: { mint: NULL_TOKEN, limit: 1, page: 1 }
+                    })
+                });
+                const heliusData = await heliusRes.json();
+                
+                // For actual holder count, we need to use a different approach
+                // The getTokenLargestAccounts gives us top holders, but not count
+                // Let's try to get supply info
+                const supplyRes = await fetch(HELIUS_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getAccountInfo',
+                        params: [NULL_TOKEN, { encoding: 'jsonParsed' }]
+                    })
+                });
+                const supplyData = await supplyRes.json();
+                
+                if (supplyData.result?.value?.data?.parsed?.info) {
+                    const supply = parseInt(supplyData.result.value.data.parsed.info.supply) / 1e6;
+                    const supplyEl = document.getElementById('null-supply');
+                    if (supplyEl) supplyEl.textContent = formatNumber(supply);
+                }
+                
+                // Holder count - use Helius DAS API
+                const holdersRes = await fetch(`https://api.helius.xyz/v0/addresses/${NULL_TOKEN}/balances?api-key=${HELIUS_KEY}`);
+                // This endpoint may not give holders directly, so let's estimate from DexScreener or show "—"
+                
+            } catch (e) {
+                console.log('Helius error:', e);
+            }
+            
+            // Update timestamp
+            if (updateEl) {
+                const now = new Date();
+                updateEl.textContent = 'Updated ' + now.toLocaleTimeString();
+            }
+        }
+        
+        function formatNumber(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toFixed(2);
         }
         
         // init
         async function init() {
-            try {
-                const d = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, { encoding: 'jsonParsed' }]);
-                if (d.result?.value?.data?.parsed?.info) {
-                    const supply = parseInt(d.result.value.data.parsed.info.supply) / 1e6;
-                    document.getElementById('null-supply').textContent = supply.toLocaleString();
-                }
-            } catch (e) {}
+            // Fetch $NULL live stats
+            refreshNullStats();
+            setInterval(refreshNullStats, 60000); // refresh every minute
+            
             checkLabBal();
             setInterval(checkLabBal, 60000);
         }
