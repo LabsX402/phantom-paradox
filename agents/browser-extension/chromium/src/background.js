@@ -1,6 +1,6 @@
 /**
  * PHANTOM PARADOX BROWSER AGENT
- * Background Service Worker
+ * Background Service Worker (Chromium - Chrome/Edge/Brave/Opera)
  * 
  * Handles:
  * - Relay connections (bandwidth sharing)
@@ -12,10 +12,11 @@
 // ============== CONFIG ==============
 
 const CONFIG = {
-    MANAGER_URL: 'https://api.phantomparadox.io', // TODO: replace with real
-    HEARTBEAT_INTERVAL: 30000, // 30 seconds
-    STATS_INTERVAL: 60000, // 1 minute
-    VERSION: '0.1.0'
+    MANAGER_URL: 'https://api.phantomparadox.io',
+    HEARTBEAT_INTERVAL: 30000,
+    STATS_INTERVAL: 60000,
+    VERSION: '0.1.0',
+    PLATFORM: 'chromium'
 };
 
 // ============== STATE ==============
@@ -53,7 +54,7 @@ async function loadState() {
         console.log('[Agent] State loaded:', state);
     }
     
-    if (state.isActive) {
+    if (state.isActive && state.walletAddress) {
         startAgent();
     }
 }
@@ -70,15 +71,14 @@ function startAgent() {
     state.isActive = true;
     state.sessionStart = Date.now();
     
-    // Start heartbeat
     chrome.alarms.create('heartbeat', { periodInMinutes: 0.5 });
     chrome.alarms.create('statsUpdate', { periodInMinutes: 1 });
     
     saveState();
+    updateBadge();
     console.log('[Agent] Started');
     
-    // Notify popup
-    chrome.runtime.sendMessage({ type: 'STATE_UPDATE', state });
+    broadcastState();
 }
 
 function stopAgent() {
@@ -89,9 +89,23 @@ function stopAgent() {
     chrome.alarms.clear('statsUpdate');
     
     saveState();
+    updateBadge();
     console.log('[Agent] Stopped');
     
-    chrome.runtime.sendMessage({ type: 'STATE_UPDATE', state });
+    broadcastState();
+}
+
+function updateBadge() {
+    if (state.isActive) {
+        chrome.action.setBadgeText({ text: 'ON' });
+        chrome.action.setBadgeBackgroundColor({ color: '#00ff88' });
+    } else {
+        chrome.action.setBadgeText({ text: '' });
+    }
+}
+
+function broadcastState() {
+    chrome.runtime.sendMessage({ type: 'STATE_UPDATE', state }).catch(() => {});
 }
 
 // ============== ALARMS ==============
@@ -119,14 +133,14 @@ async function sendHeartbeat() {
             uptime: state.sessionStart ? Math.floor((Date.now() - state.sessionStart) / 1000) : 0
         },
         version: CONFIG.VERSION,
-        platform: 'browser-extension'
+        platform: CONFIG.PLATFORM
     };
     
     try {
         // TODO: Send to real manager endpoint
         console.log('[Agent] Heartbeat:', heartbeat);
         
-        // Simulate relay activity for demo
+        // Simulate relay activity
         state.stats.bytesRelayed += Math.floor(Math.random() * 1024 * 100);
         state.stats.connections += Math.floor(Math.random() * 3);
         
@@ -140,25 +154,22 @@ async function sendHeartbeat() {
 function updateStats() {
     if (!state.isActive) return;
     
-    // Calculate uptime
     if (state.sessionStart) {
         state.stats.uptime = Math.floor((Date.now() - state.sessionStart) / 1000);
     }
     
-    // Estimate earnings (demo: $0.001 per MB relayed)
     const mbRelayed = state.stats.bytesRelayed / (1024 * 1024);
     state.stats.earnings = mbRelayed * 0.001;
     
     saveState();
     
-    // Notify popup
-    chrome.runtime.sendMessage({ type: 'STATS_UPDATE', stats: state.stats });
+    chrome.runtime.sendMessage({ type: 'STATS_UPDATE', stats: state.stats }).catch(() => {});
 }
 
 // ============== MESSAGE HANDLING ==============
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('[Agent] Message received:', message);
+    console.log('[Agent] Message:', message.type);
     
     switch (message.type) {
         case 'GET_STATE':
@@ -166,8 +177,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             break;
             
         case 'START_AGENT':
-            startAgent();
-            sendResponse({ success: true });
+            if (!state.walletAddress) {
+                sendResponse({ success: false, error: 'No wallet connected' });
+            } else {
+                startAgent();
+                sendResponse({ success: true });
+            }
             break;
             
         case 'STOP_AGENT':
@@ -182,12 +197,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             break;
             
         case 'RESET_STATS':
-            state.stats = {
-                bytesRelayed: 0,
-                connections: 0,
-                uptime: 0,
-                earnings: 0
-            };
+            state.stats = { bytesRelayed: 0, connections: 0, uptime: 0, earnings: 0 };
             saveState();
             sendResponse({ success: true });
             break;
@@ -196,8 +206,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ error: 'Unknown message type' });
     }
     
-    return true; // Keep channel open for async response
+    return true;
 });
 
-console.log('[Agent] Background service worker loaded');
+console.log('[Agent] Background service worker loaded (Chromium)');
 

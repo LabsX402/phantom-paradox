@@ -611,8 +611,15 @@
                             <span>Daily Data Cap</span>
                             <span id="dataVal">1 GB</span>
                         </div>
-                        <input type="range" min="100" max="10000" step="100" value="1000" id="dataSlider" 
-                               oninput="document.getElementById('dataVal').textContent=(this.value/1000).toFixed(1)+' GB'">
+                        <input type="range" min="100" max="100000" step="100" value="1000" id="dataSlider" 
+                               oninput="updateDataCap()">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
+                                <input type="checkbox" id="unlimitedData" onchange="toggleUnlimited()" style="width: 18px; height: 18px; accent-color: var(--accent);">
+                                Unlimited
+                            </label>
+                            <span style="color: var(--text-muted); font-size: 0.75rem;">100 MB - 100 GB</span>
+                        </div>
                     </div>
 
                     <div class="btn-group">
@@ -1250,6 +1257,46 @@ User pays:        $1.00
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
+        
+        // ==================== DATA CAP ====================
+        
+        function updateDataCap() {
+            const slider = document.getElementById('dataSlider');
+            const val = parseInt(slider.value);
+            let display;
+            
+            if (val < 1000) {
+                display = val + ' MB';
+            } else {
+                display = (val / 1000).toFixed(1) + ' GB';
+            }
+            
+            document.getElementById('dataVal').textContent = display;
+        }
+        
+        function toggleUnlimited() {
+            const checkbox = document.getElementById('unlimitedData');
+            const slider = document.getElementById('dataSlider');
+            
+            if (checkbox.checked) {
+                slider.disabled = true;
+                slider.style.opacity = '0.4';
+                document.getElementById('dataVal').textContent = 'UNLIMITED';
+            } else {
+                slider.disabled = false;
+                slider.style.opacity = '1';
+                updateDataCap();
+            }
+        }
+        
+        // Initialize data cap slider
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('dataSlider');
+            if (slider) {
+                slider.disabled = false;
+                updateDataCap();
+            }
+        });
         
         // ==================== WALLET CONNECT ====================
         
