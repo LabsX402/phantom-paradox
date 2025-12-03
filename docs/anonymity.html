@@ -76,13 +76,13 @@ TRADITIONAL SOLANA TRANSFER:
     Wallet A ─────────────────────────────▶ Wallet B
               direct on-chain transfer
               
-    🔍 Chain Analysis Result:
+    CHAIN ANALYSIS RESULT:
     ════════════════════════════════════════════════
-    ✓ Sender:    Wallet A (known)
-    ✓ Receiver:  Wallet B (known)  
-    ✓ Amount:    100 SOL
-    ✓ Time:      2025-01-30 12:34:56
-    ✓ Link:      DIRECT CONNECTION VISIBLE
+    [+] Sender:    Wallet A (known)
+    [+] Receiver:  Wallet B (known)  
+    [+] Amount:    100 SOL
+    [+] Time:      2025-01-30 12:34:56
+    [+] Link:      DIRECT CONNECTION VISIBLE
 </pre>
         </div>
         
@@ -111,14 +111,14 @@ PHANTOM PARADOX TRANSFER:
     │                                      └─────────────┘       │
     └─────────────────────────────────────────────────────────────┘
 
-    🔍 Chain Analysis Result:
+    CHAIN ANALYSIS RESULT:
     ════════════════════════════════════════════════
-    ✗ Sender:    ??? (only vault deposit visible)
-    ✗ Receiver:  ??? (payout from pool, not from A)
-    ✗ Link:      NO DIRECT CONNECTION
-    ✓ Visible:   Vault ← LP deposits
-    ✓ Visible:   Pool → Wallet B
-    ✓ Visible:   Ghost wallets (noise)
+    [-] Sender:    ??? (only vault deposit visible)
+    [-] Receiver:  ??? (payout from pool, not from A)
+    [-] Link:      NO DIRECT CONNECTION
+    [+] Visible:   Vault deposits
+    [+] Visible:   Pool -> Wallet B
+    [+] Visible:   Ghost wallets (noise)
 </pre>
         </div>
 
