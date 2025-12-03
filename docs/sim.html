@@ -748,8 +748,8 @@
   
   <!-- Main Tabs -->
   <div class="main-tabs">
-    <div class="main-tab active" data-tab="dashboard">📊 Dashboard</div>
-    <div class="main-tab armageddon-tab" data-tab="armageddon">☢️ Armageddon Log</div>
+    <div class="main-tab active" data-tab="dashboard">Dashboard</div>
+    <div class="main-tab armageddon-tab" data-tab="armageddon">Armageddon Log</div>
   </div>
   
   <!-- Dashboard Tab -->
@@ -1729,7 +1729,7 @@
         state.history.prices.push({ ts: Date.now(), price: pdoxUsdPrice, sol: realPrice });
         if (state.history.prices.length > 1000) state.history.prices.shift();
         
-        console.log('📊 REAL Orca Data:', { solInPool, pdoxInPool, price: realPrice, tvl: state.market.lpValue });
+        console.log('REAL Orca Data:', { solInPool, pdoxInPool, price: realPrice, tvl: state.market.lpValue });
         
         document.getElementById('live-status').innerHTML = '🟢 <span style="color: var(--green);">LIVE Orca</span>';
         

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIVE LAB — Phantom Paradox Testing</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0f14' width='100' height='100' rx='12'/><text y='55' x='50' text-anchor='middle' font-size='40' font-family='monospace' fill='%2300ff88'>⚗️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0f14' width='100' height='100' rx='12'/><text y='55' x='50' text-anchor='middle' font-size='32' font-family='monospace' fill='%2300ff88'>LAB</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
     <style>
@@ -282,7 +282,7 @@
 <body>
     <header>
         <div class="logo">
-            <span class="logo-icon">⚗️</span>
+            <span class="logo-icon" style="font-size: 1.5rem; color: var(--accent); font-weight: 700;">[LAB]</span>
             <div>
                 <div class="logo-text">LIVE LAB</div>
                 <div class="logo-sub">Phantom Paradox · Real Tests</div>
@@ -482,7 +482,7 @@
                 <div class="progress-fill" id="mega-progress-fill" style="width: 0%"></div>
             </div>
             <div class="mega-results" id="mega-results">
-                <div style="font-weight: 600; margin-bottom: 1rem; color: var(--accent);">📊 TEST RESULTS</div>
+                <div style="font-weight: 600; margin-bottom: 1rem; color: var(--accent);">TEST RESULTS</div>
                 <div id="mega-results-content"></div>
             </div>
         </div>
@@ -762,7 +762,7 @@
                 
                 <!-- agent sim -->
                 <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <h3 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1rem;">🤖 AGENT SCALE</h3>
+                    <h3 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1rem;">AGENT SCALE</h3>
                     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">What happens when agents go brrrr.</p>
                     
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
@@ -1083,9 +1083,9 @@
                 addResult('results-null', '✓', 'Token Found', 'YES (live RPC)', true);
                 addResult('results-null', '📛', 'Name', KNOWN_NULL.name, true);
                 addResult('results-null', '🏷️', 'Symbol', '$' + KNOWN_NULL.symbol, true);
-                addResult('results-null', '🔢', 'Decimals', testData.decimals, true);
-                addResult('results-null', '📊', 'Supply', supplyNum.toLocaleString(), true);
-                addResult('results-null', '⚙️', 'Program', 'Token-2022', true);
+                addResult('results-null', '#', 'Decimals', testData.decimals, true);
+                addResult('results-null', 'S', 'Supply', supplyNum.toLocaleString(), true);
+                addResult('results-null', 'P', 'Program', 'Token-2022', true);
                 addResult('results-null', '🔐', 'Mint Authority', 'Revoked ✓', true);
                 addResult('results-null', '❄️', 'Freeze Authority', 'Revoked ✓', true);
                 addResult('results-null', '⏱️', 'Latency', elapsed + 'ms', elapsed < 2000);
@@ -1101,9 +1101,9 @@
                 addResult('results-null', '✓', 'Token Exists', 'YES (verified on-chain)', true);
                 addResult('results-null', '📛', 'Name', KNOWN_NULL.name, true);
                 addResult('results-null', '🏷️', 'Symbol', '$' + KNOWN_NULL.symbol, true);
-                addResult('results-null', '🔢', 'Decimals', KNOWN_NULL.decimals, true);
-                addResult('results-null', '📊', 'Supply', (KNOWN_NULL.supply / 1e6).toLocaleString() + ' (cached)', true);
-                addResult('results-null', '⚙️', 'Program', 'Token-2022', true);
+                addResult('results-null', '#', 'Decimals', KNOWN_NULL.decimals, true);
+                addResult('results-null', 'S', 'Supply', (KNOWN_NULL.supply / 1e6).toLocaleString() + ' (cached)', true);
+                addResult('results-null', 'P', 'Program', 'Token-2022', true);
                 addResult('results-null', '🔐', 'Mint Authority', 'Revoked ✓', true);
                 addResult('results-null', '❄️', 'Freeze Authority', 'Revoked ✓', true);
                 addResult('results-null', '🔗', 'Verify yourself', 'Solscan', true, `https://solscan.io/token/${NULL_TOKEN}`);
@@ -1147,9 +1147,9 @@
                     testData.supply = parsed?.supply;
                     
                     addResult('results-pdox', '✓', 'Token Found', 'YES', true);
-                    addResult('results-pdox', '🔢', 'Decimals', testData.decimals, true);
-                    addResult('results-pdox', '📊', 'Supply', testData.supply ? (parseInt(testData.supply) / 1e9).toLocaleString() : 'N/A', true);
-                    addResult('results-pdox', '💸', 'Transfer Fee', '3% (300 bps)', true);
+                    addResult('results-pdox', '#', 'Decimals', testData.decimals, true);
+                    addResult('results-pdox', 'S', 'Supply', testData.supply ? (parseInt(testData.supply) / 1e9).toLocaleString() : 'N/A', true);
+                    addResult('results-pdox', '%', 'Transfer Fee', '3% (300 bps)', true);
                     addResult('results-pdox', '⚙️', 'Program', 'Token-2022', true);
                     addResult('results-pdox', '⏱️', 'Latency', elapsed + 'ms', elapsed < 1000);
                     addResult('results-pdox', '🔗', 'Explorer', 'View on Solana', true, `https://explorer.solana.com/address/${PDOX_TOKEN}?cluster=devnet`);
@@ -1496,7 +1496,7 @@
                 
                 const avgTime = Math.round((devSlotTime + devBlockTime + mainSlotTime + mainBlockTime) / 4);
                 testData.averageLatency = avgTime;
-                addResult('results-rpc', '📊', 'Average Latency', avgTime + 'ms', avgTime < 500);
+                addResult('results-rpc', 'A', 'Average Latency', avgTime + 'ms', avgTime < 500);
                 
                 const verdict = avgTime < 200 ? 'EXCELLENT ⚡' : avgTime < 500 ? 'GOOD ✓' : avgTime < 1000 ? 'OK' : 'SLOW ⚠️';
                 testData.verdict = verdict;
@@ -1766,7 +1766,7 @@
                     </div>
                 </div>
                 <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(168, 85, 247, 0.1); border-radius: 6px; font-size: 0.8rem;">
-                    <strong style="color: var(--accent-purple);">📊 MONTHLY PROJECTION:</strong>
+                    <strong style="color: var(--accent-purple);">MONTHLY PROJECTION:</strong>
                     <span style="color: var(--text-dim);">${monthlyTrades.toLocaleString()} trades batched into ~${Math.ceil(monthlyTrades/10000).toLocaleString()} settlements</span>
                 </div>
             `;
