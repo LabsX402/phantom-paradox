@@ -1,0 +1,52 @@
+[package]
+name = "phantom-agent"
+version = "0.1.0"
+edition = "2021"
+description = "Phantom Paradox Desktop Agent - Earn by sharing compute and bandwidth"
+authors = ["Phantom Paradox Team"]
+
+[[bin]]
+name = "phantom-agent"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# JSON
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Solana
+solana-sdk = "1.17"
+solana-client = "1.17"
+
+# Crypto
+sha2 = "0.10"
+ed25519-dalek = "2.1"
+
+# Config
+toml = "0.8"
+dirs = "5.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# System info
+sysinfo = "0.30"
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# System tray (optional)
+# tray-item = "0.8"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "z"
+
