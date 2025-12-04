@@ -1027,11 +1027,161 @@ let connectedWallet = null;
 let map = null;
 let myMarker = null;
 
+// ============== BACKEND CONNECTION ==============
+// For local dev: http://localhost:3000, for prod: your server URL
+const API_BASE = 'http://localhost:3000';
+const WS_URL = 'ws://localhost:3000/ws';
+let ws = null;
+let heartbeatInterval = null;
+
+// Connect to backend WebSocket
+function connectToBackend() {
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+  
+  try {
+    ws = new WebSocket(WS_URL);
+    
+    ws.onopen = () => {
+      console.log('✅ Connected to backend WebSocket');
+      // Start sending heartbeats
+      sendHeartbeat();
+      heartbeatInterval = setInterval(sendHeartbeat, 30000); // Every 30s
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        handleBackendMessage(msg);
+      } catch (e) {
+        console.warn('Invalid message from backend:', event.data);
+      }
+    };
+    
+    ws.onclose = () => {
+      console.log('❌ Backend connection closed, reconnecting in 5s...');
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      setTimeout(connectToBackend, 5000);
+    };
+    
+    ws.onerror = (err) => {
+      console.warn('WebSocket error:', err);
+    };
+  } catch (e) {
+    console.warn('Failed to connect to backend:', e);
+    // Retry in 5s
+    setTimeout(connectToBackend, 5000);
+  }
+}
+
+// Send heartbeat to backend
+function sendHeartbeat() {
+  if (!ws || ws.readyState !== WebSocket.OPEN || !myAgent) return;
+  
+  const heartbeat = {
+    type: 'heartbeat',
+    agent: connectedWallet,
+    platform: 'browser',
+    version: '0.1.0',
+    capabilities: Object.entries(agentConfig.jobs)
+      .filter(([k, v]) => v)
+      .map(([k]) => k === 'relay' ? 'relay' : k === 'verify' ? 'verify' : 'compute'),
+    config: {
+      maxBandwidth: agentConfig.bandwidth,
+      dailyDataCap: agentConfig.quota * (agentConfig.quotaMode === 'hourly' ? 24 : 1) * 1024 // Convert to MB
+    },
+    metrics: {
+      latency: myAgent.latency || 0,
+      bandwidth: myAgent.bandwidth || 0,
+      uptime: Math.floor((Date.now() - (myAgent.connectedAt || Date.now())) / 1000),
+      bytesToday: 0,
+      connections: 0
+    },
+    location: {
+      city: myAgent.city,
+      lat: myAgent.lat,
+      lng: myAgent.lng
+    }
+  };
+  
+  ws.send(JSON.stringify(heartbeat));
+  console.log('📡 Heartbeat sent');
+}
+
+// Handle messages from backend
+function handleBackendMessage(msg) {
+  switch (msg.type) {
+    case 'heartbeat_ack':
+      console.log('✅ Heartbeat acknowledged, agentId:', msg.agentId);
+      break;
+    case 'job_assignment':
+      console.log('📋 Job assigned:', msg.job);
+      // TODO: Show job notification
+      break;
+    default:
+      console.log('Backend message:', msg);
+  }
+}
+
+// Fetch connected agents from API
+async function fetchAgentsFromAPI() {
+  try {
+    const response = await fetch(`${API_BASE}/api/agents/online`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('📊 Fetched agents from API:', data.count);
+      
+      // Update agents array with real data
+      if (data.agents && data.agents.length > 0) {
+        // Merge with existing agents, keeping our local agent
+        const apiAgents = data.agents
+          .filter(a => a.walletAddress !== connectedWallet?.slice(0, 8) + '...')
+          .map(a => ({
+            wallet: a.walletAddress,
+            city: a.location?.city || 'Unknown',
+            lat: a.location?.lat || 0,
+            lng: a.location?.lng || 0,
+            latency: a.metrics?.latency || 0,
+            bandwidth: a.metrics?.bandwidth || 0,
+            capLevel: a.capabilities?.length || 1,
+            isMe: false
+          }));
+        
+        agents = apiAgents;
+        renderAgents();
+        renderAgentList();
+        updateNetworkStats();
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to fetch agents from API (backend may be offline):', e.message);
+  }
+}
+
+// Update network stats header
+function updateNetworkStats() {
+  const online = (myAgent ? 1 : 0) + agents.length;
+  const regionsSet = new Set(agents.map(a => a.city?.split(',')[1]?.trim() || 'Unknown'));
+  if (myAgent?.city) regionsSet.add(myAgent.city.split(',')[1]?.trim() || 'Unknown');
+  
+  const totalBandwidth = agents.reduce((sum, a) => sum + (a.bandwidth || 0), 0) + (myAgent?.bandwidth || 0);
+  
+  document.getElementById('onlineCount').textContent = online;
+  document.getElementById('regionCount').textContent = regionsSet.size;
+  document.getElementById('totalBw').textContent = (totalBandwidth / 1000).toFixed(1);
+}
+
 // Initialize
 function init() {
   drawMap();
   setupTabs();
   setupConnect();
+  
+  // Try to connect to backend (will fail gracefully if backend is not running)
+  connectToBackend();
+  
+  // Fetch agents periodically
+  fetchAgentsFromAPI();
+  setInterval(fetchAgentsFromAPI, 10000); // Every 10s
 }
 
 function drawMap() {
@@ -1256,7 +1406,8 @@ function setupAgent(wallet, lat, lng, cityName) {
     latency: 0,
     bandwidth: 0,
     capLevel: 3,
-    isMe: true
+    isMe: true,
+    connectedAt: Date.now()
   };
   
   // Test network
@@ -1265,7 +1416,11 @@ function setupAgent(wallet, lat, lng, cityName) {
   // Render all
   renderAgents();
   renderYourAgent();
-  renderAgentList(); // Show connected agents list
+  renderAgentList();
+  updateNetworkStats();
+  
+  // Connect to backend and start sending heartbeats
+  connectToBackend();
   
   console.log('Connected:', wallet, 'Location:', cityName, `(${lat.toFixed(2)}, ${lng.toFixed(2)})`);
 }

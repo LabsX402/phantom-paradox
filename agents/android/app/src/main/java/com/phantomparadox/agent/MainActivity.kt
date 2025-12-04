@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -24,6 +25,127 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import okhttp3.*
+import com.google.gson.Gson
+import kotlinx.coroutines.*
+import java.util.concurrent.TimeUnit
+
+// ============== BACKEND CONNECTION ==============
+// Change this to your server URL (localhost for emulator, real IP for device)
+const val WS_URL = "ws://10.0.2.2:3000/ws" // 10.0.2.2 = localhost for Android emulator
+
+object AgentBackend {
+    private var webSocket: WebSocket? = null
+    private var isConnected = false
+    private val gson = Gson()
+    private val client = OkHttpClient.Builder()
+        .pingInterval(30, TimeUnit.SECONDS)
+        .build()
+    
+    var walletAddress: String? = null
+    var config: AgentConfig = AgentConfig()
+    var onConnectionChange: ((Boolean) -> Unit)? = null
+    var onJobReceived: ((String) -> Unit)? = null
+    
+    data class AgentConfig(
+        val cpuLimit: Int = 50,
+        val bandwidthLimit: Int = 25,
+        val dataQuota: Int = 5,
+        val batteryPause: Int = 20
+    )
+    
+    data class HeartbeatMessage(
+        val type: String = "heartbeat",
+        val agent: String,
+        val platform: String = "mobile",
+        val version: String = "0.1.6",
+        val capabilities: List<String> = listOf("relay", "verify"),
+        val config: Map<String, Any>,
+        val metrics: Map<String, Any>
+    )
+    
+    fun connect(wallet: String, cfg: AgentConfig) {
+        walletAddress = wallet
+        config = cfg
+        
+        if (isConnected) return
+        
+        val request = Request.Builder()
+            .url(WS_URL)
+            .build()
+        
+        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                Log.d("AgentBackend", "✅ Connected to backend")
+                isConnected = true
+                onConnectionChange?.invoke(true)
+                sendHeartbeat()
+            }
+            
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                Log.d("AgentBackend", "📩 Message: $text")
+                handleMessage(text)
+            }
+            
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                Log.d("AgentBackend", "❌ Closing: $reason")
+                isConnected = false
+                onConnectionChange?.invoke(false)
+            }
+            
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                Log.e("AgentBackend", "❌ Error: ${t.message}")
+                isConnected = false
+                onConnectionChange?.invoke(false)
+                // Reconnect after 5 seconds
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(5000)
+                    connect(wallet, cfg)
+                }
+            }
+        })
+    }
+    
+    fun disconnect() {
+        webSocket?.close(1000, "User disconnected")
+        webSocket = null
+        isConnected = false
+    }
+    
+    fun sendHeartbeat() {
+        if (!isConnected || walletAddress == null) return
+        
+        val heartbeat = HeartbeatMessage(
+            agent = walletAddress!!,
+            config = mapOf(
+                "maxBandwidth" to config.bandwidthLimit,
+                "dailyDataCap" to config.dataQuota * 1024 // Convert GB to MB
+            ),
+            metrics = mapOf(
+                "latency" to 50,
+                "bandwidth" to config.bandwidthLimit,
+                "uptime" to 0,
+                "bytesToday" to 0
+            )
+        )
+        
+        val json = gson.toJson(heartbeat)
+        webSocket?.send(json)
+        Log.d("AgentBackend", "📡 Heartbeat sent")
+    }
+    
+    private fun handleMessage(text: String) {
+        try {
+            val msg = gson.fromJson(text, Map::class.java)
+            when (msg["type"]) {
+                "heartbeat_ack" -> Log.d("AgentBackend", "✅ Heartbeat acknowledged")
+                "job_assignment" -> onJobReceived?.invoke(text)
+            }
+        } catch (e: Exception) {
+            Log.e("AgentBackend", "Failed to parse message: $text")
+        }
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,6 +221,8 @@ fun MainApp() {
             isRunning = isRunning,
             cpuLimit = cpuLimit,
             bandwidthLimit = bandwidthLimit,
+            dataQuota = dataQuota,
+            batteryPause = batteryPause,
             onToggle = { isRunning = !isRunning },
             onSettings = { currentScreen = "settings" }
         )
@@ -443,20 +567,44 @@ fun AgentMainScreen(
     isRunning: Boolean,
     cpuLimit: Int,
     bandwidthLimit: Int,
+    dataQuota: Int,
+    batteryPause: Int,
     onToggle: () -> Unit,
     onSettings: () -> Unit
 ) {
     var earnings by remember { mutableStateOf(0.0) }
     var dataRelayed by remember { mutableStateOf(0.0) }
     var uptime by remember { mutableStateOf(0L) }
+    var backendConnected by remember { mutableStateOf(false) }
     
-    // Simulate earnings when running
+    // Connect to backend when running
+    LaunchedEffect(isRunning) {
+        if (isRunning) {
+            AgentBackend.onConnectionChange = { connected ->
+                backendConnected = connected
+            }
+            AgentBackend.connect(
+                walletAddress,
+                AgentBackend.AgentConfig(cpuLimit, bandwidthLimit, dataQuota, batteryPause)
+            )
+        } else {
+            AgentBackend.disconnect()
+            backendConnected = false
+        }
+    }
+    
+    // Send heartbeats every 30 seconds when running
     LaunchedEffect(isRunning) {
         while (isRunning) {
             kotlinx.coroutines.delay(1000)
             uptime++
             dataRelayed += 0.01
             earnings += 0.000001
+            
+            // Send heartbeat every 30 seconds
+            if (uptime % 30 == 0L) {
+                AgentBackend.sendHeartbeat()
+            }
         }
     }
     
@@ -494,21 +642,32 @@ fun AgentMainScreen(
                 .size(150.dp)
                 .clip(CircleShape)
                 .background(
-                    if (isRunning) Color(0xFF00FF88).copy(alpha = 0.2f) 
+                    if (isRunning && backendConnected) Color(0xFF00FF88).copy(alpha = 0.2f) 
+                    else if (isRunning) Color(0xFFFFAA00).copy(alpha = 0.2f)
                     else Color(0xFF1A2530)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    if (isRunning) "🟢" else "⭕",
+                    if (isRunning && backendConnected) "🟢" 
+                    else if (isRunning) "🟡"
+                    else "⭕",
                     fontSize = 48.sp
                 )
                 Text(
-                    if (isRunning) "ONLINE" else "OFFLINE",
-                    color = if (isRunning) Color(0xFF00FF88) else Color(0xFF6B7C8A),
-                    fontWeight = FontWeight.Bold
+                    if (isRunning && backendConnected) "CONNECTED" 
+                    else if (isRunning) "CONNECTING..."
+                    else "OFFLINE",
+                    color = if (isRunning && backendConnected) Color(0xFF00FF88) 
+                           else if (isRunning) Color(0xFFFFAA00)
+                           else Color(0xFF6B7C8A),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
                 )
+                if (isRunning && backendConnected) {
+                    Text("📡 Live", color = Color(0xFF00FF88).copy(alpha = 0.7f), fontSize = 10.sp)
+                }
             }
         }
         
