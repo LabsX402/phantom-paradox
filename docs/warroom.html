@@ -1284,7 +1284,7 @@ async function connectWallet() {
   }
 }
 
-function onConnected(wallet) {
+async function onConnected(wallet) {
   const btn = document.getElementById('connectBtn');
   btn.textContent = wallet.slice(0, 4) + '...' + wallet.slice(-4);
   btn.classList.add('connected');
