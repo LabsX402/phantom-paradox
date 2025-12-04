@@ -1142,52 +1142,108 @@ function onConnected(wallet) {
   document.getElementById('statusBadge').textContent = 'ONLINE';
   document.getElementById('statusBadge').style.background = 'var(--cyan)';
   
-  // USE REAL GEOLOCATION - NO FAKE DATA
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        
-        // Get REAL city name from reverse geocoding - prioritize major cities
-        let cityName = 'Unknown';
-        let countryCode = '';
-        try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`);
-          const data = await response.json();
-          const addr = data.address || {};
+  // MULTI-LAYER GEOLOCATION (works for browser + API agents)
+  // 1. First: IP-based geolocation (most reliable, works for API agents too)
+  // 2. Then: Browser geolocation to refine if available (GPS on mobile)
+  
+  try {
+    // Get location from IP first (this is what API agents use)
+    const ipGeo = await getIPLocation();
+    console.log('IP location:', ipGeo);
+    
+    // Try to get more accurate browser location (GPS on mobile)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const accuracy = pos.coords.accuracy;
           
-          // Priority: city > state > county > town (skip tiny villages)
-          cityName = addr.city || addr.state || addr.county || addr.town || addr.municipality || 'Unknown';
-          countryCode = addr.country_code?.toUpperCase() || '';
+          console.log(`Browser location: ${lat}, ${lng} (accuracy: ${accuracy}m)`);
           
-          // Add country code for clarity (important for VPN routing)
-          if (countryCode && cityName !== 'Unknown') {
-            cityName = `${cityName}, ${countryCode}`;
+          // If browser location is accurate (<5km), use it with IP city name
+          // Otherwise stick with IP location
+          if (accuracy < 5000) {
+            // Get city name for these coords
+            const cityName = await reverseGeocode(lat, lng) || ipGeo.city;
+            setupAgent(wallet, lat, lng, cityName);
+          } else {
+            // Browser location too inaccurate, use IP location
+            setupAgent(wallet, ipGeo.lat, ipGeo.lng, ipGeo.city);
           }
-          
-          console.log('Real location:', cityName, `(${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-        } catch (e) {
-          console.warn('Geocoding failed, using coords only');
-          cityName = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+        },
+        (err) => {
+          console.log('Browser location denied/failed, using IP location');
+          setupAgent(wallet, ipGeo.lat, ipGeo.lng, ipGeo.city);
+        },
+        { 
+          enableHighAccuracy: true,
+          timeout: 5000, 
+          maximumAge: 60000 
         }
-        
-        setupAgent(wallet, lat, lng, cityName);
-      },
-      (err) => {
-        console.error('Geolocation denied:', err);
-        // No location = show as unknown, don't fake it
-        setupAgent(wallet, 0, 0, 'Location denied');
-      },
-      { 
-        enableHighAccuracy: true,
-        timeout: 10000, 
-        maximumAge: 60000 
-      }
-    );
-  } else {
-    console.error('Geolocation not supported');
-    setupAgent(wallet, 0, 0, 'No geolocation');
+      );
+    } else {
+      // No browser geolocation, use IP location
+      setupAgent(wallet, ipGeo.lat, ipGeo.lng, ipGeo.city);
+    }
+  } catch (e) {
+    console.error('All geolocation failed:', e);
+    setupAgent(wallet, 0, 0, 'Location unavailable');
+  }
+}
+
+// Get location from IP address (works for API agents too)
+async function getIPLocation() {
+  try {
+    // ip-api.com is free and accurate (no API key needed)
+    const response = await fetch('http://ip-api.com/json/?fields=status,city,regionName,country,countryCode,lat,lon');
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      return {
+        lat: data.lat,
+        lng: data.lon,
+        city: `${data.city}, ${data.countryCode}`,
+        region: data.regionName,
+        country: data.country
+      };
+    }
+  } catch (e) {
+    console.warn('ip-api.com failed, trying backup...');
+  }
+  
+  // Backup: ipapi.co (also free)
+  try {
+    const response = await fetch('https://ipapi.co/json/');
+    const data = await response.json();
+    
+    return {
+      lat: data.latitude,
+      lng: data.longitude,
+      city: `${data.city}, ${data.country_code}`,
+      region: data.region,
+      country: data.country_name
+    };
+  } catch (e) {
+    console.error('All IP geolocation failed');
+  }
+  
+  return { lat: 0, lng: 0, city: 'Unknown' };
+}
+
+// Reverse geocode coords to city name
+async function reverseGeocode(lat, lng) {
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`);
+    const data = await response.json();
+    const addr = data.address || {};
+    
+    const cityName = addr.city || addr.state || addr.county || addr.town || 'Unknown';
+    const countryCode = addr.country_code?.toUpperCase() || '';
+    
+    return countryCode ? `${cityName}, ${countryCode}` : cityName;
+  } catch (e) {
+    return null;
   }
 }
 
