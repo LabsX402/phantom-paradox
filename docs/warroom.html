@@ -1618,6 +1618,324 @@ onConnected = function(wallet) {
   renderAgentList();
 };
 
+// ============== AGENT CONFIG ==============
+
+let agentConfig = {
+  cpu: 50,
+  ram: 2048,
+  bandwidth: 25,
+  quotaMode: 'hourly',
+  quota: 5,
+  paymentToken: 'SOL',
+  jobs: {
+    relay: true,
+    image: true,
+    audio: true,
+    text: true,
+    video: false,
+    verify: true,
+    gpu: false,
+    jury: false
+  },
+  isRunning: false
+};
+
+// Load config from localStorage
+function loadConfig() {
+  const saved = localStorage.getItem('agentConfig');
+  if (saved) {
+    agentConfig = { ...agentConfig, ...JSON.parse(saved) };
+    applyConfigToUI();
+  }
+}
+
+// Save config to localStorage
+function saveConfig() {
+  localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+  logAudit('CONFIG_SAVE', 'Agent config saved', agentConfig);
+}
+
+// Apply saved config to UI
+function applyConfigToUI() {
+  document.getElementById('cpuSlider').value = agentConfig.cpu;
+  document.getElementById('ramSlider').value = agentConfig.ram;
+  document.getElementById('bwSlider').value = agentConfig.bandwidth;
+  document.getElementById('quotaSlider').value = agentConfig.quota;
+  
+  document.querySelector(`input[name="quotaMode"][value="${agentConfig.quotaMode}"]`).checked = true;
+  document.querySelector(`input[name="paymentToken"][value="${agentConfig.paymentToken}"]`).checked = true;
+  
+  document.getElementById('jobRelay').checked = agentConfig.jobs.relay;
+  document.getElementById('jobImage').checked = agentConfig.jobs.image;
+  document.getElementById('jobAudio').checked = agentConfig.jobs.audio;
+  document.getElementById('jobText').checked = agentConfig.jobs.text;
+  document.getElementById('jobVideo').checked = agentConfig.jobs.video;
+  document.getElementById('jobVerify').checked = agentConfig.jobs.verify;
+  document.getElementById('jobGpu').checked = agentConfig.jobs.gpu;
+  document.getElementById('jobJury').checked = agentConfig.jobs.jury;
+  
+  updateSlider('cpu');
+  updateSlider('ram');
+  updateSlider('bw');
+  updateSlider('quota');
+  updatePaymentSelection();
+}
+
+// Update slider display
+function updateSlider(type) {
+  switch(type) {
+    case 'cpu':
+      const cpu = document.getElementById('cpuSlider').value;
+      document.getElementById('cpuValue').textContent = cpu + '%';
+      agentConfig.cpu = parseInt(cpu);
+      break;
+    case 'ram':
+      const ram = document.getElementById('ramSlider').value;
+      const ramGB = (ram / 1024).toFixed(1);
+      document.getElementById('ramValue').textContent = ramGB + ' GB';
+      agentConfig.ram = parseInt(ram);
+      break;
+    case 'bw':
+      const bw = document.getElementById('bwSlider').value;
+      document.getElementById('bwValue').textContent = bw + ' Mbps';
+      agentConfig.bandwidth = parseInt(bw);
+      break;
+    case 'quota':
+      const quota = document.getElementById('quotaSlider').value;
+      document.getElementById('quotaValue').textContent = quota + ' GB';
+      agentConfig.quota = parseInt(quota);
+      break;
+  }
+  saveConfig();
+}
+
+// Payment token selection
+function updatePaymentSelection() {
+  const sol = document.getElementById('paymentSolLabel');
+  const usdc = document.getElementById('paymentUsdcLabel');
+  const note = document.getElementById('usdcNote');
+  const selected = document.querySelector('input[name="paymentToken"]:checked').value;
+  
+  agentConfig.paymentToken = selected;
+  
+  if (selected === 'SOL') {
+    sol.style.borderColor = 'var(--green)';
+    usdc.style.borderColor = 'var(--border)';
+    note.style.display = 'none';
+  } else {
+    sol.style.borderColor = 'var(--border)';
+    usdc.style.borderColor = 'var(--green)';
+    note.style.display = 'block';
+  }
+  saveConfig();
+}
+
+// Gear test
+async function runGearTest() {
+  const prompt = document.getElementById('gearTestPrompt');
+  const results = document.getElementById('gearTestResults');
+  
+  prompt.innerHTML = '<div style="text-align:center;padding:30px;"><div style="font-size:32px;">⏳</div><div>Running tests...</div></div>';
+  
+  // Detect CPU cores
+  const cpuCores = navigator.hardwareConcurrency || 4;
+  
+  // Estimate RAM (not accurate but gives idea)
+  const ram = navigator.deviceMemory || 4;
+  
+  // Test bandwidth
+  let speed = 25;
+  let latency = 100;
+  try {
+    const start = performance.now();
+    await fetch('https://api.devnet.solana.com', { method: 'HEAD', mode: 'no-cors' });
+    latency = Math.floor(performance.now() - start);
+    speed = Math.max(10, 100 - latency); // Rough estimate
+  } catch(e) {}
+  
+  // Show results
+  document.getElementById('gearCpu').textContent = cpuCores;
+  document.getElementById('gearRam').textContent = ram;
+  document.getElementById('gearSpeed').textContent = speed;
+  document.getElementById('gearLatency').textContent = latency;
+  
+  // Set suggested values
+  document.getElementById('cpuSlider').value = Math.min(50, cpuCores * 10);
+  document.getElementById('ramSlider').value = Math.min(ram * 512, 4096);
+  document.getElementById('bwSlider').value = Math.min(speed, 50);
+  
+  updateSlider('cpu');
+  updateSlider('ram');
+  updateSlider('bw');
+  
+  prompt.style.display = 'none';
+  results.style.display = 'block';
+  
+  logAudit('GEAR_TEST', 'Hardware scan completed', { cpuCores, ram, speed, latency });
+}
+
+// Toggle agent on/off
+function toggleAgent() {
+  if (!connectedWallet) {
+    alert('Connect wallet first!');
+    return;
+  }
+  
+  const btn = document.getElementById('agentToggleBtn');
+  const status = document.getElementById('agentStatusText');
+  
+  agentConfig.isRunning = !agentConfig.isRunning;
+  
+  if (agentConfig.isRunning) {
+    btn.innerHTML = '🟢 ONLINE';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#000';
+    status.textContent = 'Auto-picking jobs matching your config';
+    status.style.color = 'var(--green)';
+    
+    logAudit('AGENT_START', 'Agent started', {
+      wallet: connectedWallet,
+      config: agentConfig
+    });
+    
+    // Start auto-picking jobs
+    startAutoPickJobs();
+  } else {
+    btn.innerHTML = '🔴 OFFLINE';
+    btn.style.background = 'var(--card-alt)';
+    btn.style.color = 'var(--text)';
+    status.textContent = 'Agent stopped';
+    status.style.color = 'var(--dim)';
+    
+    logAudit('AGENT_STOP', 'Agent stopped', { wallet: connectedWallet });
+  }
+  
+  saveConfig();
+}
+
+// Auto-pick jobs based on config
+let autoPickInterval = null;
+
+function startAutoPickJobs() {
+  if (autoPickInterval) clearInterval(autoPickInterval);
+  
+  autoPickInterval = setInterval(() => {
+    if (!agentConfig.isRunning || liveJobs.length === 0) return;
+    
+    // Find matching job
+    const matchingJob = liveJobs.find(job => {
+      if (job.category === 'RELAY' && !agentConfig.jobs.relay) return false;
+      if (job.category === 'AI_IMAGE' && !agentConfig.jobs.image) return false;
+      if (job.category === 'AI_AUDIO' && !agentConfig.jobs.audio) return false;
+      if (job.category === 'AI_TEXT' && !agentConfig.jobs.text) return false;
+      if (job.category === 'AI_VIDEO' && !agentConfig.jobs.video) return false;
+      if (job.category === 'VERIFICATION' && !agentConfig.jobs.verify) return false;
+      if (job.category === 'COMPUTE' && !agentConfig.jobs.gpu) return false;
+      return true;
+    });
+    
+    if (matchingJob) {
+      logAudit('JOB_AUTO_CLAIM', 'Auto-claimed job', { jobId: matchingJob.id, type: matchingJob.type });
+      claimJob(matchingJob.id);
+    }
+  }, 5000); // Check every 5 seconds
+}
+
+// ============== CORPORATE AUDIT LOG ==============
+
+const auditLog = [];
+
+function logAudit(action, description, data = {}) {
+  const entry = {
+    id: 'AUD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+    timestamp: new Date().toISOString(),
+    action,
+    description,
+    data,
+    wallet: connectedWallet || 'anonymous',
+    userAgent: navigator.userAgent.substr(0, 50)
+  };
+  
+  auditLog.unshift(entry);
+  
+  // Keep last 1000 entries
+  while (auditLog.length > 1000) auditLog.pop();
+  
+  // Store in localStorage
+  localStorage.setItem('auditLog', JSON.stringify(auditLog.slice(0, 100)));
+  
+  console.log('[AUDIT]', action, description, data);
+}
+
+// Load audit log from localStorage
+function loadAuditLog() {
+  const saved = localStorage.getItem('auditLog');
+  if (saved) {
+    auditLog.push(...JSON.parse(saved));
+  }
+}
+
+// Get audit log for display
+function getAuditLog(limit = 50) {
+  return auditLog.slice(0, limit);
+}
+
+// ============== INIT CONFIG ==============
+
+function initConfig() {
+  loadConfig();
+  loadAuditLog();
+  
+  // Add event listeners for job checkboxes
+  ['Relay', 'Image', 'Audio', 'Text', 'Video', 'Verify', 'Gpu', 'Jury'].forEach(type => {
+    const el = document.getElementById('job' + type);
+    if (el) {
+      el.addEventListener('change', () => {
+        agentConfig.jobs[type.toLowerCase()] = el.checked;
+        saveConfig();
+      });
+    }
+  });
+  
+  // Quota mode
+  document.querySelectorAll('input[name="quotaMode"]').forEach(el => {
+    el.addEventListener('change', () => {
+      agentConfig.quotaMode = el.value;
+      saveConfig();
+    });
+  });
+  
+  // Enable agent toggle if wallet connected
+  if (connectedWallet) {
+    const btn = document.getElementById('agentToggleBtn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    document.getElementById('agentStatusText').textContent = 'Ready to start';
+  }
+  
+  logAudit('SESSION_START', 'War Room session started', { url: window.location.href });
+}
+
+// Extend init
+const originalInit = init;
+init = function() {
+  originalInit();
+  initConfig();
+};
+
+// Extend onConnected for config
+const origOnConnected2 = onConnected;
+onConnected = function(wallet) {
+  origOnConnected2(wallet);
+  
+  const btn = document.getElementById('agentToggleBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  document.getElementById('agentStatusText').textContent = 'Ready to start';
+  
+  logAudit('WALLET_CONNECT', 'Wallet connected', { wallet: wallet.slice(0, 8) + '..' });
+};
+
 document.addEventListener('DOMContentLoaded', init);
 
 </script>
