@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARADOX // Agent Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* PHANTOM PARADOX DARK THEME */
+            --bg-void: #0a0a0f;
+            --bg-deep: #0d0d14;
+            --bg-surface: #12121a;
+            --bg-elevated: #18182a;
+            --bg-card: #1a1a2e;
+            
+            /* NEON ACCENTS */
+            --neon-cyan: #00f5ff;
+            --neon-magenta: #ff00ff;
+            --neon-green: #00ff88;
+            --neon-orange: #ff8800;
+            --neon-red: #ff3366;
+            --neon-purple: #8855ff;
+            --neon-yellow: #ffee00;
+            
+            /* AGENT CAPABILITY COLORS - Additive tones */
+            --cap-vpn: #00d4aa;         /* Base: VPN/Relay */
+            --cap-compute: #00aaff;      /* +Compute */
+            --cap-verify: #aa66ff;       /* +Verify */
+            --cap-jury: #ff66aa;         /* +Jury */
+            --cap-storage: #ffaa00;      /* +Storage */
+            --cap-full: #ffffff;         /* Full capability = white glow */
+            
+            /* GRID & TEXT */
+            --grid-dim: rgba(0, 245, 255, 0.05);
+            --grid-line: rgba(0, 245, 255, 0.1);
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888aa;
+            --text-dim: #555566;
+            
+            /* TELEMETRY COLORS */
+            --telem-good: #00ff88;
+            --telem-warn: #ffaa00;
+            --telem-bad: #ff3366;
+            
+            /* FONTS */
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-void);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* GRID BACKGROUND */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* MAIN LAYOUT */
+        .command-center {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: 80px 1fr 300px;
+            gap: 1px;
+            height: 100vh;
+            background: var(--grid-line);
+        }
+
+        /* HEADER */
+        .header {
+            grid-column: 1 / -1;
+            background: var(--bg-deep);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--bg-void);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--neon-cyan); }
+            50% { box-shadow: 0 0 40px var(--neon-magenta); }
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-sub {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 40px;
+        }
+
+        .stat-block {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 20px var(--neon-green);
+        }
+
+        .stat-value.warn { color: var(--neon-orange); text-shadow: 0 0 20px var(--neon-orange); }
+        .stat-value.bad { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .system-time {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--neon-cyan);
+            text-align: right;
+        }
+
+        /* WORLD MAP PANEL */
+        .map-panel {
+            background: var(--bg-surface);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, transparent 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-size: 12px;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .panel-badge {
+            background: var(--neon-green);
+            color: var(--bg-void);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .world-map {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+
+        .map-svg path {
+            fill: var(--bg-card);
+            stroke: var(--neon-cyan);
+            stroke-width: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .map-svg path:hover {
+            fill: var(--bg-elevated);
+            stroke-width: 0.5;
+        }
+
+        /* AGENT MARKERS */
+        .agent-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .agent-marker::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            opacity: 0.5;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .agent-marker::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            opacity: 0.3;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .agent-marker:hover {
+            transform: translate(-50%, -50%) scale(1.5);
+            z-index: 100;
+        }
+
+        /* CAPABILITY COLOR CLASSES */
+        .cap-1 { background: var(--cap-vpn); color: var(--cap-vpn); box-shadow: 0 0 15px var(--cap-vpn); }
+        .cap-2 { background: linear-gradient(135deg, var(--cap-vpn), var(--cap-compute)); box-shadow: 0 0 15px var(--cap-compute); }
+        .cap-3 { background: linear-gradient(135deg, var(--cap-compute), var(--cap-verify)); box-shadow: 0 0 20px var(--cap-verify); }
+        .cap-4 { background: linear-gradient(135deg, var(--cap-verify), var(--cap-jury)); box-shadow: 0 0 25px var(--cap-jury); }
+        .cap-5 { background: linear-gradient(135deg, var(--cap-jury), var(--cap-storage), var(--cap-full)); box-shadow: 0 0 30px var(--cap-full); }
+
+        /* AGENT TOOLTIP */
+        .agent-tooltip {
+            position: absolute;
+            background: var(--bg-elevated);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            min-width: 200px;
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
+        }
+
+        .agent-marker:hover + .agent-tooltip,
+        .agent-tooltip:hover {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--grid-line);
+        }
+
+        .tooltip-id {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .tooltip-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+
+        .tooltip-label {
+            color: var(--text-secondary);
+        }
+
+        .tooltip-value {
+            color: var(--text-primary);
+        }
+
+        .tooltip-caps {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cap-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cap-badge.vpn { background: var(--cap-vpn); color: var(--bg-void); }
+        .cap-badge.compute { background: var(--cap-compute); color: var(--bg-void); }
+        .cap-badge.verify { background: var(--cap-verify); color: var(--bg-void); }
+        .cap-badge.jury { background: var(--cap-jury); color: var(--bg-void); }
+        .cap-badge.storage { background: var(--cap-storage); color: var(--bg-void); }
+
+        /* RIGHT SIDEBAR */
+        .sidebar {
+            background: var(--bg-deep);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            overflow: hidden;
+        }
+
+        /* AGENT LIST */
+        .agent-list-panel {
+            flex: 1;
+            background: var(--bg-surface);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .agent-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .agent-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .agent-list::-webkit-scrollbar-track {
+            background: var(--bg-void);
+        }
+
+        .agent-list::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 2px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--cap-vpn);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .agent-card:hover {
+            background: var(--bg-elevated);
+            transform: translateX(5px);
+        }
+
+        .agent-card.cap-2 { border-left-color: var(--cap-compute); }
+        .agent-card.cap-3 { border-left-color: var(--cap-verify); }
+        .agent-card.cap-4 { border-left-color: var(--cap-jury); }
+        .agent-card.cap-5 { border-left-color: var(--cap-full); }
+
+        .agent-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .agent-addr {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--neon-cyan);
+        }
+
+        .agent-location {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .agent-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .metric-value.good { color: var(--telem-good); }
+        .metric-value.warn { color: var(--telem-warn); }
+        .metric-value.bad { color: var(--telem-bad); }
+
+        .metric-label {
+            color: var(--text-dim);
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+
+        /* JOBS PANEL */
+        .jobs-panel {
+            height: 200px;
+            background: var(--bg-surface);
+            overflow: hidden;
+        }
+
+        .jobs-list {
+            height: calc(100% - 50px);
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .job-card {
+            background: var(--bg-card);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .job-card:hover {
+            border-color: var(--neon-cyan);
+        }
+
+        .job-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .job-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .job-icon.relay { background: var(--cap-vpn); }
+        .job-icon.compute { background: var(--cap-compute); }
+        .job-icon.verify { background: var(--cap-verify); }
+        .job-icon.jury { background: var(--cap-jury); }
+        .job-icon.storage { background: var(--cap-storage); }
+
+        .job-details {
+            font-size: 11px;
+        }
+
+        .job-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .job-desc {
+            color: var(--text-secondary);
+            font-size: 9px;
+        }
+
+        .job-price {
+            text-align: right;
+        }
+
+        .job-rate {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--neon-green);
+        }
+
+        .job-unit {
+            font-size: 9px;
+            color: var(--text-dim);
+        }
+
+        /* TELEMETRY PANEL - BOTTOM */
+        .telemetry-panel {
+            grid-column: 1 / -1;
+            background: var(--bg-deep);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 400px;
+            gap: 1px;
+        }
+
+        .telem-section {
+            background: var(--bg-surface);
+            padding: 15px 20px;
+        }
+
+        .telem-title {
+            font-family: var(--font-display);
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        /* PACKET GRAPH */
+        .packet-graph {
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-overlay {
+            position: absolute;
+            top: 0;
+            right: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .graph-stat {
+            margin-bottom: 5px;
+        }
+
+        .graph-stat-label {
+            color: var(--text-secondary);
+        }
+
+        .graph-stat-value {
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        /* NETWORK GAUGES */
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            height: 100%;
+        }
+
+        .gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--neon-green) 0deg,
+                var(--neon-green) calc(var(--value) * 3.6deg),
+                var(--bg-card) calc(var(--value) * 3.6deg)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .gauge-circle::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: var(--bg-surface);
+            border-radius: 50%;
+        }
+
+        .gauge-value {
+            position: relative;
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .gauge-label {
+            margin-top: 8px;
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* MESSAGE LOG */
+        .message-log {
+            background: var(--bg-void);
+            border-radius: 6px;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-header {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--grid-line);
+        }
+
+        .log-title {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+        }
+
+        .log-filters {
+            display: flex;
+            gap: 6px;
+        }
+
+        .log-filter {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .log-filter.active {
+            background: var(--neon-cyan);
+            color: var(--bg-void);
+        }
+
+        .log-entries {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+        }
+
+        .log-entry {
+            padding: 4px 8px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-entry.in { background: rgba(0, 255, 136, 0.1); }
+        .log-entry.out { background: rgba(0, 170, 255, 0.1); }
+        .log-entry.error { background: rgba(255, 51, 102, 0.1); }
+
+        .log-time {
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .log-dir {
+            flex-shrink: 0;
+            width: 20px;
+        }
+
+        .log-dir.in { color: var(--neon-green); }
+        .log-dir.out { color: var(--cap-compute); }
+
+        .log-type {
+            color: var(--neon-cyan);
+            flex-shrink: 0;
+            width: 100px;
+        }
+
+        .log-payload {
+            color: var(--text-secondary);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* INSTRUCTION MONITOR */
+        .instr-section {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .instr-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .instr-stat {
+            text-align: center;
+            padding: 8px;
+            background: var(--bg-card);
+            border-radius: 6px;
+        }
+
+        .instr-stat-value {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .instr-stat-label {
+            font-size: 8px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .instr-queue {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .instr-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+        }
+
+        .instr-status {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .instr-status.pending { background: var(--neon-orange); }
+        .instr-status.running { background: var(--neon-green); animation: blink 0.5s infinite; }
+        .instr-status.complete { background: var(--neon-cyan); }
+
+        .instr-type {
+            color: var(--neon-magenta);
+            width: 80px;
+        }
+
+        .instr-target {
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .instr-eta {
+            color: var(--text-dim);
+        }
+
+        /* LEGEND */
+        .capability-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            z-index: 10;
+            border: 1px solid var(--grid-line);
+        }
+
+        .legend-title {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-label {
+            color: var(--text-primary);
+        }
+
+        /* CONNECTION LINES (animated) */
+        .connection-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            transform-origin: left center;
+            animation: data-flow 2s linear infinite;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        @keyframes data-flow {
+            0% { opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { opacity: 0; }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1400px) {
+            .command-center {
+                grid-template-columns: 1fr 350px;
+            }
+            
+            .telemetry-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .command-center {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr 300px;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="command-center">
+        <!-- HEADER -->
+        <header class="header">
+            <a href="agents.html" class="logo" style="text-decoration: none;">
+                <img src="../assets/null-logo-128.png" alt="NULL" style="width: 40px; height: 40px; border-radius: 8px;">
+                <div>
+                    <div class="logo-text">PARADOX</div>
+                    <div class="logo-sub">AGENT WAR ROOM</div>
+                </div>
+            </a>
+            
+            <div style="display: flex; gap: 8px; margin-left: 20px;">
+                <a href="phantom-agent-android-v0.1.1.apk" download style="background: linear-gradient(135deg, #00ff88, #00aa66); color: #000; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.75rem;">📱 APK</a>
+                <a href="phantom-agent-chrome-v0.1.0.zip" download style="background: linear-gradient(135deg, #4285f4, #2d5db8); color: #fff; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.75rem;">🌐 Chrome</a>
+                <a href="phantom-agent-firefox-v0.1.0.xpi" download style="background: linear-gradient(135deg, #ff6600, #cc5500); color: #fff; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.75rem;">🦊 Firefox</a>
+            </div>
+            
+            <div class="header-stats">
+                <div class="stat-block">
+                    <div class="stat-value" id="totalAgents">0</div>
+                    <div class="stat-label">Agents Online</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-value" id="totalBandwidth">0</div>
+                    <div class="stat-label">Gbps Total</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-value" id="activeJobs">0</div>
+                    <div class="stat-label">Active Jobs</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-value" id="avgLatency">0</div>
+                    <div class="stat-label">Avg Latency (ms)</div>
+                </div>
+            </div>
+            
+            <div class="system-time">
+                <div id="systemTime">--:--:--</div>
+                <div style="font-size: 10px; color: var(--text-dim);">UTC</div>
+            </div>
+        </header>
+        
+        <!-- WORLD MAP -->
+        <div class="map-panel">
+            <div class="panel-header">
+                <div class="panel-title">🌐 Global Agent Network</div>
+                <div class="panel-badge" id="regionsActive">0 Regions</div>
+            </div>
+            
+            <div class="world-map" id="worldMap">
+                <!-- SVG World Map -->
+                <svg class="map-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" id="mapSvg">
+                    <!-- Simplified world map paths -->
+                    <path d="M 180 80 Q 220 90 280 75 Q 320 60 360 70 L 380 100 Q 340 130 300 120 Q 250 130 200 110 Z" title="North America"/>
+                    <path d="M 200 180 Q 250 200 290 230 Q 270 280 230 300 Q 180 280 170 230 Z" title="South America"/>
+                    <path d="M 420 80 Q 480 60 540 80 Q 560 120 540 150 Q 500 170 450 150 Q 420 120 420 80 Z" title="Europe"/>
+                    <path d="M 420 170 Q 500 160 580 200 Q 600 280 540 340 Q 460 360 400 300 Q 380 230 420 170 Z" title="Africa"/>
+                    <path d="M 580 60 Q 700 40 800 80 Q 850 150 820 220 Q 740 260 640 220 Q 580 160 580 60 Z" title="Russia/Asia"/>
+                    <path d="M 650 240 Q 720 220 780 260 Q 800 320 750 370 Q 680 380 640 340 Q 620 290 650 240 Z" title="China/SEA"/>
+                    <path d="M 800 320 Q 850 340 880 390 Q 860 430 810 440 Q 760 420 770 380 Q 780 350 800 320 Z" title="Australia"/>
+                </svg>
+                
+                <!-- Agent markers will be added dynamically -->
+                <div id="agentMarkers"></div>
+            </div>
+            
+            <!-- Capability Legend -->
+            <div class="capability-legend">
+                <div class="legend-title">Agent Capabilities</div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--cap-vpn)"></div>
+                    <span class="legend-label">VPN / Relay</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, var(--cap-vpn), var(--cap-compute))"></div>
+                    <span class="legend-label">+ Compute</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, var(--cap-compute), var(--cap-verify))"></div>
+                    <span class="legend-label">+ Verify</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, var(--cap-verify), var(--cap-jury))"></div>
+                    <span class="legend-label">+ Jury</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, var(--cap-jury), var(--cap-storage), var(--cap-full))"></div>
+                    <span class="legend-label">Full Stack</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT SIDEBAR -->
+        <aside class="sidebar">
+            <!-- Agent List -->
+            <div class="agent-list-panel">
+                <div class="panel-header">
+                    <div class="panel-title">📡 Connected Agents</div>
+                    <div class="panel-badge" id="agentCount">0</div>
+                </div>
+                <div class="agent-list" id="agentList">
+                    <!-- Agent cards populated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Jobs Panel -->
+            <div class="jobs-panel">
+                <div class="panel-header">
+                    <div class="panel-title">💼 Available Jobs</div>
+                </div>
+                <div class="jobs-list" id="jobsList">
+                    <!-- Job cards -->
+                </div>
+            </div>
+        </aside>
+        
+        <!-- TELEMETRY PANEL -->
+        <div class="telemetry-panel">
+            <!-- Packet Loss Graph -->
+            <div class="telem-section">
+                <div class="telem-title">📊 Packet Analysis</div>
+                <div class="packet-graph">
+                    <canvas class="graph-canvas" id="packetCanvas"></canvas>
+                    <div class="graph-overlay">
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">Loss: </span>
+                            <span class="graph-stat-value" id="packetLoss">0.00%</span>
+                        </div>
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">Jitter: </span>
+                            <span class="graph-stat-value" id="jitter">0ms</span>
+                        </div>
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">RTT: </span>
+                            <span class="graph-stat-value" id="rtt">0ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Network Gauges -->
+            <div class="telem-section">
+                <div class="telem-title">⚡ Network Health</div>
+                <div class="gauge-grid">
+                    <div class="gauge">
+                        <div class="gauge-circle" style="--value: 95">
+                            <span class="gauge-value" id="uptimeGauge">95%</span>
+                        </div>
+                        <div class="gauge-label">Uptime</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-circle" style="--value: 78">
+                            <span class="gauge-value" id="throughputGauge">78%</span>
+                        </div>
+                        <div class="gauge-label">Throughput</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-circle" style="--value: 92">
+                            <span class="gauge-value" id="successGauge">92%</span>
+                        </div>
+                        <div class="gauge-label">Success Rate</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-circle" style="--value: 88">
+                            <span class="gauge-value" id="healthGauge">88%</span>
+                        </div>
+                        <div class="gauge-label">Health Score</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Instruction Queue -->
+            <div class="telem-section">
+                <div class="telem-title">📋 Instruction Queue</div>
+                <div class="instr-section">
+                    <div class="instr-stats">
+                        <div class="instr-stat">
+                            <div class="instr-stat-value" id="instrPending">0</div>
+                            <div class="instr-stat-label">Pending</div>
+                        </div>
+                        <div class="instr-stat">
+                            <div class="instr-stat-value" id="instrRunning">0</div>
+                            <div class="instr-stat-label">Running</div>
+                        </div>
+                        <div class="instr-stat">
+                            <div class="instr-stat-value" id="instrComplete">0</div>
+                            <div class="instr-stat-label">Complete</div>
+                        </div>
+                        <div class="instr-stat">
+                            <div class="instr-stat-value" id="instrTps">0</div>
+                            <div class="instr-stat-label">TPS</div>
+                        </div>
+                    </div>
+                    <div class="instr-queue" id="instrQueue">
+                        <!-- Instructions populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message Log -->
+            <div class="telem-section">
+                <div class="telem-title">💬 Message Stream</div>
+                <div class="message-log">
+                    <div class="log-header">
+                        <span class="log-title">Live Wire</span>
+                        <div class="log-filters">
+                            <span class="log-filter active" data-filter="all">ALL</span>
+                            <span class="log-filter" data-filter="in">IN</span>
+                            <span class="log-filter" data-filter="out">OUT</span>
+                        </div>
+                    </div>
+                    <div class="log-entries" id="logEntries">
+                        <!-- Log entries populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== PARADOX AGENT COMMAND CENTER ==============
+        
+        // Simulated agent data with realistic city-level locations (no precise IPs)
+        const CITIES = [
+            { city: 'Los Angeles', country: 'US', lat: 34.05, lon: -118.25, x: 12, y: 38 },
+            { city: 'New York', country: 'US', lat: 40.71, lon: -74.01, x: 22, y: 32 },
+            { city: 'London', country: 'GB', lat: 51.51, lon: -0.13, x: 45, y: 24 },
+            { city: 'Paris', country: 'FR', lat: 48.86, lon: 2.35, x: 47, y: 26 },
+            { city: 'Frankfurt', country: 'DE', lat: 50.11, lon: 8.68, x: 49, y: 25 },
+            { city: 'Singapore', country: 'SG', lat: 1.35, lon: 103.82, x: 72, y: 52 },
+            { city: 'Tokyo', country: 'JP', lat: 35.68, lon: 139.69, x: 82, y: 36 },
+            { city: 'Seoul', country: 'KR', lat: 37.57, lon: 126.98, x: 79, y: 34 },
+            { city: 'Sydney', country: 'AU', lat: -33.87, lon: 151.21, x: 86, y: 72 },
+            { city: 'São Paulo', country: 'BR', lat: -23.55, lon: -46.63, x: 26, y: 62 },
+            { city: 'Mumbai', country: 'IN', lat: 19.08, lon: 72.88, x: 64, y: 44 },
+            { city: 'Dubai', country: 'AE', lat: 25.20, lon: 55.27, x: 58, y: 40 },
+            { city: 'Toronto', country: 'CA', lat: 43.65, lon: -79.38, x: 20, y: 30 },
+            { city: 'Amsterdam', country: 'NL', lat: 52.37, lon: 4.90, x: 46, y: 23 },
+            { city: 'Hong Kong', country: 'HK', lat: 22.32, lon: 114.17, x: 75, y: 44 },
+        ];
+
+        const CAPABILITIES = ['relay', 'compute', 'verify', 'jury', 'storage'];
+        
+        const JOB_TYPES = [
+            { type: 'relay', name: 'VPN Relay', desc: 'Route encrypted traffic', rate: '$0.001', unit: '/MB', icon: '🔗' },
+            { type: 'compute', name: 'Compute Task', desc: 'Execute CPU/GPU workload', rate: '$0.005', unit: '/min', icon: '⚡' },
+            { type: 'verify', name: 'Merkle Verify', desc: 'Validate batch proofs', rate: '$0.02', unit: '/batch', icon: '✓' },
+            { type: 'jury', name: 'Jury Duty', desc: 'Vote on disputes', rate: '$0.50', unit: '/case', icon: '⚖️' },
+            { type: 'storage', name: 'Data Storage', desc: 'Store encrypted blobs', rate: '$0.0001', unit: '/MB/day', icon: '💾' },
+        ];
+
+        // State
+        let agents = [];
+        let messageLog = [];
+        let packetHistory = [];
+        let instructionQueue = [];
+        
+        // ============== INITIALIZATION ==============
+        
+        function init() {
+            generateAgents();
+            renderAgentMarkers();
+            renderAgentList();
+            renderJobsList();
+            startTelemetry();
+            startMessageStream();
+            startInstructionUpdates();
+            updateSystemTime();
+            setInterval(updateSystemTime, 1000);
+        }
+
+        // Generate simulated agents
+        function generateAgents() {
+            const count = 40 + Math.floor(Math.random() * 30); // 40-70 agents
+            
+            for (let i = 0; i < count; i++) {
+                const city = CITIES[Math.floor(Math.random() * CITIES.length)];
+                const capCount = 1 + Math.floor(Math.random() * 5);
+                const caps = CAPABILITIES.slice(0, capCount);
+                
+                agents.push({
+                    id: `agent_${Math.random().toString(36).substr(2, 8)}`,
+                    address: generateWalletAddress(),
+                    city: city.city,
+                    country: city.country,
+                    x: city.x + (Math.random() - 0.5) * 5,
+                    y: city.y + (Math.random() - 0.5) * 5,
+                    capabilities: caps,
+                    capLevel: capCount,
+                    metrics: {
+                        latency: 20 + Math.floor(Math.random() * 180),
+                        bandwidth: 10 + Math.floor(Math.random() * 90),
+                        uptime: 90 + Math.floor(Math.random() * 10),
+                        jobs: Math.floor(Math.random() * 500),
+                    },
+                    online: Math.random() > 0.1,
+                });
+            }
+            
+            updateHeaderStats();
+        }
+
+        function generateWalletAddress() {
+            const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let addr = '';
+            for (let i = 0; i < 44; i++) {
+                addr += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return addr;
+        }
+
+        // ============== RENDERING ==============
+        
+        function renderAgentMarkers() {
+            const container = document.getElementById('agentMarkers');
+            container.innerHTML = '';
+            
+            const regions = new Set();
+            
+            agents.filter(a => a.online).forEach(agent => {
+                regions.add(agent.country);
+                
+                const marker = document.createElement('div');
+                marker.className = `agent-marker cap-${agent.capLevel}`;
+                marker.style.left = `${agent.x}%`;
+                marker.style.top = `${agent.y}%`;
+                marker.dataset.agentId = agent.id;
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'agent-tooltip';
+                tooltip.style.left = `${agent.x + 2}%`;
+                tooltip.style.top = `${agent.y + 2}%`;
+                tooltip.innerHTML = `
+                    <div class="tooltip-header">
+                        <span class="tooltip-id">${agent.address.substr(0, 8)}...</span>
+                        <div class="tooltip-status"></div>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Location</span>
+                        <span class="tooltip-value">${agent.city}, ${agent.country}</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Latency</span>
+                        <span class="tooltip-value">${agent.metrics.latency}ms</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Bandwidth</span>
+                        <span class="tooltip-value">${agent.metrics.bandwidth} Mbps</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Jobs Done</span>
+                        <span class="tooltip-value">${agent.metrics.jobs}</span>
+                    </div>
+                    <div class="tooltip-caps">
+                        ${agent.capabilities.map(c => `<span class="cap-badge ${c}">${c}</span>`).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(marker);
+                container.appendChild(tooltip);
+            });
+            
+            document.getElementById('regionsActive').textContent = `${regions.size} Regions`;
+        }
+
+        function renderAgentList() {
+            const list = document.getElementById('agentList');
+            list.innerHTML = '';
+            
+            const onlineAgents = agents.filter(a => a.online).slice(0, 20);
+            document.getElementById('agentCount').textContent = onlineAgents.length;
+            
+            onlineAgents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = `agent-card cap-${agent.capLevel}`;
+                
+                const latClass = agent.metrics.latency < 50 ? 'good' : agent.metrics.latency < 150 ? 'warn' : 'bad';
+                const bwClass = agent.metrics.bandwidth > 50 ? 'good' : agent.metrics.bandwidth > 20 ? 'warn' : 'bad';
+                const upClass = agent.metrics.uptime > 95 ? 'good' : agent.metrics.uptime > 80 ? 'warn' : 'bad';
+                
+                card.innerHTML = `
+                    <div class="agent-card-header">
+                        <span class="agent-addr">${agent.address.substr(0, 8)}...${agent.address.substr(-4)}</span>
+                        <span class="agent-location">📍 ${agent.city}</span>
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <div class="metric-value ${latClass}">${agent.metrics.latency}</div>
+                            <div class="metric-label">ms</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value ${bwClass}">${agent.metrics.bandwidth}</div>
+                            <div class="metric-label">Mbps</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value ${upClass}">${agent.metrics.uptime}%</div>
+                            <div class="metric-label">Up</div>
+                        </div>
+                    </div>
+                `;
+                
+                list.appendChild(card);
+            });
+        }
+
+        function renderJobsList() {
+            const list = document.getElementById('jobsList');
+            list.innerHTML = '';
+            
+            JOB_TYPES.forEach(job => {
+                const card = document.createElement('div');
+                card.className = 'job-card';
+                card.innerHTML = `
+                    <div class="job-type">
+                        <div class="job-icon ${job.type}">${job.icon}</div>
+                        <div class="job-details">
+                            <div class="job-name">${job.name}</div>
+                            <div class="job-desc">${job.desc}</div>
+                        </div>
+                    </div>
+                    <div class="job-price">
+                        <div class="job-rate">${job.rate}</div>
+                        <div class="job-unit">${job.unit}</div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ============== TELEMETRY ==============
+        
+        function startTelemetry() {
+            const canvas = document.getElementById('packetCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() {
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+                ctx.scale(2, 2);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+            
+            // Generate initial packet history
+            for (let i = 0; i < 100; i++) {
+                packetHistory.push({
+                    sent: 1000 + Math.random() * 500,
+                    received: 980 + Math.random() * 500,
+                    loss: Math.random() * 2,
+                });
+            }
+            
+            function draw() {
+                const w = canvas.offsetWidth;
+                const h = canvas.offsetHeight;
+                
+                ctx.fillStyle = 'rgba(10, 10, 15, 0.3)';
+                ctx.fillRect(0, 0, w, h);
+                
+                // Draw grid
+                ctx.strokeStyle = 'rgba(0, 245, 255, 0.1)';
+                ctx.lineWidth = 0.5;
+                for (let y = 0; y < h; y += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
+                }
+                
+                // Draw packet lines
+                const step = w / (packetHistory.length - 1);
+                
+                // Sent packets (cyan)
+                ctx.strokeStyle = 'rgba(0, 245, 255, 0.8)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                packetHistory.forEach((p, i) => {
+                    const x = i * step;
+                    const y = h - (p.sent / 2000) * h * 0.8;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                
+                // Received packets (green)
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.8)';
+                ctx.beginPath();
+                packetHistory.forEach((p, i) => {
+                    const x = i * step;
+                    const y = h - (p.received / 2000) * h * 0.8;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                
+                // Packet loss indicator (red bars)
+                ctx.fillStyle = 'rgba(255, 51, 102, 0.6)';
+                packetHistory.forEach((p, i) => {
+                    if (p.loss > 1) {
+                        const x = i * step;
+                        const height = (p.loss / 5) * 30;
+                        ctx.fillRect(x - 1, h - height - 5, 2, height);
+                    }
+                });
+                
+                requestAnimationFrame(draw);
+            }
+            
+            draw();
+            
+            // Update packet data
+            setInterval(() => {
+                packetHistory.shift();
+                const last = packetHistory[packetHistory.length - 1];
+                packetHistory.push({
+                    sent: last.sent + (Math.random() - 0.5) * 100,
+                    received: last.received + (Math.random() - 0.5) * 100,
+                    loss: Math.random() * 3,
+                });
+                
+                // Update stats
+                const avgLoss = packetHistory.reduce((a, p) => a + p.loss, 0) / packetHistory.length;
+                document.getElementById('packetLoss').textContent = avgLoss.toFixed(2) + '%';
+                document.getElementById('jitter').textContent = Math.floor(5 + Math.random() * 15) + 'ms';
+                document.getElementById('rtt').textContent = Math.floor(30 + Math.random() * 50) + 'ms';
+            }, 200);
+            
+            // Update gauges
+            setInterval(() => {
+                updateGauge('uptimeGauge', 90 + Math.random() * 10);
+                updateGauge('throughputGauge', 70 + Math.random() * 25);
+                updateGauge('successGauge', 88 + Math.random() * 12);
+                updateGauge('healthGauge', 85 + Math.random() * 15);
+            }, 2000);
+        }
+
+        function updateGauge(id, value) {
+            const el = document.getElementById(id);
+            const val = Math.min(100, Math.max(0, value));
+            el.textContent = Math.floor(val) + '%';
+            el.parentElement.style.setProperty('--value', val);
+            
+            // Update color based on value
+            const color = val > 90 ? 'var(--neon-green)' : val > 70 ? 'var(--neon-orange)' : 'var(--neon-red)';
+            el.parentElement.style.background = `conic-gradient(${color} 0deg, ${color} ${val * 3.6}deg, var(--bg-card) ${val * 3.6}deg)`;
+        }
+
+        // ============== MESSAGE STREAM ==============
+        
+        const MESSAGE_TYPES = [
+            'heartbeat', 'job_request', 'job_assignment', 'job_accept', 
+            'job_progress', 'job_complete', 'payment_stream'
+        ];
+        
+        function startMessageStream() {
+            const container = document.getElementById('logEntries');
+            
+            setInterval(() => {
+                const isIn = Math.random() > 0.5;
+                const type = MESSAGE_TYPES[Math.floor(Math.random() * MESSAGE_TYPES.length)];
+                const agent = agents[Math.floor(Math.random() * agents.length)];
+                
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${isIn ? 'in' : 'out'}`;
+                
+                const time = new Date().toISOString().substr(11, 12);
+                const payload = generatePayload(type);
+                
+                entry.innerHTML = `
+                    <span class="log-time">${time}</span>
+                    <span class="log-dir ${isIn ? 'in' : 'out'}">${isIn ? '←' : '→'}</span>
+                    <span class="log-type">${type}</span>
+                    <span class="log-payload">${agent.address.substr(0, 8)}... ${payload}</span>
+                `;
+                
+                container.insertBefore(entry, container.firstChild);
+                
+                // Keep only last 50 entries
+                while (container.children.length > 50) {
+                    container.removeChild(container.lastChild);
+                }
+            }, 300 + Math.random() * 700);
+            
+            // Filter buttons
+            document.querySelectorAll('.log-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.log-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const filter = btn.dataset.filter;
+                    document.querySelectorAll('.log-entry').forEach(entry => {
+                        if (filter === 'all') {
+                            entry.style.display = 'flex';
+                        } else {
+                            entry.style.display = entry.classList.contains(filter) ? 'flex' : 'none';
+                        }
+                    });
+                });
+            });
+        }
+
+        function generatePayload(type) {
+            switch (type) {
+                case 'heartbeat': return `status=online caps=${Math.floor(Math.random() * 5) + 1}`;
+                case 'job_request': return `type=${CAPABILITIES[Math.floor(Math.random() * 5)]} budget=${(Math.random() * 10).toFixed(3)} SOL`;
+                case 'job_assignment': return `job_id=${Math.random().toString(36).substr(2, 8)}`;
+                case 'job_accept': return `ETA=${Math.floor(Math.random() * 60)}min`;
+                case 'job_progress': return `progress=${Math.floor(Math.random() * 100)}%`;
+                case 'job_complete': return `success=true metrics={...}`;
+                case 'payment_stream': return `amount=${(Math.random() * 0.5).toFixed(4)} SOL`;
+                default: return '';
+            }
+        }
+
+        // ============== INSTRUCTION QUEUE ==============
+        
+        function startInstructionUpdates() {
+            const queue = document.getElementById('instrQueue');
+            let pending = 0, running = 0, complete = 0;
+            
+            setInterval(() => {
+                // Add new instruction
+                if (Math.random() > 0.5 && pending < 10) {
+                    pending++;
+                    const type = CAPABILITIES[Math.floor(Math.random() * 5)];
+                    const target = agents[Math.floor(Math.random() * agents.length)];
+                    
+                    const item = document.createElement('div');
+                    item.className = 'instr-item';
+                    item.innerHTML = `
+                        <div class="instr-status pending"></div>
+                        <span class="instr-type">${type.toUpperCase()}</span>
+                        <span class="instr-target">${target.address.substr(0, 12)}...</span>
+                        <span class="instr-eta">${Math.floor(Math.random() * 30)}s</span>
+                    `;
+                    queue.appendChild(item);
+                    
+                    // Transition to running after delay
+                    setTimeout(() => {
+                        pending--;
+                        running++;
+                        item.querySelector('.instr-status').className = 'instr-status running';
+                        updateInstrStats();
+                        
+                        // Complete after random time
+                        setTimeout(() => {
+                            running--;
+                            complete++;
+                            item.querySelector('.instr-status').className = 'instr-status complete';
+                            updateInstrStats();
+                            
+                            // Remove after showing complete
+                            setTimeout(() => {
+                                queue.removeChild(item);
+                            }, 2000);
+                        }, 1000 + Math.random() * 3000);
+                    }, 500 + Math.random() * 2000);
+                }
+                
+                updateInstrStats();
+            }, 500);
+            
+            function updateInstrStats() {
+                document.getElementById('instrPending').textContent = pending;
+                document.getElementById('instrRunning').textContent = running;
+                document.getElementById('instrComplete').textContent = complete;
+                document.getElementById('instrTps').textContent = Math.floor(Math.random() * 50 + 20);
+            }
+        }
+
+        // ============== HEADER STATS ==============
+        
+        function updateHeaderStats() {
+            const onlineAgents = agents.filter(a => a.online);
+            document.getElementById('totalAgents').textContent = onlineAgents.length;
+            
+            const totalBw = onlineAgents.reduce((a, b) => a + b.metrics.bandwidth, 0);
+            document.getElementById('totalBandwidth').textContent = (totalBw / 1000).toFixed(1);
+            
+            document.getElementById('activeJobs').textContent = Math.floor(Math.random() * 200 + 100);
+            
+            const avgLat = onlineAgents.reduce((a, b) => a + b.metrics.latency, 0) / onlineAgents.length;
+            const latEl = document.getElementById('avgLatency');
+            latEl.textContent = Math.floor(avgLat);
+            latEl.className = 'stat-value' + (avgLat < 100 ? '' : avgLat < 200 ? ' warn' : ' bad');
+            
+            // Periodic updates
+            setInterval(() => {
+                document.getElementById('activeJobs').textContent = Math.floor(Math.random() * 200 + 100);
+            }, 5000);
+        }
+
+        function updateSystemTime() {
+            const now = new Date();
+            document.getElementById('systemTime').textContent = now.toISOString().substr(11, 8);
+        }
+
+        // ============== START ==============
+        
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
