@@ -451,8 +451,8 @@
   
   <div class="tabs">
     <div class="tab active" data-tab="map">🗺️ Network Map</div>
+    <div class="tab" data-tab="config">⚙️ Config</div>
     <div class="tab" data-tab="live">⚡ Live Jobs</div>
-    <div class="tab" data-tab="jobs">💼 Job Catalog</div>
     <div class="tab" data-tab="score">🏆 Scores</div>
     <div class="tab" data-tab="deploy">📦 Agent Shop</div>
   </div>
@@ -515,6 +515,180 @@
           <div style="margin-top:8px;font-size:9px;color:var(--dim);">~$150/SOL rate</div>
         </div>
       </div>
+    </div>
+  </div>
+  
+  <!-- CONFIG TAB -->
+  <div class="tab-content" id="tab-config">
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+      
+      <!-- Gear Test -->
+      <div class="job-card" style="border-color: var(--cyan); margin-bottom: 20px;">
+        <div class="section-title">📊 GEAR TEST</div>
+        <div id="gearTestResults" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 15px; background: var(--card-alt); border-radius: 6px;">
+              <div style="font-size: 24px;">💻</div>
+              <div style="font-size: 20px; font-weight: bold; color: var(--green);" id="gearCpu">--</div>
+              <div style="font-size: 10px; color: var(--dim);">CPU Cores</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: var(--card-alt); border-radius: 6px;">
+              <div style="font-size: 24px;">🧠</div>
+              <div style="font-size: 20px; font-weight: bold; color: var(--green);" id="gearRam">--</div>
+              <div style="font-size: 10px; color: var(--dim);">RAM (GB)</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: var(--card-alt); border-radius: 6px;">
+              <div style="font-size: 24px;">📶</div>
+              <div style="font-size: 20px; font-weight: bold; color: var(--green);" id="gearSpeed">--</div>
+              <div style="font-size: 10px; color: var(--dim);">Mbps</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: var(--card-alt); border-radius: 6px;">
+              <div style="font-size: 24px;">⏱️</div>
+              <div style="font-size: 20px; font-weight: bold; color: var(--green);" id="gearLatency">--</div>
+              <div style="font-size: 10px; color: var(--dim);">Latency (ms)</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--dim); padding: 10px; background: rgba(63, 185, 80, 0.1); border-radius: 4px;">
+            💡 <strong>Suggested limits based on your hardware are pre-filled below</strong>
+          </div>
+        </div>
+        <div id="gearTestPrompt">
+          <div style="text-align: center; padding: 30px;">
+            <div style="font-size: 48px; margin-bottom: 15px;">🔬</div>
+            <div style="margin-bottom: 15px;">Run a gear test to detect your hardware capabilities</div>
+            <button onclick="runGearTest()" class="download-btn ready" style="padding: 12px 30px; font-size: 14px;">🚀 Run Gear Test</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Resource Limits -->
+      <div class="job-card" style="margin-bottom: 20px;">
+        <div class="section-title">⚙️ RESOURCE LIMITS</div>
+        <div style="display: grid; gap: 20px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Max CPU Usage</span>
+              <span style="color: var(--green); font-weight: bold;" id="cpuValue">50%</span>
+            </div>
+            <input type="range" id="cpuSlider" min="10" max="100" value="50" style="width: 100%; accent-color: var(--green);" oninput="updateSlider('cpu')">
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Max RAM</span>
+              <span style="color: var(--green); font-weight: bold;" id="ramValue">2 GB</span>
+            </div>
+            <input type="range" id="ramSlider" min="256" max="8192" value="2048" step="256" style="width: 100%; accent-color: var(--green);" oninput="updateSlider('ram')">
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Max Bandwidth</span>
+              <span style="color: var(--green); font-weight: bold;" id="bwValue">25 Mbps</span>
+            </div>
+            <input type="range" id="bwSlider" min="1" max="100" value="25" style="width: 100%; accent-color: var(--green);" oninput="updateSlider('bw')">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quota Settings -->
+      <div class="job-card" style="margin-bottom: 20px;">
+        <div class="section-title">📊 DATA QUOTA</div>
+        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="radio" name="quotaMode" value="hourly" checked style="accent-color: var(--green);">
+            <span>Per Hour</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="radio" name="quotaMode" value="daily" style="accent-color: var(--green);">
+            <span>Per 24 Hours</span>
+          </label>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>Max Data</span>
+            <span style="color: var(--green); font-weight: bold;" id="quotaValue">5 GB</span>
+          </div>
+          <input type="range" id="quotaSlider" min="1" max="100" value="5" style="width: 100%; accent-color: var(--green);" oninput="updateSlider('quota')">
+        </div>
+      </div>
+      
+      <!-- Job Types -->
+      <div class="job-card" style="margin-bottom: 20px;">
+        <div class="section-title">✅ AUTO-ACCEPT JOB TYPES</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobRelay" checked style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>🔗 Relay (VPN traffic)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobImage" checked style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>📸 AI Image</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobAudio" checked style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>🎤 AI Audio</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobText" checked style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>📄 AI Text</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobVideo" style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>🎬 AI Video</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobVerify" checked style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>✓ Verify</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobGpu" style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>🎮 GPU Render</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--card-alt); border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" id="jobJury" style="accent-color: var(--green); width: 18px; height: 18px;">
+            <span>⚖️ Jury Duty</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Payment Token -->
+      <div class="job-card" style="margin-bottom: 20px;">
+        <div class="section-title">💰 PAYMENT TOKEN</div>
+        <div style="display: flex; gap: 15px;">
+          <label style="flex: 1; display: flex; align-items: center; gap: 12px; padding: 20px; background: var(--card-alt); border-radius: 8px; cursor: pointer; border: 2px solid var(--border);" id="paymentSolLabel">
+            <input type="radio" name="paymentToken" value="SOL" checked style="accent-color: var(--green); width: 20px; height: 20px;" onchange="updatePaymentSelection()">
+            <div>
+              <div style="font-size: 24px;">◎</div>
+              <div style="font-weight: bold;">SOL</div>
+              <div style="font-size: 10px; color: var(--dim);">Direct payment</div>
+            </div>
+          </label>
+          <label style="flex: 1; display: flex; align-items: center; gap: 12px; padding: 20px; background: var(--card-alt); border-radius: 8px; cursor: pointer; border: 2px solid var(--border);" id="paymentUsdcLabel">
+            <input type="radio" name="paymentToken" value="USDC" style="accent-color: var(--green); width: 20px; height: 20px;" onchange="updatePaymentSelection()">
+            <div>
+              <div style="font-size: 24px;">💵</div>
+              <div style="font-weight: bold;">USDC</div>
+              <div style="font-size: 10px; color: var(--dim);">Auto-swap via Jupiter</div>
+            </div>
+          </label>
+        </div>
+        <div id="usdcNote" style="display: none; margin-top: 12px; padding: 10px; background: rgba(88, 166, 255, 0.1); border-radius: 4px; font-size: 11px;">
+          ℹ️ Earnings accumulate in SOL → Auto-swap to USDC when ≥$0.50 → Sent to your wallet
+        </div>
+      </div>
+      
+      <!-- Agent Toggle -->
+      <div class="job-card" style="border-color: var(--green);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 18px; font-weight: bold;">Agent Status</div>
+            <div style="font-size: 12px; color: var(--dim);" id="agentStatusText">Connect wallet to enable</div>
+          </div>
+          <button id="agentToggleBtn" onclick="toggleAgent()" class="download-btn" style="padding: 15px 40px; font-size: 16px; background: var(--card-alt); opacity: 0.5;" disabled>
+            🔴 OFFLINE
+          </button>
+        </div>
+      </div>
+      
     </div>
   </div>
   
@@ -716,7 +890,7 @@
           <div style="font-size: 10px; color: var(--dim);">≈ $0.15-0.30 USDC</div>
         </div>
         <div style="margin-top: 12px;">
-          <a href="phantom-agent-android-v0.1.2.apk" download class="download-btn ready" style="width:100%; display:block; text-align:center;">📱 Download APK v0.1.2</a>
+          <a href="phantom-agent-android-v0.1.3.apk" download class="download-btn ready" style="width:100%; display:block; text-align:center;">📱 Download APK v0.1.2</a>
         </div>
         <div style="font-size: 9px; color: var(--dim); margin-top: 8px;">
           Enable "Install from unknown sources" in Settings
@@ -1117,23 +1291,12 @@ function renderYourAgent() {
 function renderAgentList() {
   const list = document.getElementById('agentList');
   
-  if (agents.length === 0 && !connectedWallet) {
+  if (agents.length === 0) {
     list.innerHTML = '<div class="empty-state" style="padding: 20px;">No other agents online</div>';
     return;
   }
   
-  // Generate some simulated agents when connected
-  if (connectedWallet && agents.length === 0) {
-    const simCities = ['Berlin', 'Tokyo', 'New York', 'London', 'Sydney'];
-    agents = simCities.map((city, i) => ({
-      wallet: 'Agent' + (i+1) + 'x'.repeat(30),
-      city,
-      latency: 50 + Math.floor(Math.random() * 150),
-      bandwidth: 20 + Math.floor(Math.random() * 80),
-      capLevel: 1 + Math.floor(Math.random() * 4)
-    }));
-  }
-  
+  // Only show REAL agents from devnet
   list.innerHTML = agents.slice(0, 10).map(agent => `
     <div class="agent-item">
       <div class="agent-addr">${agent.wallet.slice(0, 8)}...${agent.wallet.slice(-4)}</div>
