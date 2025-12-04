@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.nullagent.app"
+    namespace = "com.phantomparadox.agent"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.nullagent.app"
+        applicationId = "com.phantomparadox.agent"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.2"
     }
 
     buildTypes {
