@@ -303,13 +303,26 @@
         .wallet-btn {
             margin-top: 12px;
             width: 100%;
-            padding: 12px;
-            background: var(--border);
+            padding: 14px;
+            background: linear-gradient(135deg, #AB9FF2, #8B7FD2);
             border: none;
-            border-radius: 8px;
-            color: var(--text);
+            border-radius: 10px;
+            color: #000;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wallet-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .wallet-btn.connected {
+            background: var(--border);
+            color: var(--text);
         }
         
         /* Main Button */
@@ -498,7 +511,10 @@
         <div class="wallet-card">
             <div class="wallet-label">Wallet</div>
             <div class="wallet-address empty" id="walletAddress">Not connected</div>
-            <button class="wallet-btn" id="walletBtn" onclick="handleWallet()">Connect Wallet</button>
+            <button class="wallet-btn" id="walletBtn" onclick="handleWallet()">
+                <img src="https://phantom.app/img/phantom-icon-purple.svg" alt="" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;">
+                Connect Phantom
+            </button>
         </div>
         
         <!-- Main Button -->
@@ -736,11 +752,13 @@
                 const addr = state.walletAddress;
                 walletEl.textContent = addr.slice(0, 6) + '...' + addr.slice(-6);
                 walletEl.className = 'wallet-address';
-                walletBtn.textContent = 'Disconnect';
+                walletBtn.innerHTML = 'Disconnect';
+                walletBtn.className = 'wallet-btn connected';
             } else {
                 walletEl.textContent = 'Not connected';
                 walletEl.className = 'wallet-address empty';
-                walletBtn.textContent = 'Connect Wallet';
+                walletBtn.innerHTML = '<img src="https://phantom.app/img/phantom-icon-purple.svg" alt="" style="width: 20px; height: 20px; margin-right: 8px;">Connect Phantom';
+                walletBtn.className = 'wallet-btn';
             }
             
             updateStatsUI();
@@ -818,25 +836,173 @@
         
         // ============== WALLET ==============
         
+        // Phantom wallet connection for mobile
+        const PHANTOM_CONNECT_URL = 'https://phantom.app/ul/v1/connect';
+        const APP_URL = window.location.origin + window.location.pathname;
+        const CLUSTER = 'devnet'; // or 'mainnet-beta'
+        
+        // Check for Phantom response on page load
+        function checkPhantomCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const phantomKey = urlParams.get('phantom_encryption_public_key');
+            const data = urlParams.get('data');
+            const nonce = urlParams.get('nonce');
+            
+            // Check for direct public key in hash (simpler method)
+            if (window.location.hash) {
+                const hashParams = new URLSearchParams(window.location.hash.slice(1));
+                const pubKey = hashParams.get('publicKey') || hashParams.get('phantom_public_key');
+                if (pubKey) {
+                    state.walletAddress = pubKey;
+                    saveState();
+                    updateUI();
+                    // Clean URL
+                    history.replaceState(null, '', window.location.pathname);
+                    return;
+                }
+            }
+            
+            // Check localStorage for session
+            const session = localStorage.getItem('phantomSession');
+            if (session) {
+                try {
+                    const s = JSON.parse(session);
+                    if (s.publicKey) {
+                        state.walletAddress = s.publicKey;
+                    }
+                } catch (e) {}
+            }
+        }
+        
         function handleWallet() {
             if (state.walletAddress) {
                 if (confirm('Disconnect wallet?')) {
                     state.walletAddress = null;
+                    localStorage.removeItem('phantomSession');
                     if (state.isActive) stopAgent();
                     saveState();
                     updateUI();
                 }
             } else {
-                const addr = prompt('Enter your Solana wallet address:');
-                if (addr && addr.length >= 32 && addr.length <= 44) {
-                    state.walletAddress = addr.trim();
-                    saveState();
-                    updateUI();
-                } else if (addr) {
-                    alert('Invalid wallet address');
+                connectPhantom();
+            }
+        }
+        
+        function connectPhantom() {
+            // Check if running in browser with Phantom extension
+            if (window.solana && window.solana.isPhantom) {
+                connectPhantomExtension();
+                return;
+            }
+            
+            // Check if Phantom app is available (mobile)
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                connectPhantomMobile();
+            } else {
+                // Desktop without extension - show install prompt
+                if (confirm('Phantom wallet not detected.\n\nInstall Phantom extension?')) {
+                    window.open('https://phantom.app/', '_blank');
                 }
             }
         }
+        
+        async function connectPhantomExtension() {
+            try {
+                const resp = await window.solana.connect();
+                state.walletAddress = resp.publicKey.toString();
+                localStorage.setItem('phantomSession', JSON.stringify({
+                    publicKey: state.walletAddress,
+                    connected: Date.now()
+                }));
+                saveState();
+                updateUI();
+            } catch (err) {
+                console.error('Phantom connect error:', err);
+                alert('Failed to connect: ' + err.message);
+            }
+        }
+        
+        function connectPhantomMobile() {
+            // Build Phantom deep link
+            const dappName = encodeURIComponent('Phantom Paradox Agent');
+            const redirectUrl = encodeURIComponent(APP_URL + '#connected=true');
+            
+            // Try universal link first (works on iOS)
+            const phantomUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(APP_URL)}&dapp_encryption_public_key=&cluster=${CLUSTER}&redirect_link=${redirectUrl}`;
+            
+            // Also try deep link for Android
+            const deepLink = `phantom://v1/connect?app_url=${encodeURIComponent(APP_URL)}&dapp_encryption_public_key=&cluster=${CLUSTER}&redirect_link=${redirectUrl}`;
+            
+            // Show modal with options
+            showWalletModal(phantomUrl, deepLink);
+        }
+        
+        function showWalletModal(universalLink, deepLink) {
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'walletModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.9); z-index: 1000;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 20px;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 320px; text-align: center;">
+                    <img src="https://phantom.app/img/phantom-icon-purple.svg" alt="Phantom" style="width: 60px; height: 60px; margin-bottom: 16px;">
+                    <h3 style="color: var(--accent); margin-bottom: 8px;">Connect Phantom</h3>
+                    <p style="color: var(--dim); font-size: 14px; margin-bottom: 20px;">Open Phantom wallet to connect</p>
+                    
+                    <a href="${deepLink}" style="display: block; background: #AB9FF2; color: #000; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 600; margin-bottom: 10px;">
+                        Open Phantom App
+                    </a>
+                    
+                    <div style="color: var(--muted); font-size: 12px; margin: 16px 0;">or enter manually:</div>
+                    
+                    <input type="text" id="manualWallet" placeholder="Solana address..." style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: monospace; font-size: 12px; margin-bottom: 10px;">
+                    
+                    <button onclick="submitManualWallet()" style="width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Connect
+                    </button>
+                    
+                    <button onclick="closeWalletModal()" style="margin-top: 16px; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 14px;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function closeWalletModal() {
+            const modal = document.getElementById('walletModal');
+            if (modal) modal.remove();
+        }
+        
+        function submitManualWallet() {
+            const input = document.getElementById('manualWallet');
+            const addr = input.value.trim();
+            
+            if (addr.length >= 32 && addr.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(addr)) {
+                state.walletAddress = addr;
+                localStorage.setItem('phantomSession', JSON.stringify({
+                    publicKey: addr,
+                    connected: Date.now(),
+                    manual: true
+                }));
+                saveState();
+                updateUI();
+                closeWalletModal();
+            } else {
+                alert('Invalid Solana address');
+            }
+        }
+        
+        // Check for callback on load
+        checkPhantomCallback();
     </script>
 </body>
 </html>
