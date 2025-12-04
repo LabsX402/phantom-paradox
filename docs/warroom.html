@@ -1149,13 +1149,24 @@ function onConnected(wallet) {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         
-        // Get REAL city name from reverse geocoding
+        // Get REAL city name from reverse geocoding - prioritize major cities
         let cityName = 'Unknown';
+        let countryCode = '';
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`);
           const data = await response.json();
-          cityName = data.address?.city || data.address?.town || data.address?.village || data.address?.county || 'Unknown';
-          console.log('Real location:', cityName, lat, lng);
+          const addr = data.address || {};
+          
+          // Priority: city > state > county > town (skip tiny villages)
+          cityName = addr.city || addr.state || addr.county || addr.town || addr.municipality || 'Unknown';
+          countryCode = addr.country_code?.toUpperCase() || '';
+          
+          // Add country code for clarity (important for VPN routing)
+          if (countryCode && cityName !== 'Unknown') {
+            cityName = `${cityName}, ${countryCode}`;
+          }
+          
+          console.log('Real location:', cityName, `(${lat.toFixed(4)}, ${lng.toFixed(4)})`);
         } catch (e) {
           console.warn('Geocoding failed, using coords only');
           cityName = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
