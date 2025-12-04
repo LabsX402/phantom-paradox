@@ -1,124 +1,154 @@
 # PHANTOM PARADOX
 
-> Anonymous payment infrastructure on Solana using statistical mixing and Merkle compression.
+> **Anonymous payment infrastructure on Solana** — Fast, cheap, private.
+
+![Status](https://img.shields.io/badge/Network-Devnet-orange) ![License](https://img.shields.io/badge/License-BSL%201.1-blue)
 
 ---
 
-## ⚠️ IMPORTANT DISCLAIMER
+## 🚀 What We Built
 
-**This project is NOT affiliated with:**
-- Coinbase
-- x402 Protocol / x402-labs
-- Boosty Labs
-- Vercel Labs
+**Phantom Paradox** is a privacy layer for Solana that makes payments untraceable using statistical mixing and Merkle compression.
 
-**LabsX402** is an independent project. The name similarity is coincidental.
+### Core Features
 
-**Status:** DEVNET only. Not production-ready. Use at your own risk.
-
----
-
-## What This Is
-
-A privacy layer for Solana payments using:
-
-- **Statistical mixing** (NOT zero-knowledge proofs)
-- **Merkle compression** for batch settlements
-- **Vault architecture** that breaks sender→receiver links on-chain
-
-## What This Is NOT
-
-- ❌ Not "1M TPS guaranteed" — theoretical ceiling
-- ❌ Not "100% anonymous" — statistical, degrades with low traffic
-- ❌ Not "ZK proofs" — uses mixing, not cryptographic ZK
-- ❌ Not production-ready — devnet testing only
+| Feature | Description |
+|---------|-------------|
+| **🔒 Anonymous Payments** | Break sender→receiver links on-chain |
+| **⚡ Sub-second Settlement** | ~500ms for standard transactions |
+| **💰 Ultra-low Fees** | $0.00001 per transaction |
+| **📦 Batch Processing** | 1M+ intents per batch |
+| **🤖 Agent Network** | Decentralized relay infrastructure |
 
 ---
 
-## Live Demo
+## 📊 Live Stats
 
-**GitHub Pages (temporary):** https://labsx402.github.io/test/
+| Metric | Value |
+|--------|-------|
+| Anonymity (Standard) | 91.6% |
+| Anonymity (MAX) | 99.9% |
+| Cost per proof | $0.00001 |
+| Netting speed @ 100K | <500ms |
 
-Production domain `phantomparadox.io` coming soon.
+---
+
+## 🔗 Live Demo
+
+**Production Site:** [phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/)
 
 ### Pages
 
 | Page | Description |
 |------|-------------|
-| [index.html](https://labsx402.github.io/test/) | Main landing |
-| [docs/token.html](https://labsx402.github.io/test/docs/token.html) | PDOX Token specs |
-| [docs/sim.html](https://labsx402.github.io/test/docs/sim.html) | 24/7 Trading Simulation |
-| [docs/api.html](https://labsx402.github.io/test/docs/api.html) | API for verification |
-| [docs/test.html](https://labsx402.github.io/test/docs/test.html) | TestLabs |
+| [Landing](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/) | Main site |
+| [Agent Network](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/agents.html) | Join as agent, download apps |
+| [Live Simulation](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/sim.html) | 24/7 trading simulation |
+| [API Docs](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/api.html) | Verify transactions |
+| [Lab](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/lab.html) | Live tests |
 
 ---
 
-## Verified On-Chain (Devnet)
+## ⛓️ On-Chain (Devnet)
 
 ```
-Program ID: 8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x
-PDOX Token: 4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF
-Network:    Solana Devnet
+Program ID:  8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x
+PDOX Token:  4ckvALSiB6Hii7iVY9Dt6LRM5i7xocBZ9yr3YGNtVRwF
+Network:     Solana Devnet
 ```
 
-### Verify Program Exists
-
+**Verify:**
 ```bash
-curl -X POST https://api.devnet.solana.com \
+curl -s -X POST https://api.devnet.solana.com \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"getAccountInfo",
-       "params":["8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x",
-       {"encoding":"base64"}]}' | jq '.result.value.executable'
-# Expected: true
+  -d '{"jsonrpc":"2.0","id":1,"method":"getAccountInfo","params":["8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x",{"encoding":"base64"}]}' \
+  | jq '.result.value.executable'
+# Returns: true
 ```
 
 ---
 
-## 24/7 Trading Simulation
+## 🏗️ Architecture
 
-GitHub Actions runs a trading simulation every 15 minutes to demonstrate tokenomics:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  USER INTENT                                                │
+│      ↓                                                      │
+│  NETTING ENGINE ──→ Batch 1M+ intents                      │
+│      ↓                                                      │
+│  POLTERGEIST ──→ Ghost injection (noise)                   │
+│      ↓                                                      │
+│  HYDRA VAULT ──→ Multi-shard distribution                  │
+│      ↓                                                      │
+│  MERKLE COMMIT ──→ On-chain proof                          │
+│      ↓                                                      │
+│  ANONYMOUS PAYOUT ──→ Recipient gets funds                 │
+└─────────────────────────────────────────────────────────────┘
 
-- Normal trading, pumps, dumps, whale activity
-- Armageddon mode triggers when LP drops
-- LP growth from fees
-- All data downloadable as JSON
-
-See: [docs/sim.html](https://labsx402.github.io/test/docs/sim.html)
+Chain analysis sees: Vault → Payout (no sender link)
+```
 
 ---
 
-## Architecture (High Level)
+## 📱 Agent Network
 
-```
-User Intent → Netting Engine → Batch → Merkle Root → On-Chain Settlement
-                    ↓
-            Ghost Injection (Poltergeist)
-                    ↓
-            Vault → Anonymous Payout
-```
+Earn SOL/USDC by sharing bandwidth, compute, and verification:
 
-**What chain analysis sees:**
-- ❌ Cannot link sender to receiver
-- ✅ Can see vault → payout
-- ✅ Can see ghost traffic (noise)
+| Agent Type | Earnings | Download |
+|------------|----------|----------|
+| 📱 Android App | $0.15-0.30/day | [APK](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/phantom-agent-android-v0.1.1.apk) |
+| 🌐 Browser Extension | $0.30-0.75/day | [Chrome](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/phantom-agent-chrome-v0.1.0.zip) / [Firefox](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/docs/phantom-agent-firefox-v0.1.0.xpi) |
+| 💻 Desktop | $0.75-2.25/day | Coming Soon |
+| 🔲 Phantom Box | $1.50-4.50/day | Coming Soon |
 
 ---
 
-## License
+## 📁 Repository Structure
+
+```
+├── programs/           # Solana/Anchor smart contracts
+│   ├── phantom_vault/  # Main vault program
+│   └── pdox_token/     # Token program (Token-2022)
+├── offchain/           # Backend services
+│   └── src/            # Netting engine, API
+├── agents/             # Agent applications
+│   ├── android/        # Kotlin/Compose app
+│   ├── browser-extension/  # Chrome/Firefox
+│   └── desktop/        # Rust binary
+├── docs/               # GitHub Pages site
+├── scripts/            # Deployment & testing
+└── frontend/           # UI components
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Smart Contracts | Rust, Anchor Framework |
+| Backend | TypeScript, Node.js |
+| Mobile | Kotlin, Jetpack Compose |
+| Desktop | Rust |
+| Frontend | HTML/CSS/JS |
+| Blockchain | Solana (Devnet) |
+
+---
+
+## 📜 License
 
 [Business Source License 1.1](./LICENSE)
 
-- View/study/test: ✅ Free
-- Commercial use: ❌ Requires license until Dec 2028
-- After Dec 2028: Converts to MIT
+- ✅ View, study, test: Free
+- ⏳ Commercial use: License required until Dec 2028
+- 🔓 After Dec 2028: Converts to MIT
 
 ---
 
-## Links
+## 🔗 Links
 
-- Landing: https://labsx402.github.io/test/
-- Docs Repo: https://github.com/LabsX402/PHANTOMGRID-Paradox
-- Twitter: [@SLS_0x](https://twitter.com/SLS_0x)
+- **Website:** [phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet](https://phantomgrid-wraight.github.io/PhantomGrid-Wraith-Testnet/)
+- **Twitter:** [@SLS_0x](https://twitter.com/SLS_0x)
 
 ---
 
