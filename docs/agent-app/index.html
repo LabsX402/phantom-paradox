@@ -6,233 +6,313 @@
     <meta name="theme-color" content="#030508">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    
     <title>$NULL Agent</title>
-    
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <link rel="apple-touch-icon" href="icon.svg">
-    
     <style>
         :root {
-            --bg: #030508;
-            --card: #0a0f14;
-            --border: #1a2530;
-            --accent: #00ff88;
-            --accent-dim: rgba(0, 255, 136, 0.3);
-            --blue: #00d4ff;
-            --orange: #ff9500;
-            --red: #ff4757;
-            --purple: #AB9FF2;
-            --text: #e8f0f8;
-            --dim: #6b7c8a;
-            --muted: #3a4a5a;
+            --bg: #030508; --card: #0a0f14; --border: #1a2530;
+            --accent: #00ff88; --blue: #00d4ff; --orange: #ff9500;
+            --red: #ff4757; --purple: #AB9FF2;
+            --text: #e8f0f8; --dim: #6b7c8a; --muted: #3a4a5a;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; overflow: hidden; }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 16px;
-            display: flex;
-            flex-direction: column;
-            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text);
+            font-size: 16px; display: flex; flex-direction: column;
         }
-        
         .header {
-            background: var(--card);
-            padding: 16px 20px;
-            padding-top: max(16px, env(safe-area-inset-top));
+            background: var(--card); padding: 14px 16px;
+            padding-top: max(14px, env(safe-area-inset-top));
             border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent);
-            font-family: monospace;
-        }
-        
-        .status-badge {
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--accent); font-family: monospace; }
+        .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 20px; font-weight: 600; }
         .status-badge.offline { background: var(--border); color: var(--dim); }
         .status-badge.online { background: var(--accent); color: var(--bg); }
-        .status-badge.connecting { background: var(--orange); color: var(--bg); }
+        
+        .tabs {
+            display: flex; background: var(--card); border-bottom: 1px solid var(--border);
+        }
+        .tab {
+            flex: 1; padding: 12px; text-align: center; font-size: 12px;
+            color: var(--dim); border: none; background: none; cursor: pointer;
+        }
+        .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
         
         .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            padding-bottom: max(100px, env(safe-area-inset-bottom));
+            flex: 1; overflow-y: auto; padding: 16px;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
         }
-        
-        .status-ring {
-            width: 140px;
-            height: 140px;
-            margin: 10px auto 20px;
-            position: relative;
-        }
-        
-        .status-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-        .status-ring .bg { fill: none; stroke: var(--border); stroke-width: 8; }
-        .status-ring .progress {
-            fill: none; stroke: var(--accent); stroke-width: 8;
-            stroke-linecap: round; stroke-dasharray: 380; stroke-dashoffset: 380;
-            transition: stroke-dashoffset 0.5s ease;
-        }
-        .status-ring.online .progress { stroke-dashoffset: 0; animation: pulse-ring 2s ease-in-out infinite; }
-        @keyframes pulse-ring { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: 0.5; } }
-        
-        .status-ring .center {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); text-align: center;
-        }
-        .status-ring .icon { font-size: 32px; margin-bottom: 4px; }
-        .status-ring .label { font-size: 12px; font-weight: 600; color: var(--dim); }
-        .status-ring.online .label { color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
         .earnings-card {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.05));
-            border: 1px solid var(--accent);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,212,255,0.05));
+            border: 1px solid var(--accent); border-radius: 14px;
+            padding: 20px; text-align: center; margin-bottom: 16px;
         }
-        .earnings-value { font-size: 36px; font-weight: 700; color: var(--accent); font-family: monospace; }
-        .earnings-label { font-size: 12px; color: var(--dim); margin-top: 4px; }
+        .earnings-value { font-size: 32px; font-weight: 700; color: var(--accent); font-family: monospace; }
+        .earnings-sub { font-size: 11px; color: var(--dim); margin-top: 4px; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-        .stat-card {
-            background: var(--card); border: 1px solid var(--border);
+        .stats-row { display: flex; gap: 10px; margin-bottom: 16px; }
+        .stat-box {
+            flex: 1; background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px; text-align: center;
         }
-        .stat-value { font-size: 20px; font-weight: 700; color: var(--accent); font-family: monospace; }
-        .stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; margin-top: 2px; }
+        .stat-val { font-size: 18px; font-weight: 700; color: var(--accent); font-family: monospace; }
+        .stat-lbl { font-size: 9px; color: var(--dim); text-transform: uppercase; margin-top: 2px; }
         
-        .jobs-card {
+        .section { margin-bottom: 16px; }
+        .section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; margin-bottom: 8px; }
+        
+        .job-toggle {
+            display: flex; align-items: center; justify-content: space-between;
             background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 12px; margin-bottom: 16px;
+            border-radius: 10px; padding: 12px; margin-bottom: 8px;
         }
-        .jobs-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .jobs-title { font-size: 12px; color: var(--dim); text-transform: uppercase; }
-        .jobs-count { font-size: 12px; color: var(--accent); font-family: monospace; }
+        .job-info { display: flex; align-items: center; gap: 10px; }
+        .job-icon { font-size: 20px; }
+        .job-name { font-size: 13px; color: var(--text); }
+        .job-rate { font-size: 11px; color: var(--accent); font-family: monospace; }
+        .toggle {
+            width: 44px; height: 24px; background: var(--border);
+            border-radius: 12px; position: relative; cursor: pointer; transition: 0.2s;
+        }
+        .toggle.on { background: var(--accent); }
+        .toggle::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; background: white;
+            border-radius: 50%; transition: 0.2s;
+        }
+        .toggle.on::after { left: 22px; }
+        
+        .jobs-feed {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; max-height: 200px; overflow-y: auto;
+        }
         .job-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 0; border-bottom: 1px solid var(--border);
-            font-size: 12px;
+            padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px;
         }
         .job-item:last-child { border: none; }
-        .job-type { color: var(--blue); }
-        .job-amount { color: var(--accent); font-family: monospace; }
+        .job-item .type { color: var(--blue); }
+        .job-item .amount { color: var(--accent); font-family: monospace; }
+        .job-item .time { color: var(--muted); font-size: 10px; }
         
         .wallet-card {
             background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 14px; margin-bottom: 16px;
+            border-radius: 10px; padding: 12px;
         }
-        .wallet-label { font-size: 10px; color: var(--dim); text-transform: uppercase; margin-bottom: 4px; }
-        .wallet-address { font-size: 13px; font-family: monospace; color: var(--blue); word-break: break-all; }
-        .wallet-address.empty { color: var(--orange); }
-        
+        .wallet-row { display: flex; justify-content: space-between; align-items: center; }
+        .wallet-addr { font-size: 12px; font-family: monospace; color: var(--blue); }
+        .wallet-addr.empty { color: var(--orange); }
+        .wallet-bal { font-size: 14px; color: var(--accent); font-family: monospace; }
         .wallet-btn {
-            margin-top: 10px; width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #AB9FF2, #8B7FD2);
-            border: none; border-radius: 10px; color: #000;
-            font-size: 14px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            margin-top: 10px; width: 100%; padding: 12px;
+            background: var(--purple); border: none; border-radius: 8px;
+            color: #000; font-weight: 600; cursor: pointer;
         }
-        .wallet-btn:active { transform: scale(0.98); }
         .wallet-btn.connected { background: var(--border); color: var(--text); }
         
         .main-btn {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            padding: 18px; border: none; border-radius: 14px;
-            font-size: 18px; font-weight: 700; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px;
-            z-index: 100;
+            position: fixed; bottom: 16px; left: 16px; right: 16px;
+            padding: 16px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; z-index: 100;
         }
-        .main-btn:active { transform: scale(0.98); }
         .main-btn.start { background: var(--accent); color: var(--bg); }
         .main-btn.stop { background: var(--red); color: white; }
-        .main-btn:disabled { opacity: 0.5; }
         
-        .footer {
-            padding: 10px; text-align: center;
-            font-size: 10px; color: var(--muted);
+        .devnet-badge {
+            display: inline-block; background: var(--orange); color: #000;
+            font-size: 9px; padding: 2px 6px; border-radius: 4px;
+            font-weight: 600; margin-left: 8px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <span class="logo">$NULL</span>
+        <span class="logo">$NULL <span class="devnet-badge">DEVNET</span></span>
         <span class="status-badge offline" id="statusBadge">OFFLINE</span>
     </div>
     
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('earn')">Earn</button>
+        <button class="tab" onclick="showTab('jobs')">Jobs</button>
+        <button class="tab" onclick="showTab('wallet')">Wallet</button>
+    </div>
+    
     <div class="content">
-        <div class="status-ring" id="statusRing">
-            <svg viewBox="0 0 140 140">
-                <circle class="bg" cx="70" cy="70" r="60"/>
-                <circle class="progress" id="progressRing" cx="70" cy="70" r="60"/>
-            </svg>
-            <div class="center">
-                <div class="icon" id="statusIcon">○</div>
-                <div class="label" id="statusLabel">OFFLINE</div>
+        <!-- EARN TAB -->
+        <div class="tab-content active" id="tab-earn">
+            <div class="earnings-card">
+                <div class="earnings-value" id="earnings">0.0000 SOL</div>
+                <div class="earnings-sub">Session Earnings (Devnet)</div>
             </div>
-        </div>
-        
-        <div class="earnings-card">
-            <div class="earnings-value" id="earnings">$0.0000</div>
-            <div class="earnings-label">Session Earnings</div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="jobsCompleted">0</div>
-                <div class="stat-label">Jobs Done</div>
+            
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-val" id="jobsDone">0</div>
+                    <div class="stat-lbl">Jobs</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="dataUsed">0 MB</div>
+                    <div class="stat-lbl">Data</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="uptime">0:00</div>
+                    <div class="stat-lbl">Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="rate">0.00/hr</div>
+                    <div class="stat-lbl">Rate</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="uptime">0:00</div>
-                <div class="stat-label">Uptime</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="dataRelayed">0 KB</div>
-                <div class="stat-label">Data</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="rate">$0.00/hr</div>
-                <div class="stat-label">Rate</div>
-            </div>
-        </div>
-        
-        <div class="jobs-card">
-            <div class="jobs-header">
-                <span class="jobs-title">Recent Jobs</span>
-                <span class="jobs-count" id="pendingJobs">0 pending</span>
-            </div>
-            <div id="jobsList">
-                <div style="color: var(--dim); font-size: 12px; text-align: center; padding: 20px;">
-                    Connect wallet & start to receive jobs
+            
+            <div class="section">
+                <div class="section-title">Live Feed</div>
+                <div class="jobs-feed" id="jobsFeed">
+                    <div style="padding: 20px; text-align: center; color: var(--dim); font-size: 12px;">
+                        Select jobs & press START
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="wallet-card">
-            <div class="wallet-label">Wallet</div>
-            <div class="wallet-address empty" id="walletAddress">Not connected</div>
-            <button class="wallet-btn" id="walletBtn" onclick="handleWallet()">
-                + Add Wallet
-            </button>
+        <!-- JOBS TAB -->
+        <div class="tab-content" id="tab-jobs">
+            <div class="section">
+                <div class="section-title">Select Jobs to Accept</div>
+                
+                <div class="job-toggle" onclick="toggleJob('vpn')">
+                    <div class="job-info">
+                        <span class="job-icon">🌐</span>
+                        <div>
+                            <div class="job-name">VPN / Proxy Relay</div>
+                            <div class="job-rate">$0.02 - $0.08 / GB</div>
+                        </div>
+                    </div>
+                    <div class="toggle on" id="toggle-vpn"></div>
+                </div>
+                
+                <div class="job-toggle" onclick="toggleJob('compute')">
+                    <div class="job-info">
+                        <span class="job-icon">⚡</span>
+                        <div>
+                            <div class="job-name">Compute Tasks</div>
+                            <div class="job-rate">$0.001 - $0.01 / task</div>
+                        </div>
+                    </div>
+                    <div class="toggle on" id="toggle-compute"></div>
+                </div>
+                
+                <div class="job-toggle" onclick="toggleJob('verify')">
+                    <div class="job-info">
+                        <span class="job-icon">✓</span>
+                        <div>
+                            <div class="job-name">TX Verification</div>
+                            <div class="job-rate">$0.002 - $0.005 / tx</div>
+                        </div>
+                    </div>
+                    <div class="toggle on" id="toggle-verify"></div>
+                </div>
+                
+                <div class="job-toggle" onclick="toggleJob('storage')">
+                    <div class="job-info">
+                        <span class="job-icon">💾</span>
+                        <div>
+                            <div class="job-name">Data Caching</div>
+                            <div class="job-rate">$0.01 - $0.03 / GB/hr</div>
+                        </div>
+                    </div>
+                    <div class="toggle" id="toggle-storage"></div>
+                </div>
+                
+                <div class="job-toggle" onclick="toggleJob('rlhf')">
+                    <div class="job-info">
+                        <span class="job-icon">🧠</span>
+                        <div>
+                            <div class="job-name">AI Training (RLHF)</div>
+                            <div class="job-rate">$0.05 - $0.20 / task</div>
+                        </div>
+                    </div>
+                    <div class="toggle" id="toggle-rlhf"></div>
+                </div>
+                
+                <div class="job-toggle" onclick="toggleJob('scrape')">
+                    <div class="job-info">
+                        <span class="job-icon">🔍</span>
+                        <div>
+                            <div class="job-name">Web Scraping</div>
+                            <div class="job-rate">$0.03 - $0.10 / request</div>
+                        </div>
+                    </div>
+                    <div class="toggle" id="toggle-scrape"></div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Estimated Earnings</div>
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--dim); font-size: 12px;">Per Hour</span>
+                        <span style="color: var(--accent); font-family: monospace;" id="estHourly">$0.15 - $0.50</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--dim); font-size: 12px;">Per Day (24h)</span>
+                        <span style="color: var(--accent); font-family: monospace;" id="estDaily">$3.60 - $12.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--dim); font-size: 12px;">Per Month</span>
+                        <span style="color: var(--accent); font-family: monospace;" id="estMonthly">$108 - $360</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WALLET TAB -->
+        <div class="tab-content" id="tab-wallet">
+            <div class="section">
+                <div class="section-title">Connected Wallet</div>
+                <div class="wallet-card">
+                    <div class="wallet-row">
+                        <span class="wallet-addr empty" id="walletAddr">Not connected</span>
+                        <span class="wallet-bal" id="walletBal">-- SOL</span>
+                    </div>
+                    <button class="wallet-btn" id="walletBtn" onclick="handleWallet()">
+                        Connect Wallet
+                    </button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Devnet Earnings</div>
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--dim); font-size: 12px;">This Session</span>
+                        <span style="color: var(--accent); font-family: monospace;" id="sessionEarn">0.0000 SOL</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--dim); font-size: 12px;">Total Earned</span>
+                        <span style="color: var(--accent); font-family: monospace;" id="totalEarn">0.0000 SOL</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--dim); font-size: 12px;">Pending Payout</span>
+                        <span style="color: var(--orange); font-family: monospace;" id="pendingEarn">0.0000 SOL</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Recent Transactions</div>
+                <div id="txList" style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px;">
+                    <div style="color: var(--dim); font-size: 12px; text-align: center;">No transactions yet</div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -240,327 +320,262 @@
         START EARNING
     </button>
     
-    <div class="footer">v0.1.0</div>
-    
     <script>
         // ============== STATE ==============
-        let state = {
+        const state = {
             isActive: false,
-            walletAddress: null,
-            sessionStart: null,
-            stats: { bytesRelayed: 0, uptime: 0, earnings: 0, jobsCompleted: 0 },
+            wallet: null,
+            balance: 0,
+            session: { start: null, earnings: 0, jobs: 0, data: 0 },
+            total: { earnings: 0, jobs: 0 },
             jobs: [],
-            pendingJobs: 0
+            txs: [],
+            enabledJobs: { vpn: true, compute: true, verify: true, storage: false, rlhf: false, scrape: false }
         };
         
-        let intervals = { heartbeat: null, stats: null, jobs: null };
+        let intervals = {};
         
-        // ============== JOB TYPES ==============
-        const JOB_TYPES = [
-            { type: 'RELAY', name: 'Traffic Relay', minPay: 0.001, maxPay: 0.005, icon: '📡' },
-            { type: 'VERIFY', name: 'TX Verification', minPay: 0.002, maxPay: 0.008, icon: '✓' },
-            { type: 'COMPUTE', name: 'Compute Task', minPay: 0.005, maxPay: 0.02, icon: '⚡' },
-            { type: 'STORAGE', name: 'Data Cache', minPay: 0.001, maxPay: 0.003, icon: '💾' },
-            { type: 'PROXY', name: 'Proxy Request', minPay: 0.003, maxPay: 0.01, icon: '🔀' },
-            { type: 'SCRAPE', name: 'Data Scrape', minPay: 0.01, maxPay: 0.05, icon: '🔍' },
-            { type: 'RLHF', name: 'AI Training', minPay: 0.02, maxPay: 0.1, icon: '🧠' },
-            { type: 'CAPTCHA', name: 'Captcha Solve', minPay: 0.005, maxPay: 0.015, icon: '🔐' },
-            { type: 'BANDWIDTH', name: 'Bandwidth Test', minPay: 0.002, maxPay: 0.006, icon: '📶' },
-            { type: 'LATENCY', name: 'Latency Check', minPay: 0.001, maxPay: 0.004, icon: '⏱️' }
-        ];
+        // ============== JOB CONFIG (Real-world rates) ==============
+        const JOB_CONFIG = {
+            vpn: { name: 'VPN Relay', icon: '🌐', minPay: 0.0001, maxPay: 0.0004, dataMin: 50, dataMax: 500 },
+            compute: { name: 'Compute', icon: '⚡', minPay: 0.00001, maxPay: 0.0001, dataMin: 1, dataMax: 10 },
+            verify: { name: 'TX Verify', icon: '✓', minPay: 0.00002, maxPay: 0.00005, dataMin: 1, dataMax: 5 },
+            storage: { name: 'Cache', icon: '💾', minPay: 0.0001, maxPay: 0.0003, dataMin: 100, dataMax: 1000 },
+            rlhf: { name: 'AI Train', icon: '🧠', minPay: 0.0005, maxPay: 0.002, dataMin: 10, dataMax: 50 },
+            scrape: { name: 'Scrape', icon: '🔍', minPay: 0.0003, maxPay: 0.001, dataMin: 20, dataMax: 100 }
+        };
         
         // ============== INIT ==============
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
-            }
+            updateAllUI();
         });
         
         function loadState() {
-            const saved = localStorage.getItem('nullAgentState');
+            const saved = localStorage.getItem('nullAgentV2');
             if (saved) {
-                const parsed = JSON.parse(saved);
-                state.walletAddress = parsed.walletAddress;
-                state.stats.earnings = parsed.totalEarnings || 0;
+                const s = JSON.parse(saved);
+                state.wallet = s.wallet;
+                state.total = s.total || { earnings: 0, jobs: 0 };
+                state.enabledJobs = s.enabledJobs || state.enabledJobs;
             }
-            updateUI();
         }
         
         function saveState() {
-            localStorage.setItem('nullAgentState', JSON.stringify({
-                walletAddress: state.walletAddress,
-                totalEarnings: state.stats.earnings
+            localStorage.setItem('nullAgentV2', JSON.stringify({
+                wallet: state.wallet,
+                total: state.total,
+                enabledJobs: state.enabledJobs
             }));
+        }
+        
+        // ============== TABS ==============
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${name === 'earn' ? 1 : name === 'jobs' ? 2 : 3})`).classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+        
+        // ============== JOBS ==============
+        function toggleJob(type) {
+            state.enabledJobs[type] = !state.enabledJobs[type];
+            document.getElementById('toggle-' + type).classList.toggle('on');
+            updateEstimates();
+            saveState();
+        }
+        
+        function updateEstimates() {
+            let minHr = 0, maxHr = 0;
+            Object.keys(state.enabledJobs).forEach(type => {
+                if (state.enabledJobs[type]) {
+                    const cfg = JOB_CONFIG[type];
+                    // Assume ~60 jobs/hour for VPN, 200 for compute, etc.
+                    const jobsPerHour = type === 'vpn' ? 60 : type === 'compute' ? 200 : 100;
+                    minHr += cfg.minPay * jobsPerHour * 170; // Convert SOL to USD (~$170)
+                    maxHr += cfg.maxPay * jobsPerHour * 170;
+                }
+            });
+            document.getElementById('estHourly').textContent = `$${minHr.toFixed(2)} - $${maxHr.toFixed(2)}`;
+            document.getElementById('estDaily').textContent = `$${(minHr * 24).toFixed(2)} - $${(maxHr * 24).toFixed(2)}`;
+            document.getElementById('estMonthly').textContent = `$${(minHr * 24 * 30).toFixed(0)} - $${(maxHr * 24 * 30).toFixed(0)}`;
         }
         
         // ============== AGENT ==============
         function toggleAgent() {
-            if (state.isActive) {
-                stopAgent();
-            } else {
-                startAgent();
-            }
-        }
-        
-        function startAgent() {
-            if (!state.walletAddress) {
+            if (!state.wallet) {
+                showTab('wallet');
                 handleWallet();
                 return;
             }
-            
+            state.isActive ? stopAgent() : startAgent();
+        }
+        
+        function startAgent() {
             state.isActive = true;
-            state.sessionStart = Date.now();
-            state.stats = { bytesRelayed: 0, uptime: 0, earnings: 0, jobsCompleted: 0 };
+            state.session = { start: Date.now(), earnings: 0, jobs: 0, data: 0 };
             state.jobs = [];
-            state.pendingJobs = Math.floor(Math.random() * 5) + 3;
             
-            // Start job simulation
-            intervals.jobs = setInterval(simulateJob, 2000 + Math.random() * 3000);
+            intervals.job = setInterval(runJob, 1500 + Math.random() * 2000);
             intervals.stats = setInterval(updateStats, 1000);
             
-            // First job immediately
-            setTimeout(simulateJob, 500);
-            
-            updateUI();
-            saveState();
+            setTimeout(runJob, 300);
+            updateAllUI();
         }
         
         function stopAgent() {
             state.isActive = false;
-            state.sessionStart = null;
+            state.total.earnings += state.session.earnings;
+            state.total.jobs += state.session.jobs;
             
-            clearInterval(intervals.jobs);
+            clearInterval(intervals.job);
             clearInterval(intervals.stats);
             
-            updateUI();
             saveState();
+            updateAllUI();
         }
         
-        function simulateJob() {
+        function runJob() {
             if (!state.isActive) return;
             
-            // Pick random job type
-            const jobType = JOB_TYPES[Math.floor(Math.random() * JOB_TYPES.length)];
-            const payment = jobType.minPay + Math.random() * (jobType.maxPay - jobType.minPay);
-            const dataSize = Math.floor(Math.random() * 500 + 50); // KB
+            // Pick random enabled job
+            const enabled = Object.keys(state.enabledJobs).filter(k => state.enabledJobs[k]);
+            if (enabled.length === 0) return;
             
-            // Add to stats
-            state.stats.earnings += payment;
-            state.stats.bytesRelayed += dataSize * 1024;
-            state.stats.jobsCompleted++;
+            const type = enabled[Math.floor(Math.random() * enabled.length)];
+            const cfg = JOB_CONFIG[type];
+            const pay = cfg.minPay + Math.random() * (cfg.maxPay - cfg.minPay);
+            const data = cfg.dataMin + Math.random() * (cfg.dataMax - cfg.dataMin);
             
-            // Update pending
-            state.pendingJobs = Math.max(0, state.pendingJobs + (Math.random() > 0.6 ? 1 : -1));
-            if (state.pendingJobs < 2) state.pendingJobs = Math.floor(Math.random() * 3) + 2;
+            state.session.earnings += pay;
+            state.session.jobs++;
+            state.session.data += data;
             
-            // Add to recent jobs
             state.jobs.unshift({
-                type: jobType.type,
-                name: jobType.name,
-                icon: jobType.icon,
-                payment: payment,
-                time: Date.now()
+                type, icon: cfg.icon, name: cfg.name,
+                pay, time: Date.now()
             });
+            if (state.jobs.length > 20) state.jobs.pop();
             
-            // Keep only last 5 jobs
-            if (state.jobs.length > 5) state.jobs.pop();
-            
-            updateJobsUI();
-            updateStatsUI();
+            updateJobsFeed();
+            updateStats();
         }
         
         function updateStats() {
-            if (!state.isActive || !state.sessionStart) return;
-            state.stats.uptime = Math.floor((Date.now() - state.sessionStart) / 1000);
-            updateStatsUI();
+            if (!state.session.start) return;
+            const uptime = Math.floor((Date.now() - state.session.start) / 1000);
+            const hrs = Math.floor(uptime / 3600);
+            const mins = Math.floor((uptime % 3600) / 60);
+            const secs = uptime % 60;
+            
+            document.getElementById('earnings').textContent = state.session.earnings.toFixed(4) + ' SOL';
+            document.getElementById('jobsDone').textContent = state.session.jobs;
+            document.getElementById('dataUsed').textContent = (state.session.data / 1024).toFixed(1) + ' MB';
+            document.getElementById('uptime').textContent = hrs > 0 
+                ? `${hrs}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`
+                : `${mins}:${secs.toString().padStart(2,'0')}`;
+            
+            const rate = uptime > 60 ? (state.session.earnings / uptime * 3600) : 0;
+            document.getElementById('rate').textContent = rate.toFixed(4);
+            
+            document.getElementById('sessionEarn').textContent = state.session.earnings.toFixed(4) + ' SOL';
+            document.getElementById('totalEarn').textContent = (state.total.earnings + state.session.earnings).toFixed(4) + ' SOL';
         }
         
-        // ============== UI ==============
-        function updateUI() {
-            const ring = document.getElementById('statusRing');
-            const icon = document.getElementById('statusIcon');
-            const label = document.getElementById('statusLabel');
-            const badge = document.getElementById('statusBadge');
-            const btn = document.getElementById('mainBtn');
-            
-            if (state.isActive) {
-                ring.classList.add('online');
-                icon.textContent = '●';
-                label.textContent = 'ONLINE';
-                badge.textContent = 'ONLINE';
-                badge.className = 'status-badge online';
-                btn.textContent = 'STOP';
-                btn.className = 'main-btn stop';
-            } else {
-                ring.classList.remove('online');
-                icon.textContent = '○';
-                label.textContent = 'OFFLINE';
-                badge.textContent = 'OFFLINE';
-                badge.className = 'status-badge offline';
-                btn.textContent = state.walletAddress ? 'START EARNING' : 'CONNECT & START';
-                btn.className = 'main-btn start';
-            }
-            
-            // Wallet
-            const walletEl = document.getElementById('walletAddress');
-            const walletBtn = document.getElementById('walletBtn');
-            
-            if (state.walletAddress) {
-                const addr = state.walletAddress;
-                walletEl.textContent = addr.slice(0, 6) + '...' + addr.slice(-4);
-                walletEl.className = 'wallet-address';
-                walletBtn.innerHTML = 'Disconnect';
-                walletBtn.className = 'wallet-btn connected';
-            } else {
-                walletEl.textContent = 'Not connected';
-                walletEl.className = 'wallet-address empty';
-                walletBtn.innerHTML = '+ Add Wallet';
-                walletBtn.className = 'wallet-btn';
-            }
-            
-            updateStatsUI();
-            updateJobsUI();
-        }
-        
-        function updateStatsUI() {
-            const s = state.stats;
-            
-            document.getElementById('earnings').textContent = '$' + s.earnings.toFixed(4);
-            document.getElementById('jobsCompleted').textContent = s.jobsCompleted;
-            
-            // Data
-            const kb = s.bytesRelayed / 1024;
-            document.getElementById('dataRelayed').textContent = 
-                kb < 1000 ? Math.round(kb) + ' KB' :
-                (kb / 1024).toFixed(1) + ' MB';
-            
-            // Uptime
-            const hrs = Math.floor(s.uptime / 3600);
-            const mins = Math.floor((s.uptime % 3600) / 60);
-            const secs = s.uptime % 60;
-            document.getElementById('uptime').textContent = 
-                hrs > 0 ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}` :
-                `${mins}:${secs.toString().padStart(2, '0')}`;
-            
-            // Rate
-            const rate = s.uptime > 60 ? (s.earnings / s.uptime * 3600) : 0;
-            document.getElementById('rate').textContent = '$' + rate.toFixed(2) + '/hr';
-        }
-        
-        function updateJobsUI() {
-            document.getElementById('pendingJobs').textContent = state.pendingJobs + ' pending';
-            
-            const list = document.getElementById('jobsList');
-            
+        function updateJobsFeed() {
+            const feed = document.getElementById('jobsFeed');
             if (state.jobs.length === 0) {
-                list.innerHTML = `<div style="color: var(--dim); font-size: 12px; text-align: center; padding: 20px;">
-                    ${state.walletAddress ? 'Press START to receive jobs' : 'Connect wallet to receive jobs'}
-                </div>`;
+                feed.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--dim); font-size: 12px;">Select jobs & press START</div>';
                 return;
             }
-            
-            list.innerHTML = state.jobs.map(job => `
+            feed.innerHTML = state.jobs.slice(0, 10).map(j => `
                 <div class="job-item">
-                    <span class="job-type">${job.icon} ${job.name}</span>
-                    <span class="job-amount">+$${job.payment.toFixed(4)}</span>
+                    <span class="type">${j.icon} ${j.name}</span>
+                    <span class="amount">+${j.pay.toFixed(6)} SOL</span>
                 </div>
             `).join('');
         }
         
+        function updateAllUI() {
+            // Status
+            const badge = document.getElementById('statusBadge');
+            const btn = document.getElementById('mainBtn');
+            badge.textContent = state.isActive ? 'ONLINE' : 'OFFLINE';
+            badge.className = 'status-badge ' + (state.isActive ? 'online' : 'offline');
+            btn.textContent = state.isActive ? 'STOP' : 'START EARNING';
+            btn.className = 'main-btn ' + (state.isActive ? 'stop' : 'start');
+            
+            // Wallet
+            const addr = document.getElementById('walletAddr');
+            const wbtn = document.getElementById('walletBtn');
+            if (state.wallet) {
+                addr.textContent = state.wallet.slice(0,6) + '...' + state.wallet.slice(-4);
+                addr.className = 'wallet-addr';
+                wbtn.textContent = 'Disconnect';
+                wbtn.className = 'wallet-btn connected';
+            } else {
+                addr.textContent = 'Not connected';
+                addr.className = 'wallet-addr empty';
+                wbtn.textContent = 'Connect Wallet';
+                wbtn.className = 'wallet-btn';
+            }
+            
+            // Job toggles
+            Object.keys(state.enabledJobs).forEach(type => {
+                const el = document.getElementById('toggle-' + type);
+                if (el) el.classList.toggle('on', state.enabledJobs[type]);
+            });
+            
+            updateEstimates();
+            updateStats();
+            updateJobsFeed();
+        }
+        
         // ============== WALLET ==============
         function handleWallet() {
-            if (state.walletAddress) {
+            if (state.wallet) {
                 if (confirm('Disconnect wallet?')) {
-                    state.walletAddress = null;
-                    localStorage.removeItem('phantomSession');
+                    state.wallet = null;
                     if (state.isActive) stopAgent();
                     saveState();
-                    updateUI();
+                    updateAllUI();
                 }
             } else {
-                showWalletModal();
+                const addr = prompt('Paste your Solana wallet address:\n\n(Open Phantom → Tap wallet name → Copy address)');
+                if (addr && addr.length >= 32 && addr.length <= 44) {
+                    state.wallet = addr.trim();
+                    saveState();
+                    updateAllUI();
+                    
+                    // Fetch devnet balance
+                    fetchBalance();
+                } else if (addr) {
+                    alert('Invalid address');
+                }
             }
         }
         
-        function showWalletModal() {
-            const modal = document.createElement('div');
-            modal.id = 'walletModal';
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.95); z-index: 1000;
-                display: flex; flex-direction: column; align-items: center; justify-content: center;
-                padding: 20px;
-            `;
-            
-            modal.innerHTML = `
-                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 320px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 12px;">👻</div>
-                    <h3 style="color: var(--accent); margin-bottom: 16px; font-size: 18px;">Connect Wallet</h3>
-                    
-                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: left;">
-                        <div style="color: var(--dim); font-size: 11px; margin-bottom: 8px;">HOW TO GET YOUR ADDRESS:</div>
-                        <div style="color: var(--text); font-size: 12px; line-height: 1.6;">
-                            1. Open Phantom app<br>
-                            2. Tap your wallet name at top<br>
-                            3. Tap "Copy address"<br>
-                            4. Paste below
-                        </div>
-                    </div>
-                    
-                    <input type="text" id="manualWallet" placeholder="Paste your Solana address here..." style="width: 100%; padding: 14px; background: var(--bg); border: 2px solid var(--accent); border-radius: 8px; color: var(--text); font-family: monospace; font-size: 12px; margin-bottom: 12px; text-align: center;">
-                    
-                    <button onclick="submitManualWallet()" style="width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer;">
-                        CONNECT
-                    </button>
-                    
-                    <button onclick="closeWalletModal()" style="margin-top: 16px; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 13px;">
-                        Cancel
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            document.getElementById('manualWallet').focus();
-        }
-        
-        function closeWalletModal() {
-            const modal = document.getElementById('walletModal');
-            if (modal) modal.remove();
-        }
-        
-        function submitManualWallet() {
-            const input = document.getElementById('manualWallet');
-            const addr = input.value.trim();
-            
-            // Validate Solana address (base58, 32-44 chars)
-            if (addr.length >= 32 && addr.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(addr)) {
-                state.walletAddress = addr;
-                localStorage.setItem('phantomSession', JSON.stringify({
-                    publicKey: addr,
-                    connected: Date.now()
-                }));
-                saveState();
-                updateUI();
-                closeWalletModal();
-            } else {
-                alert('Invalid Solana address. Must be 32-44 characters, base58 encoded.');
+        async function fetchBalance() {
+            if (!state.wallet) return;
+            try {
+                const resp = await fetch('https://api.devnet.solana.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0', id: 1,
+                        method: 'getBalance',
+                        params: [state.wallet]
+                    })
+                });
+                const data = await resp.json();
+                if (data.result) {
+                    state.balance = data.result.value / 1e9;
+                    document.getElementById('walletBal').textContent = state.balance.toFixed(4) + ' SOL';
+                }
+            } catch (e) {
+                console.error('Balance fetch error:', e);
             }
         }
-        
-        // Check for existing session
-        (function() {
-            const session = localStorage.getItem('phantomSession');
-            if (session) {
-                try {
-                    const s = JSON.parse(session);
-                    if (s.publicKey) {
-                        state.walletAddress = s.publicKey;
-                        updateUI();
-                    }
-                } catch (e) {}
-            }
-        })();
     </script>
 </body>
 </html>
