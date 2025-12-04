@@ -915,104 +915,90 @@ DISPUTE FLOW
                 </table>
                 
                 <h2>// DOWNLOAD AGENTS</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
-                    <a href="./agent-app/" target="_blank" style="display: block; background: var(--bg-elevated); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; text-decoration: none; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📱</div>
-                        <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">MOBILE AGENT</div>
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Android/iOS PWA</div>
-                        <div style="color: var(--accent); font-size: 0.7rem; margin-top: 0.5rem;">[READY]</div>
-                    </a>
-                    <a href="https://github.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet/tree/main/agents/browser-extension" target="_blank" style="display: block; background: var(--bg-elevated); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; text-decoration: none; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌐</div>
-                        <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">BROWSER EXT</div>
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Chrome/Edge/Brave/Firefox</div>
-                        <div style="color: var(--accent); font-size: 0.7rem; margin-top: 0.5rem;">[READY]</div>
-                    </a>
-                    <a href="https://github.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet/tree/main/agents/desktop" target="_blank" style="display: block; background: var(--bg-elevated); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; text-decoration: none; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💻</div>
-                        <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">DESKTOP</div>
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Win/Mac/Linux (Rust)</div>
-                        <div style="color: var(--accent); font-size: 0.7rem; margin-top: 0.5rem;">[READY]</div>
-                    </a>
-                    <a href="https://github.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet/tree/main/agents/phantom-box" target="_blank" style="display: block; background: var(--bg-elevated); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; text-decoration: none; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔲</div>
-                        <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">PHANTOM BOX</div>
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Raspberry Pi Scripts</div>
-                        <div style="color: var(--accent); font-size: 0.7rem; margin-top: 0.5rem;">[READY]</div>
-                    </a>
-                </div>
-                
-                <!-- Android Native APK -->
-                <div style="background: var(--bg-card); border: 1px solid var(--accent); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">📱 Android Native App - DOWNLOAD NOW</div>
-                    <div style="margin: 12px 0;">
-                        <a href="phantom-agent-android-v0.1.0.apk" download style="background: linear-gradient(135deg, #00ff88, #00aa66); color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 1rem;">
-                            📱 Download APK v0.1.0 (14.8 MB)
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+                    
+                    <!-- ANDROID APK - ONE CLICK -->
+                    <div style="background: var(--bg-card); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 2rem;">📱</span>
+                            <div>
+                                <div style="color: var(--accent); font-weight: 700; font-size: 1.1rem;">ANDROID APP</div>
+                                <div style="color: var(--text-dim); font-size: 0.75rem;">Native Kotlin • Battery-aware</div>
+                            </div>
+                            <span style="margin-left: auto; background: var(--accent); color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">READY</span>
+                        </div>
+                        <a href="phantom-agent-android-v0.1.0.apk" download style="display: block; background: linear-gradient(135deg, #00ff88, #00aa66); color: #000; padding: 14px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; font-size: 1rem; margin-bottom: 8px;">
+                            ⬇️ DOWNLOAD APK (14.8 MB)
                         </a>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; text-align: center;">
+                            Settings → Security → Enable "Unknown sources"
+                        </div>
                     </div>
-                    <div style="color: var(--text-dim); font-size: 0.85rem;">
-                        Enable "Install from unknown sources" in Android Settings → Security<br>
-                        Native Kotlin app with Jetpack Compose • Battery-aware • Auto-pauses at 15%
+                    
+                    <!-- BROWSER EXTENSION - ONE CLICK -->
+                    <div style="background: var(--bg-card); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 2rem;">🌐</span>
+                            <div>
+                                <div style="color: var(--accent); font-weight: 700; font-size: 1.1rem;">BROWSER EXTENSION</div>
+                                <div style="color: var(--text-dim); font-size: 0.75rem;">Chrome/Edge/Brave/Firefox</div>
+                            </div>
+                            <span style="margin-left: auto; background: var(--accent); color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">READY</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <a href="phantom-agent-chrome-v0.1.0.zip" download style="flex: 1; background: linear-gradient(135deg, #4285f4, #2d5db8); color: #fff; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; font-size: 0.9rem;">
+                                🔵 Chrome/Edge
+                            </a>
+                            <a href="phantom-agent-firefox-v0.1.0.xpi" download style="flex: 1; background: linear-gradient(135deg, #ff6600, #cc5500); color: #fff; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; font-size: 0.9rem;">
+                                🦊 Firefox
+                            </a>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; text-align: center;">
+                            Chrome: Unzip → chrome://extensions → Load unpacked
+                        </div>
+                    </div>
+                    
+                    <!-- DESKTOP - COMING SOON -->
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; opacity: 0.7;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 2rem;">💻</span>
+                            <div>
+                                <div style="color: var(--text); font-weight: 700; font-size: 1.1rem;">DESKTOP AGENT</div>
+                                <div style="color: var(--text-dim); font-size: 0.75rem;">Windows/Mac/Linux</div>
+                            </div>
+                            <span style="margin-left: auto; background: var(--accent-orange); color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">SOON</span>
+                        </div>
+                        <div style="background: var(--bg-elevated); color: var(--text-dim); padding: 14px; border-radius: 8px; text-align: center; font-size: 0.9rem;">
+                            Coming Q1 2025
+                        </div>
+                    </div>
+                    
+                    <!-- PHANTOM BOX - COMING SOON -->
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; opacity: 0.7;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 2rem;">🔲</span>
+                            <div>
+                                <div style="color: var(--text); font-weight: 700; font-size: 1.1rem;">PHANTOM BOX</div>
+                                <div style="color: var(--text-dim); font-size: 0.75rem;">Raspberry Pi • 24/7 Passive</div>
+                            </div>
+                            <span style="margin-left: auto; background: var(--accent-orange); color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">SOON</span>
+                        </div>
+                        <div style="background: var(--bg-elevated); color: var(--text-dim); padding: 14px; border-radius: 8px; text-align: center; font-size: 0.9rem;">
+                            Coming Q1 2025
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Mobile PWA Install (Alternative) -->
-                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="color: var(--accent-blue); font-weight: 600; margin-bottom: 0.5rem;">📱 PWA Alternative (iOS/Android)</div>
-                    <div style="color: var(--text-dim); font-size: 0.85rem;">
-                        1. Open <a href="./agent-app/" style="color: var(--accent-blue);">agent-app/</a> in Chrome on your phone<br>
-                        2. Tap menu → "Add to Home Screen" or "Install App"<br>
-                        3. Open from home screen - runs as standalone app<br>
-                        4. Connect wallet and start earning
+                <!-- PWA Alternative (collapsed) -->
+                <details style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <summary style="color: var(--accent-blue); font-weight: 600; cursor: pointer;">📱 iOS Alternative (PWA)</summary>
+                    <div style="color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">
+                        1. Open <a href="./agent-app/" style="color: var(--accent-blue);">agent-app/</a> in Safari on your iPhone<br>
+                        2. Tap Share → "Add to Home Screen"<br>
+                        3. Open from home screen - runs as standalone app
                     </div>
-                </div>
+                </details>
                 
-                <!-- Browser Extension Install -->
-                <div style="background: var(--bg-card); border: 1px solid var(--accent); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">🌐 Browser Extension - DOWNLOAD NOW</div>
-                    <div style="display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap;">
-                        <a href="phantom-agent-chrome-v0.1.0.zip" download style="background: linear-gradient(135deg, #00ff88, #00aa66); color: #000; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                            🔵 Chrome/Edge/Brave v0.1.0
-                        </a>
-                        <a href="phantom-agent-firefox-v0.1.0.xpi" download style="background: linear-gradient(135deg, #ff6600, #cc5500); color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                            🦊 Firefox v0.1.0
-                        </a>
-                    </div>
-                    <div style="color: var(--text-dim); font-size: 0.85rem;">
-                        <strong>Chrome/Edge/Brave:</strong> Unzip → <code>chrome://extensions</code> → Enable Developer Mode → Load unpacked<br>
-                        <strong>Firefox:</strong> Click to install directly (or <code>about:debugging</code> → Load Temporary Add-on)
-                    </div>
-                </div>
-                
-                <!-- Desktop Install -->
-                <div style="background: var(--bg-card); border: 1px solid var(--accent-purple); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="color: var(--accent-purple); font-weight: 600; margin-bottom: 0.5rem;">💻 Desktop Agent Install (Linux/Mac/Win)</div>
-                    <div style="color: var(--text-dim); font-size: 0.85rem;">
-                        <strong>Requirements:</strong> Rust toolchain (<a href="https://rustup.rs" style="color: var(--accent-blue);" target="_blank">rustup.rs</a>)<br><br>
-                        <code style="background: var(--bg-void); padding: 0.5rem; display: block; border-radius: 4px; margin: 0.5rem 0;">
-git clone https://github.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet.git<br>
-cd PhantomGrid-Wraith-Testnet/agents/desktop<br>
-cargo build --release<br>
-./target/release/phantom-agent start
-                        </code>
-                        <strong>Ubuntu/Debian deps:</strong> <code>sudo apt install build-essential pkg-config libssl-dev</code>
-                    </div>
-                </div>
-                
-                <!-- Phantom Box Install -->
-                <div style="background: var(--bg-card); border: 1px solid var(--accent-orange); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-                    <div style="color: var(--accent-orange); font-weight: 600; margin-bottom: 0.5rem;">🔲 Phantom Box Install (Raspberry Pi)</div>
-                    <div style="color: var(--text-dim); font-size: 0.85rem;">
-                        <strong>Requirements:</strong> Raspberry Pi 4/5, SD card, Ethernet<br><br>
-                        <strong>Option A - Fresh Pi OS:</strong><br>
-                        <code style="background: var(--bg-void); padding: 0.5rem; display: block; border-radius: 4px; margin: 0.5rem 0;">
-# Flash Raspberry Pi OS Lite to SD card<br>
-# SSH in, then run:<br>
-curl -sSL https://raw.githubusercontent.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet/main/agents/phantom-box/scripts/setup.sh | bash
-                        </code>
-                        <strong>Option B - Build custom image:</strong> See <a href="https://github.com/PhantomGrid-Wraight/PhantomGrid-Wraith-Testnet/tree/main/agents/phantom-box" style="color: var(--accent-blue);" target="_blank">phantom-box/README.md</a>
-                    </div>
-                </div>
 
                 <h2>// PHANTOM BOX (Pi)</h2>
                 <pre>
@@ -1590,3 +1576,4 @@ User pays:        $1.00
     </script>
 </body>
 </html>
+
