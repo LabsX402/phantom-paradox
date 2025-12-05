@@ -148,11 +148,46 @@ object AgentBackend {
 }
 
 class MainActivity : ComponentActivity() {
+    
+    companion object {
+        var pendingWalletCallback: ((String) -> Unit)? = null
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleIntent(intent)
         setContent {
             PhantomAgentTheme {
                 MainApp()
+            }
+        }
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+    
+    private fun handleIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+        Log.d("PhantomCallback", "Received URI: $uri")
+        
+        // Handle Phantom wallet callback
+        if (uri.scheme == "phantomagent") {
+            val publicKey = uri.getQueryParameter("phantom_encryption_public_key")
+                ?: uri.getQueryParameter("public_key")
+                ?: uri.host // Sometimes the wallet address is in the host
+            
+            if (publicKey != null && publicKey.length >= 32) {
+                Log.d("PhantomCallback", "Wallet connected: $publicKey")
+                pendingWalletCallback?.invoke(publicKey)
+            } else {
+                // Try to extract from path
+                val path = uri.path?.removePrefix("/")
+                if (path != null && path.length >= 32) {
+                    Log.d("PhantomCallback", "Wallet from path: $path")
+                    pendingWalletCallback?.invoke(path)
+                }
             }
         }
     }
@@ -234,6 +269,15 @@ fun WalletConnectScreen(onConnected: (String) -> Unit) {
     val context = LocalContext.current
     var manualWallet by remember { mutableStateOf("") }
     var showManualInput by remember { mutableStateOf(false) }
+    var isConnecting by remember { mutableStateOf(false) }
+    
+    // Set up callback for Phantom response
+    LaunchedEffect(Unit) {
+        MainActivity.pendingWalletCallback = { wallet ->
+            isConnecting = false
+            onConnected(wallet)
+        }
+    }
     
     Column(
         modifier = Modifier
@@ -248,14 +292,14 @@ fun WalletConnectScreen(onConnected: (String) -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
         
         Text(
-            "Connect Wallet",
+            if (isConnecting) "Connecting..." else "Connect Wallet",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF00FF88)
         )
         
         Text(
-            "Required to start earning",
+            if (isConnecting) "Approve in Phantom app" else "Required to start earning",
             fontSize = 14.sp,
             color = Color(0xFF6B7C8A),
             modifier = Modifier.padding(top = 8.dp)
@@ -266,15 +310,28 @@ fun WalletConnectScreen(onConnected: (String) -> Unit) {
         // Phantom Connect Button
         Button(
             onClick = {
-                // Deep link to Phantom wallet
-                val uri = Uri.parse("https://phantom.app/ul/v1/connect?app_url=https://phantomparadox.io&dapp_encryption_public_key=&redirect_link=phantomagent://callback")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
+                isConnecting = true
+                // Deep link to Phantom wallet with proper callback
+                val connectUri = Uri.Builder()
+                    .scheme("https")
+                    .authority("phantom.app")
+                    .appendPath("ul")
+                    .appendPath("v1")
+                    .appendPath("connect")
+                    .appendQueryParameter("app_url", "https://phantomparadox.io")
+                    .appendQueryParameter("redirect_link", "phantomagent://connect")
+                    .appendQueryParameter("cluster", "devnet")
+                    .build()
+                
+                val intent = Intent(Intent.ACTION_VIEW, connectUri)
                 try {
                     context.startActivity(intent)
                 } catch (e: Exception) {
+                    isConnecting = false
                     showManualInput = true
                 }
             },
+            enabled = !isConnecting,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
