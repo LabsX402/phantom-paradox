@@ -55,3 +55,4 @@ Intents are signed off-chain messages that get netted together and settled in ba
 
 **Full explanation:** See `EXPLAIN_INS_VS_TX.md`
 
+
