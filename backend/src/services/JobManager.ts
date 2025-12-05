@@ -452,7 +452,7 @@ export class JobManager {
                 });
                 
                 if (payoutResponse.ok) {
-                    const payoutData = await payoutResponse.json();
+                    const payoutData = await payoutResponse.json() as { signature: string; explorer: string };
                     payment = {
                         amountLamports: job.payment.amount,
                         amountSOL: job.payment.amount / 1_000_000_000,
