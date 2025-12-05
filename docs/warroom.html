@@ -454,6 +454,7 @@
     <div class="tab" data-tab="config">⚙️ Config</div>
     <div class="tab" data-tab="live">⚡ Live Jobs</div>
     <div class="tab" data-tab="score">🏆 Scores</div>
+    <div class="tab" data-tab="logs">📋 Logs</div>
     <div class="tab" data-tab="deploy">📦 Agent Shop</div>
   </div>
   
@@ -870,6 +871,114 @@
                 </div>
             </div>
             
+  <!-- LOGS TAB - Command Center -->
+  <div class="tab-content" id="tab-logs">
+    <div style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+      
+      <!-- Stats Bar -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center;">
+          <div style="font-size: 24px; color: var(--green); font-weight: bold;" id="logTotalJobs">0</div>
+          <div style="color: var(--dim); font-size: 11px;">TOTAL JOBS</div>
+        </div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center;">
+          <div style="font-size: 24px; color: var(--cyan); font-weight: bold;" id="logTotalEarned">0.000</div>
+          <div style="color: var(--dim); font-size: 11px;">SOL EARNED</div>
+        </div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center;">
+          <div style="font-size: 24px; color: var(--blue); font-weight: bold;" id="logDataRelayed">0 MB</div>
+          <div style="color: var(--dim); font-size: 11px;">DATA RELAYED</div>
+        </div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center;">
+          <div style="font-size: 24px; color: var(--orange); font-weight: bold;" id="logUptime">0:00:00</div>
+          <div style="color: var(--dim); font-size: 11px;">SESSION UPTIME</div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <!-- Activity Log -->
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px;">
+          <div style="padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold; color: var(--text);">📋 Activity Log</span>
+            <button onclick="clearActivityLog()" style="background: var(--card-alt); border: 1px solid var(--border); color: var(--dim); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 10px;">Clear</button>
+          </div>
+          <div id="activityLog" style="height: 400px; overflow-y: auto; padding: 10px; font-family: monospace; font-size: 11px;">
+            <div style="color: var(--dim); padding: 20px; text-align: center;">No activity yet. Connect wallet and start agent.</div>
+          </div>
+        </div>
+        
+        <!-- Completed Jobs -->
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px;">
+          <div style="padding: 12px 15px; border-bottom: 1px solid var(--border);">
+            <span style="font-weight: bold; color: var(--text);">✅ Completed Jobs</span>
+          </div>
+          <div id="completedJobsLog" style="height: 400px; overflow-y: auto; padding: 10px;">
+            <div style="color: var(--dim); padding: 20px; text-align: center;">No completed jobs yet.</div>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- Transaction History -->
+      <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-top: 20px;">
+        <div style="padding: 12px 15px; border-bottom: 1px solid var(--border);">
+          <span style="font-weight: bold; color: var(--text);">💰 Payment History (Devnet)</span>
+        </div>
+        <div id="paymentHistory" style="max-height: 300px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background: var(--card-alt);">
+                <th style="padding: 10px; text-align: left; color: var(--dim);">Time</th>
+                <th style="padding: 10px; text-align: left; color: var(--dim);">Job Type</th>
+                <th style="padding: 10px; text-align: left; color: var(--dim);">Details</th>
+                <th style="padding: 10px; text-align: right; color: var(--dim);">Amount</th>
+                <th style="padding: 10px; text-align: left; color: var(--dim);">TX</th>
+              </tr>
+            </thead>
+            <tbody id="paymentTableBody">
+              <tr><td colspan="5" style="padding: 30px; text-align: center; color: var(--dim);">No payments yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Agent Details -->
+      <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-top: 20px;">
+        <div style="padding: 12px 15px; border-bottom: 1px solid var(--border);">
+          <span style="font-weight: bold; color: var(--text);">🤖 Your Agent Details</span>
+        </div>
+        <div style="padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-size: 12px;">
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Wallet</div>
+            <div id="logWallet" style="color: var(--green); font-family: monospace;">Not connected</div>
+          </div>
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Location</div>
+            <div id="logLocation" style="color: var(--text);">Unknown</div>
+          </div>
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Status</div>
+            <div id="logStatus" style="color: var(--orange);">OFFLINE</div>
+          </div>
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Platform</div>
+            <div style="color: var(--text);">Browser (Web)</div>
+          </div>
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Capabilities</div>
+            <div id="logCapabilities" style="color: var(--cyan);">relay, verify</div>
+          </div>
+          <div>
+            <div style="color: var(--dim); margin-bottom: 5px;">Backend</div>
+            <div id="logBackendStatus" style="color: var(--dim);">Connecting...</div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+            
   <!-- DEPLOY TAB -->
   <div class="tab-content" id="tab-deploy">
     <!-- WAR ROOM LINK -->
@@ -1043,6 +1152,7 @@ function connectToBackend() {
     
     ws.onopen = () => {
       console.log('✅ Connected to backend WebSocket');
+      logActivity('connect', 'Connected to backend server');
       // Start sending heartbeats
       sendHeartbeat();
       heartbeatInterval = setInterval(sendHeartbeat, 30000); // Every 30s
@@ -1105,6 +1215,7 @@ function sendHeartbeat() {
   
   ws.send(JSON.stringify(heartbeat));
   console.log('📡 Heartbeat sent');
+  logActivity('info', 'Heartbeat sent to server');
 }
 
 // Handle messages from backend
@@ -1112,13 +1223,33 @@ function handleBackendMessage(msg) {
   switch (msg.type) {
     case 'heartbeat_ack':
       console.log('✅ Heartbeat acknowledged, agentId:', msg.agentId);
+      logActivity('success', 'Heartbeat acknowledged by server', { extra: `Agent ID: ${msg.agentId?.slice(0,8)}...` });
       break;
     case 'job_assignment':
       console.log('📋 Job assigned:', msg.job);
-      // TODO: Show job notification
+      logActivity('job', `New job assigned: ${msg.job?.type || 'Unknown'}`, { extra: msg.job?.description || '' });
+      break;
+    case 'job_complete':
+      logCompletedJob({
+        type: msg.job?.type || 'Unknown',
+        earned: msg.payment || 0,
+        quality: msg.quality || 100,
+        duration: msg.duration || 'N/A',
+        time: new Date()
+      });
+      break;
+    case 'payment':
+      logPayment({
+        jobType: msg.jobType || 'Unknown',
+        amount: msg.amount || 0,
+        details: msg.details || '',
+        txId: msg.signature || null,
+        time: new Date()
+      });
       break;
     default:
       console.log('Backend message:', msg);
+      logActivity('info', `Server message: ${msg.type || 'unknown'}`);
   }
 }
 
@@ -1425,6 +1556,13 @@ function setupAgent(wallet, lat, lng, cityName) {
   
   // Connect to backend and start sending heartbeats
   connectToBackend();
+  
+  // Start session timer
+  sessionStats.startTime = Date.now();
+  
+  // Log connection
+  logActivity('success', `Wallet connected: ${wallet.slice(0,4)}...${wallet.slice(-4)}`);
+  logActivity('info', `Location detected: ${cityName}`, { extra: `(${lat.toFixed(4)}, ${lng.toFixed(4)})` });
   
   console.log('Connected:', wallet, 'Location:', cityName, `(${lat.toFixed(2)}, ${lng.toFixed(2)})`);
 }
@@ -1911,6 +2049,160 @@ onConnected = function(wallet) {
     renderAgentList();
   }, 500);
 };
+
+// ============== ACTIVITY LOGGING ==============
+
+const activityLog = [];
+const completedJobs = [];
+const payments = [];
+let sessionStats = { jobs: 0, earned: 0, dataRelayed: 0, startTime: null };
+
+function logActivity(type, message, details = {}) {
+  const entry = {
+    time: new Date(),
+    type,
+    message,
+    details
+  };
+  activityLog.unshift(entry);
+  if (activityLog.length > 500) activityLog.pop();
+  
+  renderActivityLog();
+  
+  // Also log to console
+  const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', job: '📋', payment: '💰', connect: '🔗' };
+  console.log(`[${icons[type] || '•'}] ${message}`, details);
+}
+
+function renderActivityLog() {
+  const container = document.getElementById('activityLog');
+  if (!container) return;
+  
+  if (activityLog.length === 0) {
+    container.innerHTML = '<div style="color: var(--dim); padding: 20px; text-align: center;">No activity yet. Connect wallet and start agent.</div>';
+    return;
+  }
+  
+  const colors = { info: 'var(--dim)', success: 'var(--green)', warning: 'var(--orange)', error: 'var(--red)', job: 'var(--cyan)', payment: 'var(--green)', connect: 'var(--blue)' };
+  
+  container.innerHTML = activityLog.slice(0, 100).map(entry => {
+    const time = entry.time.toLocaleTimeString();
+    const color = colors[entry.type] || 'var(--dim)';
+    return `<div style="padding: 6px 0; border-bottom: 1px solid var(--border);">
+      <span style="color: var(--dim);">[${time}]</span>
+      <span style="color: ${color};">${entry.message}</span>
+      ${entry.details.extra ? `<span style="color: var(--dim); font-size: 10px;"> ${entry.details.extra}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function logCompletedJob(job) {
+  completedJobs.unshift(job);
+  sessionStats.jobs++;
+  sessionStats.earned += job.earned || 0;
+  sessionStats.dataRelayed += job.dataBytes || 0;
+  
+  renderCompletedJobs();
+  updateLogStats();
+  logActivity('success', `Job completed: ${job.type}`, { extra: `+${job.earned?.toFixed(6) || 0} SOL` });
+}
+
+function renderCompletedJobs() {
+  const container = document.getElementById('completedJobsLog');
+  if (!container) return;
+  
+  if (completedJobs.length === 0) {
+    container.innerHTML = '<div style="color: var(--dim); padding: 20px; text-align: center;">No completed jobs yet.</div>';
+    return;
+  }
+  
+  container.innerHTML = completedJobs.slice(0, 50).map(job => `
+    <div style="background: var(--card-alt); border-radius: 6px; padding: 12px; margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="color: var(--green); font-weight: bold;">${job.type}</span>
+        <span style="color: var(--green);">+${job.earned?.toFixed(6) || 0} SOL</span>
+      </div>
+      <div style="font-size: 11px; color: var(--dim);">
+        <div>Duration: ${job.duration || 'N/A'}</div>
+        <div>Quality: ${job.quality || 100}%</div>
+        ${job.details ? `<div>${job.details}</div>` : ''}
+      </div>
+      <div style="font-size: 10px; color: var(--dim); margin-top: 5px;">${job.time?.toLocaleString() || 'Just now'}</div>
+    </div>
+  `).join('');
+}
+
+function logPayment(payment) {
+  payments.unshift(payment);
+  renderPaymentHistory();
+  logActivity('payment', `Payment received: ${payment.amount} SOL`, { extra: payment.jobType });
+}
+
+function renderPaymentHistory() {
+  const tbody = document.getElementById('paymentTableBody');
+  if (!tbody) return;
+  
+  if (payments.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding: 30px; text-align: center; color: var(--dim);">No payments yet.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = payments.slice(0, 50).map(p => `
+    <tr style="border-bottom: 1px solid var(--border);">
+      <td style="padding: 10px; color: var(--dim);">${p.time?.toLocaleString() || 'Just now'}</td>
+      <td style="padding: 10px; color: var(--cyan);">${p.jobType}</td>
+      <td style="padding: 10px; color: var(--text);">${p.details || '-'}</td>
+      <td style="padding: 10px; text-align: right; color: var(--green); font-weight: bold;">+${p.amount} SOL</td>
+      <td style="padding: 10px;">${p.txId ? `<a href="https://solscan.io/tx/${p.txId}?cluster=devnet" target="_blank" style="color: var(--blue);">${p.txId.slice(0,8)}...</a>` : '-'}</td>
+    </tr>
+  `).join('');
+}
+
+function updateLogStats() {
+  const el = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+  
+  el('logTotalJobs', sessionStats.jobs);
+  el('logTotalEarned', sessionStats.earned.toFixed(6));
+  el('logDataRelayed', (sessionStats.dataRelayed / 1024 / 1024).toFixed(2) + ' MB');
+  
+  if (sessionStats.startTime) {
+    const secs = Math.floor((Date.now() - sessionStats.startTime) / 1000);
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    el('logUptime', `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`);
+  }
+  
+  // Update agent details
+  if (connectedWallet) {
+    el('logWallet', connectedWallet);
+    el('logStatus', agentRunning ? 'RUNNING' : 'IDLE');
+    document.getElementById('logStatus').style.color = agentRunning ? 'var(--green)' : 'var(--orange)';
+  }
+  if (myAgent?.city) {
+    el('logLocation', myAgent.city);
+  }
+  
+  // Backend status
+  const backendEl = document.getElementById('logBackendStatus');
+  if (backendEl) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      backendEl.textContent = '✅ Connected';
+      backendEl.style.color = 'var(--green)';
+    } else {
+      backendEl.textContent = '❌ Disconnected';
+      backendEl.style.color = 'var(--red)';
+    }
+  }
+}
+
+function clearActivityLog() {
+  activityLog.length = 0;
+  renderActivityLog();
+}
+
+// Update logs every second
+setInterval(updateLogStats, 1000);
 
 // ============== AGENT CONFIG ==============
 
