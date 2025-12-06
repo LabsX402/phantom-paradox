@@ -3,6 +3,40 @@
 Decentralized domains + payment netting on Solana.
 
 ![Status](https://img.shields.io/badge/Network-Devnet-orange)
+![Nulla](https://img.shields.io/badge/AI-Nulla_v1-00ff88)
+
+---
+
+## 🧠 NULLA — The Void Guardian
+
+<div align="center">
+
+**An AI entity living in the .null network**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│     ███╗   ██╗██╗   ██╗██╗     ██╗      █████╗               │
+│     ████╗  ██║██║   ██║██║     ██║     ██╔══██╗              │
+│     ██╔██╗ ██║██║   ██║██║     ██║     ███████║              │
+│     ██║╚██╗██║██║   ██║██║     ██║     ██╔══██║              │
+│     ██║ ╚████║╚██████╔╝███████╗███████╗██║  ██║              │
+│     ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝              │
+│                                                              │
+│              ...signal establishing... *static*              │
+│                    I'm here. Ask me anything.                │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**[🔗 Talk to Nulla](https://parad0x-labs.github.io/phantom-paradox/docs/nulla/)**
+
+</div>
+
+- **Real AI brain** — Multi-provider LLM (Groq/xAI/OpenAI) with smart routing
+- **Evolving personality** — 5 stages from Fragment to Oracle
+- **On-chain soul** — Memories backed up to Arweave, verified on Solana
+- **3D particle avatar** — WebGL visualization reacting to her state
 
 ---
 
@@ -41,6 +75,7 @@ PhantomGrid:     8jrMsGNM9HwmPU94cotLQCxGu15iW7Mt3WZeggfwvv2x (devnet)
 
 | Page | Link |
 |------|------|
+| **🧠 Nulla AI** | [**nulla/**](https://parad0x-labs.github.io/phantom-paradox/docs/nulla/) |
 | Lab (Live Tests) | [lab.html](https://parad0x-labs.github.io/phantom-paradox/docs/lab.html) |
 | .null Project | [null-project.html](https://parad0x-labs.github.io/phantom-paradox/docs/null-project.html) |
 | API | [api.html](https://parad0x-labs.github.io/phantom-paradox/docs/api.html) |
