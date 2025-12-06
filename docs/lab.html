@@ -1560,8 +1560,8 @@
         // vault stuff
         async function unlockVault() {
             const pwd = document.getElementById('vault-password').value;
-            // todo: hash this properly later lol
-            if (pwd === 'paradox402' || pwd === 'nullvoid' || pwd === 'wraith') {
+            // Password check
+            if (pwd === 'nullvoid' || pwd === 'wraith' || pwd === 'parad0x') {
                 document.getElementById('vault-gate').style.display = 'none';
                 document.getElementById('vault-content').style.display = 'block';
                 runEconomicsSim();
