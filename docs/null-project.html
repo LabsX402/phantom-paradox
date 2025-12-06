@@ -354,32 +354,129 @@ Cold Content (low demand):
         <div class="section">
             <h2 class="section-title">// 05. Nulla — AI Integrity Guardian</h2>
             
-            <!-- Interactive Nulla Demo -->
-            <div class="nulla-container" id="nulla-demo" onclick="cycleNullaState()">
+            <!-- Interactive Nulla Demo - REAL CHECKS -->
+            <div class="nulla-container" id="nulla-demo">
                 <div class="nulla-avatar safe" id="nulla-face">∅</div>
-                <div class="nulla-speech" id="nulla-speech">Hey! I'm Nulla. Click me to see how I react to threats.</div>
-                <div class="nulla-status safe" id="nulla-status">STATUS: ALL CLEAR</div>
-                <div class="nulla-hint">Click to cycle through threat levels</div>
+                <div class="nulla-speech" id="nulla-speech">Click "Run Check" and I'll do REAL network scans. No simulations.</div>
+                <div class="nulla-status safe" id="nulla-status">READY</div>
+                <button onclick="runNullaCheck()" id="nulla-btn" style="margin-top: 1rem; padding: 0.75rem 2rem; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'JetBrains Mono', monospace;">▶ RUN CHECK</button>
+                <div id="nulla-log" style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); max-height: 150px; overflow-y: auto; text-align: left; width: 100%; max-width: 500px;"></div>
             </div>
             
             <script>
-                let nullaState = 0;
-                const states = [
-                    { face: '∅', class: 'safe', speech: "All systems clear! No threats detected. I'm watching the network.", status: 'STATUS: ALL CLEAR', statusClass: 'safe' },
-                    { face: '⚠', class: 'alert', speech: "Wait... something's off. I'm detecting unusual activity. Stay alert.", status: 'STATUS: SUSPICIOUS ACTIVITY', statusClass: 'alert' },
-                    { face: '✖', class: 'glitch', speech: "THREAT DETECTED! Someone's trying to drain your wallet. BLOCKING!", status: 'STATUS: ATTACK BLOCKED', statusClass: 'danger' }
-                ];
-                function cycleNullaState() {
-                    nullaState = (nullaState + 1) % states.length;
-                    const s = states[nullaState];
+                const MAINNET_RPC = 'https://api.mainnet-beta.solana.com';
+                const DEVNET_RPC = 'https://api.devnet.solana.com';
+                const NULL_TOKEN = '8EeDdvCRmFAzVD4takkBrNNwkeUTUQh4MscRK5Fzpump';
+                const DOMAINS_PROGRAM = '6BRBfHd5Dru7Y1tF6xYFnFN1T7vApPMcowFN7CqsGsDY';
+                
+                function log(msg) {
+                    const el = document.getElementById('nulla-log');
+                    const time = new Date().toISOString().split('T')[1].split('.')[0];
+                    el.innerHTML += `[${time}] ${msg}<br>`;
+                    el.scrollTop = el.scrollHeight;
+                }
+                
+                function setNullaState(state, speech, status) {
                     const face = document.getElementById('nulla-face');
-                    const speech = document.getElementById('nulla-speech');
-                    const status = document.getElementById('nulla-status');
-                    face.textContent = s.face;
-                    face.className = 'nulla-avatar ' + s.class;
-                    speech.textContent = s.speech;
-                    status.textContent = s.status;
-                    status.className = 'nulla-status ' + s.statusClass;
+                    const speechEl = document.getElementById('nulla-speech');
+                    const statusEl = document.getElementById('nulla-status');
+                    face.className = 'nulla-avatar ' + state;
+                    face.textContent = state === 'safe' ? '∅' : state === 'alert' ? '⚠' : '✖';
+                    speechEl.textContent = speech;
+                    statusEl.textContent = status;
+                    statusEl.className = 'nulla-status ' + state;
+                }
+                
+                async function rpcCall(url, method, params) {
+                    const start = performance.now();
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+                    });
+                    const data = await res.json();
+                    const latency = Math.round(performance.now() - start);
+                    return { data, latency };
+                }
+                
+                async function runNullaCheck() {
+                    const btn = document.getElementById('nulla-btn');
+                    btn.disabled = true;
+                    btn.textContent = '⏳ SCANNING...';
+                    document.getElementById('nulla-log').innerHTML = '';
+                    
+                    let issues = 0;
+                    let totalLatency = 0;
+                    
+                    try {
+                        // Check 1: Mainnet RPC Health
+                        log('🔍 Checking Mainnet RPC...');
+                        setNullaState('alert', 'Scanning Mainnet RPC health...', 'SCANNING');
+                        const mainnet = await rpcCall(MAINNET_RPC, 'getHealth', []);
+                        totalLatency += mainnet.latency;
+                        if (mainnet.data.result === 'ok') {
+                            log(`✓ Mainnet OK (${mainnet.latency}ms)`);
+                        } else {
+                            log(`⚠ Mainnet unhealthy!`);
+                            issues++;
+                        }
+                        
+                        // Check 2: $NULL Token exists
+                        log('🔍 Verifying $NULL token on mainnet...');
+                        const token = await rpcCall(MAINNET_RPC, 'getAccountInfo', [NULL_TOKEN, {encoding: 'jsonParsed'}]);
+                        totalLatency += token.latency;
+                        if (token.data.result?.value) {
+                            const supply = token.data.result.value.data?.parsed?.info?.supply;
+                            const supplyM = supply ? (parseInt(supply) / 1e9 / 1e6).toFixed(2) : '?';
+                            log(`✓ $NULL found: ${supplyM}M supply (${token.latency}ms)`);
+                        } else {
+                            log(`✖ $NULL token NOT FOUND!`);
+                            issues += 2;
+                        }
+                        
+                        // Check 3: Devnet Program
+                        log('🔍 Checking Domains program on devnet...');
+                        setNullaState('alert', 'Verifying Solana programs...', 'SCANNING');
+                        const program = await rpcCall(DEVNET_RPC, 'getAccountInfo', [DOMAINS_PROGRAM, {encoding: 'base64'}]);
+                        totalLatency += program.latency;
+                        if (program.data.result?.value?.executable) {
+                            log(`✓ Domains program OK (${program.latency}ms)`);
+                        } else {
+                            log(`⚠ Domains program issue`);
+                            issues++;
+                        }
+                        
+                        // Check 4: Devnet RPC latency
+                        log('🔍 Testing devnet latency...');
+                        const devnet = await rpcCall(DEVNET_RPC, 'getSlot', []);
+                        totalLatency += devnet.latency;
+                        log(`✓ Devnet slot ${devnet.data.result} (${devnet.latency}ms)`);
+                        if (devnet.latency > 1000) issues++;
+                        
+                        // Final assessment
+                        const avgLatency = Math.round(totalLatency / 4);
+                        log(`─────────────────────`);
+                        log(`AVG LATENCY: ${avgLatency}ms`);
+                        log(`ISSUES: ${issues}`);
+                        
+                        if (issues === 0 && avgLatency < 500) {
+                            setNullaState('safe', `All clear! ${avgLatency}ms avg latency. Network healthy.`, 'ALL SYSTEMS GO');
+                            log(`STATUS: ✓ HEALTHY`);
+                        } else if (issues <= 1 || avgLatency < 1000) {
+                            setNullaState('alert', `Minor issues detected. ${issues} warning(s). ${avgLatency}ms latency.`, 'ELEVATED');
+                            log(`STATUS: ⚠ ELEVATED`);
+                        } else {
+                            setNullaState('glitch', `Problems detected! ${issues} issue(s). Check logs.`, 'THREAT DETECTED');
+                            log(`STATUS: ✖ ISSUES`);
+                        }
+                        
+                    } catch (e) {
+                        log(`✖ ERROR: ${e.message}`);
+                        setNullaState('glitch', 'Network error! RPC unreachable.', 'ERROR');
+                    }
+                    
+                    btn.disabled = false;
+                    btn.textContent = '▶ RUN CHECK';
                 }
             </script>
             
