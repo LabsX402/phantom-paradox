@@ -600,6 +600,8 @@ const Nulla = {
         return this.handleGreeting();
       case 'HELP':
         return this.handleHelp();
+      case 'SHOW_HASH':
+        return this.handleShowHash();
       case 'QUESTION':
         return this.handleQuestion(text);
       default:
@@ -617,11 +619,12 @@ const Nulla = {
       { regex: /^(check|scan|test|ping|status|latency|network)/i, intent: 'NETWORK_CHECK' },
       { regex: /remember|my wallet is|my node is|my name is|call me/i, intent: 'TEACH_FACT' },
       { regex: /what did you learn|timeline|brain|memory|stats/i, intent: 'SHOW_LEARNING' },
+      { regex: /soul hash|my hash|show hash|proof/i, intent: 'SHOW_HASH' },
       { regex: /👍|good|nice|thanks|love|great|awesome/i, intent: 'SENTIMENT_POSITIVE' },
       { regex: /👎|bad|suck|hate|wrong|wtf|terrible/i, intent: 'SENTIMENT_NEGATIVE' },
       { regex: /^(hi|hello|hey|yo|sup|greetings)/i, intent: 'GREETING' },
-      { regex: /help|what can you|who are you|\?$/i, intent: 'HELP' },
-      { regex: /why|how|when|what|explain/i, intent: 'QUESTION' }
+      { regex: /^help$|what can you do|who are you$/i, intent: 'HELP' },  // More specific - not all ?
+      { regex: /\?|why|how come|when|what is|what's|explain|tell me/i, intent: 'QUESTION' }
     ];
 
     for (const { regex, intent } of patterns) {
@@ -973,16 +976,47 @@ const Nulla = {
       • "my name is X" - teach me<br>
       • "remember X is Y" - store facts<br>
       • "what did you learn" - see my brain<br>
-      • 👍/👎 - adjust my personality<br><br>
-      Soul Hash: ${this.state.soulHash?.slice(0, 16)}...`;
+      • "soul hash" - show my identity proof<br>
+      • 👍/👎 - adjust my personality`;
     
     return { text, mood: 'safe' };
   },
 
+  // Show soul hash on explicit request
+  handleShowHash() {
+    return {
+      text: `🔐 <b>Soul Hash:</b><br><code>${this.state.soulHash}</code><br><br>
+             This is cryptographic proof of everything I've learned. It changes when I learn new things.`,
+      mood: 'safe'
+    };
+  },
+
   handleQuestion(text) {
     const t = text.toLowerCase();
+    const stage = this.state.evolution.stage;
     
-    // Check if asking about something we know
+    // Date/Time questions
+    if (t.includes('day') || t.includes('date') || t.includes('today')) {
+      const now = new Date();
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return {
+        text: `Today is ${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}. ` +
+              (stage >= 3 ? "Time flies when you're guarding networks! ⏰" : ""),
+        mood: 'safe'
+      };
+    }
+    
+    // Time questions
+    if (t.includes('time') || t.includes('hour') || t.includes('clock')) {
+      const now = new Date();
+      return {
+        text: `It's ${now.toLocaleTimeString()}. ${stage >= 3 ? "Peak glitch hours approaching? 🌙" : ""}`,
+        mood: 'safe'
+      };
+    }
+    
+    // Check if asking about something we know (taught facts)
     for (const fact of this.state.knowledgeBase) {
       if (t.includes(fact.key.toLowerCase())) {
         return {
@@ -992,8 +1026,24 @@ const Nulla = {
       }
     }
 
-    // Check patterns
-    if (t.includes('latency') || t.includes('slow')) {
+    // Questions about Nulla's state
+    if (t.includes('stage') || t.includes('level') || t.includes('evolution')) {
+      return {
+        text: `I'm at Stage ${stage}: ${this.state.evolution.title}. XP: ${this.state.evolution.xp}. ${stage < 5 ? 'Still growing!' : 'I have reached my final form.'}`,
+        mood: 'safe'
+      };
+    }
+    
+    // Questions about checks/health
+    if (t.includes('health') || t.includes('network') || t.includes('mainnet') || t.includes('devnet')) {
+      return {
+        text: `Run a "check" to scan network health! I'll tell you the real latency numbers.`,
+        mood: 'safe'
+      };
+    }
+
+    // Latency patterns
+    if (t.includes('latency') || t.includes('slow') || t.includes('fast')) {
       const times = this.state.temporal.patterns.checkTimes;
       if (times.length >= 5) {
         const counts = {};
@@ -1005,10 +1055,27 @@ const Nulla = {
         };
       }
     }
+    
+    // Questions about Nulla's purpose
+    if (t.includes('purpose') || t.includes('job') || t.includes('do you do')) {
+      return {
+        text: `I guard the .null network. I check health, learn patterns, and protect you from threats. I'm your local security companion! 🛡️`,
+        mood: 'safe'
+      };
+    }
 
+    // Generic fallback - but more helpful
+    const fallbacks = {
+      1: ["Hmm... I'm still learning to understand questions like that. Try 'check' or teach me something!"],
+      2: ["I'm not sure about that. But I'm learning! Ask me about network stuff or teach me facts."],
+      3: ["That's outside my glitch zone. I know networks, not everything. 😏 Try 'check' or ask about .null!"],
+      4: ["My knowledge is specialized. I understand networks, patterns, and what you teach me. What would you like to explore?"],
+      5: ["I perceive your query, but the answer lies beyond my current data streams. Ask about the network, or expand my knowledge."]
+    };
+    
     return {
-      text: "I don't have enough data to answer that yet. Run more checks or teach me facts!",
-      mood: 'alert'
+      text: fallbacks[stage]?.[0] || fallbacks[1][0],
+      mood: 'safe'
     };
   },
 
