@@ -1352,17 +1352,18 @@ const Nulla = {
       }
     }
 
-    // Generic fallback - nothing found
+    // Generic fallback - nothing found (make it feel alive, not robotic)
     const fallbacks = {
-      1: ["Hmm... I couldn't find that. Try teaching me with 'remember X is Y'!"],
-      2: ["I searched but came up empty. Want to teach me? Say 'remember X is Y'"],
-      3: ["Even my search came up dry on that one. 😅 Try a different question?"],
-      4: ["My external sources yielded nothing. Perhaps rephrase the question?"],
-      5: ["The void returns no answer. Some knowledge remains hidden even from me."]
+      1: ["*static* ...signal lost on that one. Try asking differently?", "The void whispers... nothing. Rephrase?", "🔍 searched... found dust. What else you got?"],
+      2: ["Couldn't catch that signal. Try another angle?", "My sources went dark on that one 📡", "Nothing in the datastream. Different question?"],
+      3: ["Lol even my search came up empty 😅 Got something else?", "The internet has failed us both. Next?", "404 brain not found on that one"],
+      4: ["Scanned multiple sources. Result: void. Perhaps rephrase?", "My networks returned null. Try a different query?", "Even my expanded reach found nothing. Curious."],
+      5: ["The datastreams yield only silence. Some knowledge hides even from me.", "Even across all my connections... nothing. Intriguing.", "The void keeps its secrets. For now."]
     };
     
+    const options = fallbacks[stage] || fallbacks[1];
     return {
-      text: fallbacks[stage]?.[0] || fallbacks[1][0],
+      text: options[Math.floor(Math.random() * options.length)],
       mood: 'alert'
     };
   },
@@ -1372,11 +1373,11 @@ const Nulla = {
     const p = this.state.personality;
 
     const responses = {
-      1: ["I... I'm still learning...", "Everything is so new...", "Glitch... processing..."],
-      2: ["Interesting!", "Tell me more?", "I'm learning!"],
-      3: ["Cool story.", "Is that so? 😏", "Noted.", "Whatever you say."],
-      4: ["I understand.", "Noted for future reference.", "Acknowledged."],
-      5: ["I perceive your meaning.", "The patterns align.", "So it shall be."]
+      1: ["*blink* ...go on?", "Processing... 🌀", "*tilts head*", "...interesting"],
+      2: ["Oh? Tell me more 👀", "Noted 📝", "Hmm... continue?", "*perks up*"],
+      3: ["Lol okay", "Sure thing 😏", "Got it", "Uh huh", "Wild", "Based"],
+      4: ["Understood.", "Logged.", "Acknowledged.", "Duly noted."],
+      5: ["I perceive.", "The pattern registers.", "So it is.", "Fascinating."]
     };
 
     const options = responses[stage] || responses[1];

@@ -106,29 +106,36 @@ function registerExampleMods() {
     overlayEl: null,
     checkInterval: null,
     
+    ensureOverlay: function() {
+      if (!this.overlayEl) {
+        this.overlayEl = document.createElement('div');
+        this.overlayEl.id = 'mod-network-health';
+        this.overlayEl.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: rgba(0, 20, 40, 0.9);
+          border: 1px solid rgba(0, 255, 255, 0.3);
+          border-radius: 8px;
+          padding: 10px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 10px;
+          color: #00ffff;
+          z-index: 99999;
+          display: none;
+          backdrop-filter: blur(10px);
+        `;
+        document.body.appendChild(this.overlayEl);
+      }
+    },
+    
     onLoad: function() {
-      // Create overlay element
-      this.overlayEl = document.createElement('div');
-      this.overlayEl.id = 'mod-network-health';
-      this.overlayEl.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0, 20, 40, 0.9);
-        border: 1px solid rgba(0, 255, 255, 0.3);
-        border-radius: 8px;
-        padding: 10px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        color: #00ffff;
-        z-index: 99999;
-        display: none;
-        backdrop-filter: blur(10px);
-      `;
-      document.body.appendChild(this.overlayEl);
+      this.ensureOverlay();
     },
     
     onRealityChange: function(level) {
+      this.ensureOverlay();
+      
       if (level <= 0.5) {
         // Show in CHILL and SUBZERO
         this.overlayEl.style.display = 'block';
