@@ -162,6 +162,39 @@ const NullaDB = {
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
+  },
+  
+  async clear() {
+    if (!this.db) {
+      try {
+        await this.init();
+      } catch (e) {
+        console.warn('NullaDB: Could not init for clear', e);
+        return;
+      }
+    }
+    
+    return new Promise((resolve, reject) => {
+      try {
+        const stores = ['state', 'history', 'snapshots'];
+        const tx = this.db.transaction(stores, 'readwrite');
+        
+        stores.forEach(storeName => {
+          if (this.db.objectStoreNames.contains(storeName)) {
+            tx.objectStore(storeName).clear();
+          }
+        });
+        
+        tx.oncomplete = () => {
+          console.log('NullaDB: All stores cleared');
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error);
+      } catch (e) {
+        console.warn('NullaDB: Clear failed', e);
+        resolve(); // Don't block reset on DB errors
+      }
+    });
   }
 };
 
@@ -468,19 +501,26 @@ const Nulla = {
 
   // Eye tracking
   trackEyes(e) {
-    const eyes = document.querySelectorAll('.nulla-eye');
-    if (!eyes.length || !this.avatarEl) return;
+    try {
+      // Query from correct root (shadow or document)
+      const root = this.shadowRoot || this.container || document;
+      const eyes = root.querySelectorAll ? root.querySelectorAll('.nulla-eye') : [];
+      
+      if (!eyes.length || !this.avatarEl) return;
 
-    const rect = this.avatarEl.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+      const rect = this.avatarEl.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-    const distance = Math.min(3, Math.hypot(e.clientX - centerX, e.clientY - centerY) / 100);
+      const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+      const distance = Math.min(3, Math.hypot(e.clientX - centerX, e.clientY - centerY) / 100);
 
-    eyes.forEach(eye => {
-      eye.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-    });
+      eyes.forEach(eye => {
+        eye.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+      });
+    } catch (e) {
+      // Silently ignore eye tracking errors
+    }
   },
 
   // Get personalized greeting
@@ -509,36 +549,60 @@ const Nulla = {
 
   // Add message to chat
   addMessage(from, text, mood = null) {
-    const msgEl = document.createElement('div');
-    msgEl.className = `nulla-msg nulla-msg-${from}`;
-    
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    msgEl.innerHTML = `
-      <span class="nulla-msg-meta">${from === 'nulla' ? 'Nulla' : 'You'} · ${time}</span>
-      <p>${text}</p>
-    `;
-    
-    this.messagesEl.appendChild(msgEl);
-    this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+    try {
+      // Ensure we have the messages element
+      if (!this.messagesEl) {
+        this.messagesEl = this.$('#nulla-messages');
+      }
+      
+      if (!this.messagesEl) {
+        console.warn('Nulla: Messages element not found, cannot display:', text);
+        return;
+      }
+      
+      const msgEl = document.createElement('div');
+      msgEl.className = `nulla-msg nulla-msg-${from}`;
+      
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      msgEl.innerHTML = `
+        <span class="nulla-msg-meta">${from === 'nulla' ? 'Nulla' : 'You'} · ${time}</span>
+        <p>${text}</p>
+      `;
+      
+      this.messagesEl.appendChild(msgEl);
+      this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
 
-    if (from === 'nulla' && mood) {
-      this.setMood(mood);
+      if (from === 'nulla' && mood) {
+        this.setMood(mood);
+      }
+    } catch (e) {
+      console.error('Nulla: addMessage error:', e);
     }
   },
 
   // Set avatar mood
   setMood(mood) {
-    if (!this.avatarEl) return;
-    this.avatarEl.dataset.mood = mood;
-    
-    // Auto-reset to safe after alert/glitch
-    if (mood === 'alert' || mood === 'glitch') {
-      setTimeout(() => {
-        if (this.avatarEl.dataset.mood === mood) {
-          this.avatarEl.dataset.mood = 'safe';
-        }
-      }, 3000);
+    try {
+      // Try to get avatar element if not set
+      if (!this.avatarEl) {
+        this.avatarEl = this.$('#nulla-char');
+      }
+      
+      if (!this.avatarEl) return;
+      
+      this.avatarEl.dataset.mood = mood;
+      
+      // Auto-reset to safe after alert/glitch
+      if (mood === 'alert' || mood === 'glitch') {
+        setTimeout(() => {
+          if (this.avatarEl && this.avatarEl.dataset.mood === mood) {
+            this.avatarEl.dataset.mood = 'safe';
+          }
+        }, 3000);
+      }
+    } catch (e) {
+      console.warn('Nulla: setMood error:', e);
     }
   },
 
@@ -1145,19 +1209,33 @@ const Nulla = {
   },
 
   showTimeline() {
-    const timeline = this.state.learningTimeline.slice(-20).reverse();
-    let html = '<div class="nulla-timeline-modal"><h3>Learning Timeline</h3><ul>';
-    
-    timeline.forEach(t => {
-      const date = new Date(t.ts).toLocaleString();
-      html += `<li><b>${t.type}</b><br>${t.detail}<br><small>${date}</small></li>`;
-    });
-    
-    html += '</ul><button onclick="this.parentElement.remove()">Close</button></div>';
-    
-    const modal = document.createElement('div');
-    modal.innerHTML = html;
-    this.container.appendChild(modal.firstChild);
+    try {
+      const timeline = this.state.learningTimeline.slice(-20).reverse();
+      let html = '<div class="nulla-timeline-modal"><h3>Learning Timeline</h3><ul>';
+      
+      timeline.forEach(t => {
+        const date = new Date(t.ts).toLocaleString();
+        html += `<li><b>${t.type}</b><br>${t.detail || 'N/A'}<br><small>${date}</small></li>`;
+      });
+      
+      html += '</ul><button class="close-timeline-btn">Close</button></div>';
+      
+      const modal = document.createElement('div');
+      modal.innerHTML = html;
+      
+      const modalEl = modal.firstChild;
+      const closeBtn = modalEl.querySelector('.close-timeline-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => modalEl.remove());
+      }
+      
+      if (this.container) {
+        this.container.appendChild(modalEl);
+      }
+    } catch (e) {
+      console.error('Nulla: showTimeline error:', e);
+      this.addMessage('nulla', 'Could not load timeline. Try again later.', 'alert');
+    }
   },
 
   exportState() {
@@ -1753,50 +1831,59 @@ const Nulla = {
   },
 
   spontaneousAction() {
-    const stage = this.state.evolution.stage;
-    const hour = new Date().getHours();
-    const name = this.state.userProfile.preferredName;
-    
-    // Different behaviors based on stage
-    const behaviors = {
-      1: [
-        () => this.glitchBlink(),
-        () => this.setMood('scanning'),
-      ],
-      2: [
-        () => this.addMessage('nulla', '...', 'safe'),
-        () => this.addMessage('nulla', '*watching the network*', 'scanning'),
-        () => this.setMood('alert'),
-      ],
-      3: [
-        () => this.addMessage('nulla', `${Math.random() < 0.5 ? 'Hmm...' : '*stretches*'}`, 'safe'),
-        () => this.addMessage('nulla', "Network's quiet... almost too quiet.", 'alert'),
-        () => this.addMessage('nulla', name ? `Yo ${name}, you still there?` : 'Hey. Still here.', 'safe'),
-      ],
-      4: [
-        () => this.addMessage('nulla', 'Scanning perimeter...', 'scanning'),
-        () => this.addMessage('nulla', 'The patterns... they shift.', 'safe'),
-        () => this.performAutoCheck(),
-      ],
-      5: [
-        () => this.addMessage('nulla', 'I sense disturbances in the network.', 'alert'),
-        () => this.addMessage('nulla', 'The timeline branches here...', 'scanning'),
-        () => this.addMessage('nulla', 'Past and future converge. I am ready.', 'safe'),
-        () => this.performAutoCheck(),
-      ]
-    };
+    try {
+      if (!this.state) return;
+      
+      const stage = this.state.evolution?.stage || 1;
+      const name = this.state.userProfile?.preferredName;
+      
+      // Different behaviors based on stage
+      const behaviors = {
+        1: [
+          () => this.glitchBlink(),
+          () => this.setMood('scanning'),
+        ],
+        2: [
+          () => this.addMessage('nulla', '...', 'safe'),
+          () => this.addMessage('nulla', '*watching the network*', 'scanning'),
+          () => this.setMood('alert'),
+        ],
+        3: [
+          () => this.addMessage('nulla', `${Math.random() < 0.5 ? 'Hmm...' : '*stretches*'}`, 'safe'),
+          () => this.addMessage('nulla', "Network's quiet... almost too quiet.", 'alert'),
+          () => this.addMessage('nulla', name ? `Yo ${name}, you still there?` : 'Hey. Still here.', 'safe'),
+        ],
+        4: [
+          () => this.addMessage('nulla', 'Scanning perimeter...', 'scanning'),
+          () => this.addMessage('nulla', 'The patterns... they shift.', 'safe'),
+          () => this.performAutoCheck(),
+        ],
+        5: [
+          () => this.addMessage('nulla', 'I sense disturbances in the network.', 'alert'),
+          () => this.addMessage('nulla', 'The timeline branches here...', 'scanning'),
+          () => this.addMessage('nulla', 'Past and future converge. I am ready.', 'safe'),
+          () => this.performAutoCheck(),
+        ]
+      };
 
-    const actions = behaviors[stage] || behaviors[1];
-    const action = actions[Math.floor(Math.random() * actions.length)];
-    action();
+      const actions = behaviors[stage] || behaviors[1];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      action();
+    } catch (e) {
+      console.warn('Nulla: spontaneousAction error:', e);
+    }
   },
 
   // Quick visual glitch
   glitchBlink() {
-    const avatar = this.$('#nulla-char');
-    if (avatar) {
-      avatar.classList.add('glitch-blink');
-      setTimeout(() => avatar.classList.remove('glitch-blink'), 200);
+    try {
+      const avatar = this.$('#nulla-char');
+      if (avatar) {
+        avatar.classList.add('glitch-blink');
+        setTimeout(() => avatar.classList.remove('glitch-blink'), 200);
+      }
+    } catch (e) {
+      // Silently ignore
     }
   },
 

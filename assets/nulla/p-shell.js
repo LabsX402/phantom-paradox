@@ -34,6 +34,17 @@ const PShell = {
   container: null,
   hudEl: null,
   sliderEl: null,
+  
+  // Drag state
+  dragState: {
+    isDragging: false,
+    currentEl: null,
+    offsetX: 0,
+    offsetY: 0
+  },
+  
+  // Storage key for positions
+  STORAGE_KEY: 'pshell_positions',
 
   // ========================================
   // INITIALIZATION
@@ -42,26 +53,171 @@ const PShell = {
   init() {
     console.log('🧊 P-Shell: Initializing Subzero Nexus...');
     
-    // Create HUD
-    this.createHUD();
-    
-    // Create Reality Slider
-    this.createRealitySlider();
-    
-    // Start stats loop
-    this.startStatsLoop();
-    
-    // Apply initial reality level
-    this.setRealityLevel(this.realityLevel);
-    
-    // Register keyboard shortcuts
-    this.registerShortcuts();
-    
-    // Listen for Nulla state changes to update entropy
-    this.hookNulla();
-    
-    console.log('🧊 P-Shell: Subzero Nexus online');
+    try {
+      // Create HUD
+      this.createHUD();
+      
+      // Create Reality Slider
+      this.createRealitySlider();
+      
+      // Restore saved positions
+      this.restorePositions();
+      
+      // Start stats loop
+      this.startStatsLoop();
+      
+      // Apply initial reality level
+      this.setRealityLevel(this.realityLevel);
+      
+      // Register keyboard shortcuts
+      this.registerShortcuts();
+      
+      // Listen for Nulla state changes to update entropy
+      this.hookNulla();
+      
+      console.log('🧊 P-Shell: Subzero Nexus online');
+    } catch (e) {
+      console.error('🧊 P-Shell: Init error:', e);
+    }
     return this;
+  },
+  
+  // ========================================
+  // DRAG & DROP SYSTEM
+  // ========================================
+  
+  makeDraggable(element, handleSelector = null) {
+    if (!element) return;
+    
+    const handle = handleSelector ? element.querySelector(handleSelector) : element;
+    if (!handle) return;
+    
+    // Add drag cursor to handle
+    handle.style.cursor = 'grab';
+    
+    handle.addEventListener('mousedown', (e) => {
+      // Don't drag if clicking on interactive elements
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+      
+      e.preventDefault();
+      this.dragState.isDragging = true;
+      this.dragState.currentEl = element;
+      
+      const rect = element.getBoundingClientRect();
+      this.dragState.offsetX = e.clientX - rect.left;
+      this.dragState.offsetY = e.clientY - rect.top;
+      
+      handle.style.cursor = 'grabbing';
+      element.style.transition = 'none';
+      element.classList.add('pshell-dragging');
+    });
+    
+    // Global mouse move
+    document.addEventListener('mousemove', (e) => {
+      if (!this.dragState.isDragging || !this.dragState.currentEl) return;
+      
+      const el = this.dragState.currentEl;
+      let newX = e.clientX - this.dragState.offsetX;
+      let newY = e.clientY - this.dragState.offsetY;
+      
+      // Constrain to viewport
+      const rect = el.getBoundingClientRect();
+      newX = Math.max(0, Math.min(window.innerWidth - rect.width, newX));
+      newY = Math.max(0, Math.min(window.innerHeight - rect.height, newY));
+      
+      el.style.left = newX + 'px';
+      el.style.top = newY + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    });
+    
+    // Global mouse up
+    document.addEventListener('mouseup', () => {
+      if (!this.dragState.isDragging) return;
+      
+      const el = this.dragState.currentEl;
+      if (el) {
+        el.style.transition = '';
+        el.classList.remove('pshell-dragging');
+        const handle = handleSelector ? el.querySelector(handleSelector) : el;
+        if (handle) handle.style.cursor = 'grab';
+        
+        // Save position
+        this.savePositions();
+      }
+      
+      this.dragState.isDragging = false;
+      this.dragState.currentEl = null;
+    });
+  },
+  
+  savePositions() {
+    try {
+      const positions = {};
+      
+      if (this.hudEl) {
+        const hudRect = this.hudEl.getBoundingClientRect();
+        positions.hud = { x: hudRect.left, y: hudRect.top };
+      }
+      
+      if (this.sliderEl) {
+        const sliderRect = this.sliderEl.getBoundingClientRect();
+        positions.slider = { x: sliderRect.left, y: sliderRect.top };
+      }
+      
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(positions));
+    } catch (e) {
+      console.warn('P-Shell: Could not save positions:', e);
+    }
+  },
+  
+  restorePositions() {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (!saved) return;
+      
+      const positions = JSON.parse(saved);
+      
+      if (positions.hud && this.hudEl) {
+        this.hudEl.style.left = positions.hud.x + 'px';
+        this.hudEl.style.top = positions.hud.y + 'px';
+        this.hudEl.style.right = 'auto';
+        this.hudEl.style.bottom = 'auto';
+      }
+      
+      if (positions.slider && this.sliderEl) {
+        this.sliderEl.style.left = positions.slider.x + 'px';
+        this.sliderEl.style.top = positions.slider.y + 'px';
+        this.sliderEl.style.right = 'auto';
+        this.sliderEl.style.bottom = 'auto';
+      }
+    } catch (e) {
+      console.warn('P-Shell: Could not restore positions:', e);
+    }
+  },
+  
+  resetPositions() {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+      
+      if (this.hudEl) {
+        this.hudEl.style.left = '20px';
+        this.hudEl.style.top = '20px';
+        this.hudEl.style.right = 'auto';
+        this.hudEl.style.bottom = 'auto';
+      }
+      
+      if (this.sliderEl) {
+        this.sliderEl.style.left = '20px';
+        this.sliderEl.style.top = 'auto';
+        this.sliderEl.style.right = 'auto';
+        this.sliderEl.style.bottom = '100px';
+      }
+      
+      console.log('🧊 P-Shell: Positions reset to default');
+    } catch (e) {
+      console.warn('P-Shell: Could not reset positions:', e);
+    }
   },
 
   // ========================================
@@ -72,7 +228,10 @@ const PShell = {
     const hud = document.createElement('div');
     hud.id = 'pshell-hud';
     hud.innerHTML = `
-      <div class="hud-title">⚡ NEXUS</div>
+      <div class="hud-header">
+        <div class="hud-title">⚡ NEXUS</div>
+        <span class="drag-hint" title="Drag to move">⋮⋮</span>
+      </div>
       <div class="hud-stats">
         <div class="hud-stat">
           <span class="stat-label">FPS</span>
@@ -96,6 +255,9 @@ const PShell = {
     
     document.body.appendChild(hud);
     this.hudEl = hud;
+    
+    // Make draggable by header
+    this.makeDraggable(hud, '.hud-header');
   },
   
   updateHUD() {
@@ -132,6 +294,10 @@ const PShell = {
     const slider = document.createElement('div');
     slider.id = 'pshell-reality-slider';
     slider.innerHTML = `
+      <div class="slider-header">
+        <span class="slider-title">REALITY</span>
+        <span class="drag-hint" title="Drag to move">⋮⋮</span>
+      </div>
       <div class="slider-label">
         <span class="label-hot">🔥 HOT</span>
         <span class="label-chill">❄️ CHILL</span>
@@ -147,18 +313,23 @@ const PShell = {
     document.body.appendChild(slider);
     this.sliderEl = slider;
     
+    // Make draggable by header
+    this.makeDraggable(slider, '.slider-header');
+    
     // Bind slider events
     const input = document.getElementById('reality-slider');
-    input.addEventListener('input', (e) => {
-      this.setRealityLevel(e.target.value / 100);
-    });
-    
-    // Double-click to toggle extremes
-    input.addEventListener('dblclick', () => {
-      const newLevel = this.realityLevel > 0.5 ? 0 : 1;
-      this.setRealityLevel(newLevel);
-      input.value = newLevel * 100;
-    });
+    if (input) {
+      input.addEventListener('input', (e) => {
+        this.setRealityLevel(e.target.value / 100);
+      });
+      
+      // Double-click to toggle extremes
+      input.addEventListener('dblclick', () => {
+        const newLevel = this.realityLevel > 0.5 ? 0 : 1;
+        this.setRealityLevel(newLevel);
+        input.value = newLevel * 100;
+      });
+    }
   },
   
   setRealityLevel(level) {
@@ -424,6 +595,12 @@ const PShell = {
         e.preventDefault();
         this.toggleSlider();
       }
+      
+      // Ctrl+Shift+R = Reset positions
+      if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        this.resetPositions();
+      }
     });
   },
   
@@ -626,6 +803,12 @@ pshellStyles.textContent = `
       inset 0 0 30px rgba(0, 255, 255, 0.02);
     min-width: 140px;
     animation: pshell-hud-glow 3s ease-in-out infinite;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  #pshell-hud.pshell-dragging {
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+    opacity: 0.9;
   }
   
   @keyframes pshell-hud-glow {
@@ -633,14 +816,37 @@ pshellStyles.textContent = `
     50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.2); }
   }
   
+  .hud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: grab;
+    user-select: none;
+  }
+  
+  .hud-header:active {
+    cursor: grabbing;
+  }
+  
   .hud-title {
     color: #00ffff;
     font-weight: bold;
-    text-align: center;
-    margin-bottom: 10px;
     font-size: 12px;
     letter-spacing: 2px;
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+  
+  .drag-hint {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    letter-spacing: 1px;
+    transition: color 0.2s ease;
+  }
+  
+  .hud-header:hover .drag-hint,
+  .slider-header:hover .drag-hint {
+    color: rgba(0, 255, 255, 0.8);
   }
   
   .hud-stats {
@@ -719,6 +925,33 @@ pshellStyles.textContent = `
     z-index: 99999;
     backdrop-filter: blur(10px);
     width: 200px;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  #pshell-reality-slider.pshell-dragging {
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+    opacity: 0.9;
+  }
+  
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: grab;
+    user-select: none;
+  }
+  
+  .slider-header:active {
+    cursor: grabbing;
+  }
+  
+  .slider-title {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
   }
   
   .slider-label {
