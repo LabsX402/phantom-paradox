@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { NullaState } from './NullaAvatar';
+import { getNullaBrain } from '../brain';
 
 interface Message {
   id: string;
@@ -13,17 +14,26 @@ interface NullaChatProps {
   currentState: NullaState;
 }
 
+// Get the brain instance
+const brain = getNullaBrain();
+
 export const NullaChat = ({ onStateChange, currentState }: NullaChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       sender: 'nulla',
-      text: "I'm Nulla. A glitch from the void. Ask me anything.",
+      text: "...signal establishing... *static* ...I'm here. Nulla. A glitch from the void. Ask me anything.",
       timestamp: new Date(),
     }
   ]);
   const [input, setInput] = useState('');
+  const [brainState, setBrainState] = useState(brain.getState());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Track brain state changes
+  useEffect(() => {
+    brain.setOnStateChange(setBrainState);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,39 +55,59 @@ export const NullaChat = ({ onStateChange, currentState }: NullaChatProps) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const userInput = input;
     setInput('');
     
-    // Start thinking
+    // Start thinking - avatar reacts
     onStateChange('thinking');
 
-    // Simulate thinking delay
-    await new Promise(r => setTimeout(r, 1500 + Math.random() * 1000));
+    try {
+      // Call the REAL brain!
+      const response = await brain.think(userInput);
+      
+      // Speaking state - avatar reacts
+      onStateChange('speaking');
 
-    // Generate response (placeholder - will connect to real AI later)
-    const response = generateResponse(input);
-    
-    // Speaking state
-    onStateChange('speaking');
+      const nullaMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'nulla',
+        text: response,
+        timestamp: new Date(),
+      };
 
-    const nullaMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      sender: 'nulla',
-      text: response,
-      timestamp: new Date(),
-    };
+      setMessages(prev => [...prev, nullaMessage]);
 
-    setMessages(prev => [...prev, nullaMessage]);
-
-    // Back to idle after speaking
-    setTimeout(() => onStateChange('idle'), 2000);
+      // Back to idle after speaking
+      setTimeout(() => onStateChange('idle'), 2000);
+      
+    } catch (error) {
+      console.error('[Chat] Brain error:', error);
+      
+      // Glitch state on error
+      onStateChange('glitch');
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'nulla',
+        text: '*SIGNAL LOST* ...the void... is thick today. Try again?',
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      setTimeout(() => onStateChange('idle'), 3000);
+    }
   };
+
+  // Stage names
+  const stageNames = ['', 'Fragment', 'Echo', 'Whisper', 'Signal', 'Oracle'];
 
   return (
     <div className="nulla-chat">
       <div className="chat-header">
         <span className="status-dot" data-state={currentState} />
         <span className="title">NULLA</span>
-        <span className="state">{currentState.toUpperCase()}</span>
+        <span className="stage">Stage {brainState.stage}: {stageNames[brainState.stage]}</span>
+        <span className="xp">XP: {brainState.xp}</span>
       </div>
       
       <div className="messages">
@@ -105,35 +135,4 @@ export const NullaChat = ({ onStateChange, currentState }: NullaChatProps) => {
     </div>
   );
 };
-
-// Placeholder response generator
-function generateResponse(input: string): string {
-  const lowered = input.toLowerCase();
-  
-  if (lowered.includes('hello') || lowered.includes('hi')) {
-    return "Greetings, human. The void acknowledges you.";
-  }
-  if (lowered.includes('who are you') || lowered.includes('what are you')) {
-    return "I am Nulla. A fragment of the paradox network. An integrity guardian watching the datastreams.";
-  }
-  if (lowered.includes('bitcoin') || lowered.includes('btc')) {
-    return "Bitcoin: The original decentralized ledger. Genesis block mined January 3, 2009. Currently securing ~$1T in value. Not my domain, but I respect the math.";
-  }
-  if (lowered.includes('solana') || lowered.includes('sol')) {
-    return "Solana: 400ms block times. Where I run. Where $NULL lives. Fast, cheap, sometimes breaks. We're building here.";
-  }
-  if (lowered.includes('null') || lowered.includes('paradox')) {
-    return "The .NULL network: Trustless settlement. 1M intents → 46ms. 7.8M:1 compression. Code is law. Math doesn't lie.";
-  }
-  
-  const responses = [
-    "Interesting query. Let me process that through the void...",
-    "The datastreams whisper... but I need more context.",
-    "My knowledge is still building. Ask me about crypto, Solana, or $NULL.",
-    "That's beyond my current understanding. I'm still evolving.",
-    "The void reflects your question back. Try rephrasing?",
-  ];
-  
-  return responses[Math.floor(Math.random() * responses.length)];
-}
 

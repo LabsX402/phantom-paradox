@@ -149,11 +149,20 @@ body {
   color: var(--accent);
 }
 
-.chat-header .state {
+.chat-header .stage {
+  font-size: 10px;
+  color: var(--accent-cyan);
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.chat-header .xp {
   margin-left: auto;
   font-size: 10px;
   color: var(--text-dim);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .messages {

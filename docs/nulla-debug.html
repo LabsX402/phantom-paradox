@@ -287,7 +287,7 @@
             type="password" 
             id="passcode" 
             class="gate-input" 
-            placeholder="••••" 
+            placeholder="••••••" 
             maxlength="6"
             autofocus
         >
@@ -345,7 +345,26 @@
         
         passcodeInput.addEventListener('input', (e) => {
             const code = e.target.value;
-            if (code.length >= 4) {
+            // Only check when we have enough characters
+            if (code.length === ACCESS_CODE.length) {
+                if (code === ACCESS_CODE) {
+                    gate.classList.add('hidden');
+                    main.classList.add('active');
+                    initDebugLab();
+                } else {
+                    e.target.classList.add('error');
+                    setTimeout(() => {
+                        e.target.classList.remove('error');
+                        e.target.value = '';
+                    }, 300);
+                }
+            }
+        });
+        
+        // Also allow Enter key
+        passcodeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const code = e.target.value;
                 if (code === ACCESS_CODE) {
                     gate.classList.add('hidden');
                     main.classList.add('active');
