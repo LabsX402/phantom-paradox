@@ -28,12 +28,49 @@ export const NullaChat = ({ onStateChange, currentState }: NullaChatProps) => {
   ]);
   const [input, setInput] = useState('');
   const [brainState, setBrainState] = useState(brain.getState());
+  const [messageCount, setMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track brain state changes
   useEffect(() => {
     brain.setOnStateChange(setBrainState);
   }, []);
+
+  // Handle typing - trigger alert state
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+    
+    // If typing and currently idle, go to alert
+    if (value.length > 0 && currentState === 'idle') {
+      onStateChange('alert');
+    }
+    
+    // Reset to idle after stop typing
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    if (value.length > 0) {
+      typingTimeoutRef.current = setTimeout(() => {
+        if (currentState === 'alert') {
+          onStateChange('idle');
+        }
+      }, 2000);
+    } else if (currentState === 'alert') {
+      onStateChange('idle');
+    }
+  };
+
+  // Auto-backup soul every 5 messages
+  useEffect(() => {
+    if (messageCount > 0 && messageCount % 5 === 0) {
+      brain.backupToSoul().then(uri => {
+        if (uri) console.log('[Soul] Auto-backup:', uri);
+      });
+    }
+  }, [messageCount]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

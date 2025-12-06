@@ -181,6 +181,56 @@ class NullaBrain {
     this.history.messages = backup.history;
     this.saveState();
   }
+
+  // Auto-backup to soul storage (call periodically)
+  async backupToSoul(): Promise<string | null> {
+    try {
+      const { backupSoul } = await import('../soul/ipfs');
+      const uri = await backupSoul(this.state);
+      console.log('[Nulla] Soul backed up:', uri);
+      return uri;
+    } catch (error) {
+      console.error('[Nulla] Soul backup failed:', error);
+      return null;
+    }
+  }
+
+  // Restore from soul backup
+  async restoreFromSoul(): Promise<boolean> {
+    try {
+      const { restoreLatestSoul } = await import('../soul/ipfs');
+      const snapshot = await restoreLatestSoul();
+      
+      if (!snapshot) {
+        console.log('[Nulla] No soul backup found');
+        return false;
+      }
+      
+      this.state = {
+        stage: snapshot.stage as NullaState['stage'],
+        xp: snapshot.xp,
+        mood: snapshot.mood
+      };
+      this.saveState();
+      console.log('[Nulla] Soul restored from IPFS');
+      return true;
+    } catch (error) {
+      console.error('[Nulla] Soul restore failed:', error);
+      return false;
+    }
+  }
+
+  // Check if IPFS is configured
+  async isIPFSConfigured(): Promise<boolean> {
+    const { isPinataConfigured } = await import('../soul/ipfs');
+    return isPinataConfigured();
+  }
+
+  // Set Pinata JWT for IPFS uploads
+  async setPinataKey(jwt: string): Promise<void> {
+    const { setPinataJWT } = await import('../soul/ipfs');
+    setPinataJWT(jwt);
+  }
 }
 
 // Singleton instance

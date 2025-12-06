@@ -22,13 +22,17 @@ function App() {
           <EffectComposer>
             <Bloom 
               luminanceThreshold={0.1} 
-              intensity={nullaState === 'speaking' ? 3.0 : 1.5} 
+              intensity={
+                nullaState === 'speaking' ? 3.0 : 
+                nullaState === 'thinking' ? 2.5 :
+                nullaState === 'alert' ? 2.0 : 1.5
+              } 
               radius={0.8} 
             />
             <Glitch 
               active={nullaState === 'thinking' || nullaState === 'glitch'} 
-              ratio={nullaState === 'glitch' ? 0.95 : 0.5}
-              delay={[0.5, 1.5] as [number, number]}
+              ratio={nullaState === 'glitch' ? 0.95 : nullaState === 'thinking' ? 0.7 : 0.3}
+              delay={[0.3, 1.0] as [number, number]}
             />
           </EffectComposer>
         </Canvas>
