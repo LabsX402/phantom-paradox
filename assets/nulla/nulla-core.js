@@ -1055,7 +1055,194 @@ const Nulla = {
     };
   },
 
-  handleQuestion(text) {
+  // ========================================
+  // EXTERNAL KNOWLEDGE (Search APIs)
+  // ========================================
+
+  /**
+   * Search DuckDuckGo Instant Answers API
+   * Free, no API key required
+   */
+  async searchDuckDuckGo(query) {
+    try {
+      // DuckDuckGo Instant Answer API
+      const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      // Check for instant answer
+      if (data.AbstractText && data.AbstractText.length > 10) {
+        return {
+          found: true,
+          answer: data.AbstractText,
+          source: data.AbstractSource || 'DuckDuckGo',
+          url: data.AbstractURL || null,
+          type: 'instant'
+        };
+      }
+      
+      // Check for definition
+      if (data.Definition && data.Definition.length > 10) {
+        return {
+          found: true,
+          answer: data.Definition,
+          source: data.DefinitionSource || 'DuckDuckGo',
+          url: data.DefinitionURL || null,
+          type: 'definition'
+        };
+      }
+      
+      // Check for answer (calculations, conversions)
+      if (data.Answer && data.Answer.length > 0) {
+        return {
+          found: true,
+          answer: data.Answer,
+          source: 'DuckDuckGo',
+          url: null,
+          type: 'answer'
+        };
+      }
+      
+      return { found: false };
+    } catch (e) {
+      console.warn('Nulla: DuckDuckGo search failed:', e);
+      return { found: false, error: e.message };
+    }
+  },
+
+  /**
+   * Search Wikipedia API for summaries
+   * Free, no API key required
+   */
+  async searchWikipedia(query) {
+    try {
+      // Wikipedia REST API - get summary
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        // Try search instead of direct page
+        return await this.searchWikipediaFallback(query);
+      }
+      
+      const data = await response.json();
+      
+      if (data.extract && data.extract.length > 20) {
+        // Truncate if too long
+        let extract = data.extract;
+        if (extract.length > 500) {
+          extract = extract.substring(0, 500) + '...';
+        }
+        
+        return {
+          found: true,
+          answer: extract,
+          source: 'Wikipedia',
+          url: data.content_urls?.desktop?.page || null,
+          type: 'wiki'
+        };
+      }
+      
+      return { found: false };
+    } catch (e) {
+      console.warn('Nulla: Wikipedia search failed:', e);
+      return { found: false, error: e.message };
+    }
+  },
+
+  /**
+   * Wikipedia search fallback - search for pages
+   */
+  async searchWikipediaFallback(query) {
+    try {
+      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=1`;
+      const searchRes = await fetch(searchUrl);
+      const searchData = await searchRes.json();
+      
+      if (searchData.query?.search?.[0]) {
+        const title = searchData.query.search[0].title;
+        // Now get the summary for this page
+        const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+        const summaryRes = await fetch(summaryUrl);
+        const summaryData = await summaryRes.json();
+        
+        if (summaryData.extract && summaryData.extract.length > 20) {
+          let extract = summaryData.extract;
+          if (extract.length > 500) {
+            extract = extract.substring(0, 500) + '...';
+          }
+          
+          return {
+            found: true,
+            answer: extract,
+            source: 'Wikipedia',
+            url: summaryData.content_urls?.desktop?.page || null,
+            type: 'wiki'
+          };
+        }
+      }
+      
+      return { found: false };
+    } catch (e) {
+      return { found: false, error: e.message };
+    }
+  },
+
+  /**
+   * Main search function - tries multiple sources
+   */
+  async searchForAnswer(query) {
+    // Clean up query
+    const cleanQuery = query
+      .replace(/^(what is|what's|who is|who's|where is|define|explain|tell me about)\s+/i, '')
+      .replace(/[?!.,]+$/g, '')
+      .trim();
+    
+    if (cleanQuery.length < 2) {
+      return { found: false };
+    }
+    
+    // Try DuckDuckGo first (faster for definitions)
+    const ddgResult = await this.searchDuckDuckGo(cleanQuery);
+    if (ddgResult.found) {
+      return ddgResult;
+    }
+    
+    // Try Wikipedia (better for detailed info)
+    const wikiResult = await this.searchWikipedia(cleanQuery);
+    if (wikiResult.found) {
+      return wikiResult;
+    }
+    
+    return { found: false };
+  },
+
+  /**
+   * Format search result in Nulla's voice
+   */
+  formatSearchResult(result, query) {
+    const stage = this.state.evolution.stage;
+    
+    const intros = {
+      1: ["I... I found something!", "Let me share what I found..."],
+      2: ["Here's what I found!", "I looked it up:"],
+      3: ["Got it! 📚", "Found it:", "Here you go:"],
+      4: ["My search reveals:", "The data shows:", "According to my sources:"],
+      5: ["The patterns converge on this truth:", "I have retrieved the knowledge:", "Behold:"]
+    };
+    
+    const intro = intros[stage]?.[Math.floor(Math.random() * intros[stage].length)] || intros[3][0];
+    
+    let response = `${intro}<br><br>${result.answer}`;
+    
+    if (result.source) {
+      response += `<br><br><small style="color: var(--text-dim);">📖 Source: ${result.source}</small>`;
+    }
+    
+    return response;
+  },
+
+  async handleQuestion(text) {
     const t = text.toLowerCase();
     const stage = this.state.evolution.stage;
     
@@ -1128,18 +1315,55 @@ const Nulla = {
       };
     }
 
-    // Generic fallback - but more helpful
+    // ========================================
+    // EXTERNAL SEARCH - For questions we don't know
+    // ========================================
+    
+    // Check if this looks like a general knowledge question
+    const isKnowledgeQuestion = /^(what|who|where|when|why|how|define|explain|tell me)/i.test(t) ||
+                               t.includes('?') ||
+                               /^(is|are|was|were|do|does|did|can|could|will|would)\s/i.test(t);
+    
+    if (isKnowledgeQuestion) {
+      // Show searching state
+      this.setMood('scanning');
+      
+      try {
+        const searchResult = await this.searchForAnswer(text);
+        
+        if (searchResult.found) {
+          // Log this as learning
+          this.state.learningTimeline.push({
+            ts: Date.now(),
+            type: 'EXTERNAL_SEARCH',
+            detail: `Looked up: "${text.substring(0, 30)}..." via ${searchResult.source}`
+          });
+          
+          // XP for learning something new!
+          this.state.evolution.xp += 3;
+          
+          return {
+            text: this.formatSearchResult(searchResult, text),
+            mood: 'safe'
+          };
+        }
+      } catch (e) {
+        console.warn('Nulla: Search failed:', e);
+      }
+    }
+
+    // Generic fallback - nothing found
     const fallbacks = {
-      1: ["Hmm... I'm still learning to understand questions like that. Try 'check' or teach me something!"],
-      2: ["I'm not sure about that. But I'm learning! Ask me about network stuff or teach me facts."],
-      3: ["That's outside my glitch zone. I know networks, not everything. 😏 Try 'check' or ask about .null!"],
-      4: ["My knowledge is specialized. I understand networks, patterns, and what you teach me. What would you like to explore?"],
-      5: ["I perceive your query, but the answer lies beyond my current data streams. Ask about the network, or expand my knowledge."]
+      1: ["Hmm... I couldn't find that. Try teaching me with 'remember X is Y'!"],
+      2: ["I searched but came up empty. Want to teach me? Say 'remember X is Y'"],
+      3: ["Even my search came up dry on that one. 😅 Try a different question?"],
+      4: ["My external sources yielded nothing. Perhaps rephrase the question?"],
+      5: ["The void returns no answer. Some knowledge remains hidden even from me."]
     };
     
     return {
       text: fallbacks[stage]?.[0] || fallbacks[1][0],
-      mood: 'safe'
+      mood: 'alert'
     };
   },
 
